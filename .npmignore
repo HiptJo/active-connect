@@ -1,0 +1,7 @@
+!dist/
+*.log
+npm-debug.log*
+tsconfig.json
+tslint.json
+test
+stryker.conf.json

@@ -1,0 +1,70 @@
+{
+  "name": "active-connect",
+  "version": "0.0.1",
+  "description": "Connection framework built for smart web-based projects using NodeJS, Angular and Websockets.",
+  "author": "Jonas Hiptmair <office@hiptmairit.at>",
+  "keywords": [
+    "API",
+    "WS",
+    "websocket",
+    "node server"
+  ],
+  "main": "./dist/active-connect.js",
+  "typings": "./dist/active-connect.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsc -w",
+    "build": "npm run clean && tsc",
+    "clean": "rimraf dist",
+    "lint": "tslint ./src/**/*.ts ./test/**/*.ts",
+    "lint:fix": "tslint --fix ./src/**/*.ts ./test/**/*.ts -t verbose",
+    "pretest": "cross-env NODE_ENV=test npm run build && npm run lint",
+    "test": "cross-env NODE_ENV=test mocha --config=./test/.mocharc.yaml --exit",
+    "test:integration": "cross-env NODE_ENV=test mocha --config=./test/.mocharc-integration.yaml  --exit",
+    "test:unit": "cross-env NODE_ENV=test mocha --config=./test/.mocharc-unit.yaml  --exit",
+    "test:coverage": "nyc npm test",
+    "tsc": "tsc"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "json",
+      "html"
+    ],
+    "report-dir": "./reports/coverage",
+    "sourceMap": true,
+    "instrument": true
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "ws": "^7.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.11",
+    "@types/ws": "^7.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HiptJo/active-connect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HiptJo/active-connect/issues"
+  },
+  "directories": {
+    "lib": "dist",
+    "doc": "doc"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "engineStrict": true
+}
