@@ -5,9 +5,7 @@ import { WebsocketClient } from "../websocket-client";
 describe("server creation", () => {
   it("should be possible to create a server with websocket support", async () => {
     const server = new HttpServer(9000, true);
-
     assert.strictEqual(await server.awaitStart(), true);
-
     server.stop();
   });
   it("should be possible to connect to websocket", async () => {
