@@ -1,6 +1,10 @@
 import * as WebSocket from "ws";
+import { WebsocketOutbound } from "../routing/outbound";
+import { WebsocketRouter } from "../routing/router";
 
 export class WebsocketConnection {
+  private static router: WebsocketRouter = new WebsocketRouter();
+  private static outbound: WebsocketOutbound = new WebsocketOutbound();
   constructor(protected connection: WebSocket) {
     this.initializeListeners();
     this.sendWelcomeMessages();
@@ -12,16 +16,20 @@ export class WebsocketConnection {
     this.connection.on("close", this.onClose.bind(this));
   }
   private onMessage(message: string) {
-    // @todo handle message
+    WebsocketConnection.router.route(JSON.parse(message));
   }
   private onError(message: string) {
-    // @todo handle error
+    throw Error(message);
   }
   private onClose() {
     // @todo remove from all subscriptions
   }
 
   private sendWelcomeMessages() {
-    //@todo send welcome messages
+    WebsocketConnection.outbound.sendToConnection(this);
+  }
+
+  public send(method: string, value: any) {
+    this.connection.send(JSON.stringify({ method: method, value: value }));
   }
 }

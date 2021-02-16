@@ -1,0 +1,9 @@
+import { WebsocketConnection } from "../connection/connection";
+
+export class WebsocketRequest {
+  constructor(
+    public path: string,
+    public data: any,
+    public connection: WebsocketConnection
+  ) {}
+}

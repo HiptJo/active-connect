@@ -1,6 +1,6 @@
 import { Server as HttpServer } from "http";
 import { Server, ServerOptions } from "ws";
-import { WebsocketConnection } from "./connection";
+import { WebsocketConnection } from "./connection/connection";
 import * as WebSocket from "ws";
 
 export class WebsocketServer {
@@ -16,7 +16,12 @@ export class WebsocketServer {
     return { server: this.httpServer };
   }
 
+  private connections: Array<WebsocketConnection> = [];
   private onConnect(connection: WebSocket) {
-    new WebsocketConnection(connection);
+    this.connections.push(new WebsocketConnection(connection));
+  }
+
+  public close() {
+    this.server.close();
   }
 }

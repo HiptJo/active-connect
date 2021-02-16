@@ -5,6 +5,7 @@ import { WebsocketServer } from "../websocket/server";
 export class HttpServer {
   private app: express.Application;
   private server: http.Server;
+  private websocket: WebsocketServer;
   constructor(private port: number, private supportWebsocket: boolean) {
     this.initializeServer();
 
@@ -13,17 +14,32 @@ export class HttpServer {
     }
   }
 
+  private isServerStarted: boolean = false;
   private initializeServer() {
     this.app = express();
-    this.server = http.createServer(this.app);
-    this.server.listen(this.port, () => {
-      const address = this.server.address();
-      if (address instanceof Object)
-        console.log(`http server started (port: ${address.port})`);
+    this.server = this.app.listen(this.port, () => {
+      this.isServerStarted = true;
+      this.serverStarted();
     });
   }
 
   private initializeWebsocket() {
-    new WebsocketServer(this.server);
+    this.websocket = new WebsocketServer(this.server);
+  }
+
+  private serverStartedResolves: Array<Function> = [];
+  private serverStarted() {
+    this.serverStartedResolves.forEach((r) => r(true));
+  }
+  public async awaitStart(): Promise<boolean> {
+    if (this.isServerStarted) return true;
+    return new Promise((resolve) => {
+      this.serverStartedResolves.push(resolve);
+    });
+  }
+
+  public stop() {
+    this.server.close();
+    if (this.supportWebsocket) this.websocket.close();
   }
 }
