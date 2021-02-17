@@ -19,6 +19,7 @@
     "lint": "tslint ./src/**/*.ts ./test/**/*.ts",
     "lint:fix": "tslint --fix ./src/**/*.ts ./test/**/*.ts -t verbose",
     "test": "jest --watch --passWithNoTests --detectOpenHandles --forceExit",
+    "coverage": "jest --passWithNoTests --detectOpenHandles --forceExit --coverage",
     "tsc": "tsc"
   },
   "dependencies": {

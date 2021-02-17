@@ -9,7 +9,12 @@ export class WebsocketRoute {
       data: any | void,
       connection: WebsocketConnection
     ) => void | WebsocketResponse
-  ) {}
+  ) {
+    if (method.indexOf(".") >= 0)
+      throw Error(
+        `Websocket Routing: method must not contain a separator (.) ${this.method}`
+      );
+  }
 
   public get Method(): string {
     return this.method;

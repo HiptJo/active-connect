@@ -4,4 +4,5 @@ npm-debug.log*
 tsconfig.json
 tslint.json
 test
+coverage
 stryker.conf.json

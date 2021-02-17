@@ -61,3 +61,12 @@ it("should be possible to receive a requesting outbound", (d) => {
 it("should not be any outbound defined at the beginning", () => {
   expect(WebsocketOutbound.count).toBe(0);
 });
+
+it("should throw when requesting a non-existing outbound", (d) => {
+  WebsocketOutbound.clear();
+  const conn = WebsocketMocks.getConnectionStub();
+  const outbound = new WebsocketOutbound();
+  outbound.requestOutbound("testing1.notfound", conn).catch(() => {
+    d();
+  });
+});
