@@ -5,17 +5,19 @@ import { WebsocketRouter } from "../routing/router";
 export class WebsocketConnection {
   private static router: WebsocketRouter = new WebsocketRouter();
   private static outbound: WebsocketOutbound = new WebsocketOutbound();
-  constructor(protected connection: WebSocket) {
+  constructor(protected connection: WebSocket | null) {
     this.initializeListeners();
     this.sendWelcomeMessages();
   }
 
   private initializeListeners() {
-    this.connection.on("message", this.onMessage.bind(this));
-    this.connection.on("error", this.onError.bind(this));
-    this.connection.on("close", this.onClose.bind(this));
+    if (this.connection) {
+      this.connection.on("message", this.onMessage.bind(this));
+      this.connection.on("error", this.onError.bind(this));
+      this.connection.on("close", this.onClose.bind(this));
+    }
   }
-  private onMessage(message: string) {
+  protected onMessage(message: string) {
     WebsocketConnection.router.route(JSON.parse(message));
   }
   private onError(message: string) {
@@ -30,6 +32,7 @@ export class WebsocketConnection {
   }
 
   public send(method: string, value: any) {
-    this.connection.send(JSON.stringify({ method: method, value: value }));
+    if (this.connection)
+      this.connection.send(JSON.stringify({ method: method, value: value }));
   }
 }

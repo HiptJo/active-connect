@@ -15,11 +15,14 @@ export class Outbound {
 
 export class WebsocketOutbound {
   private static outbounds: Array<Outbound> = [];
+  public static addOutbound(outbound: Outbound) {
+    WebsocketOutbound.outbounds.push(outbound);
+  }
 
   public sendToConnection(connection: WebsocketConnection) {
-    WebsocketOutbound.outbounds.forEach(
-      async (o) => await this.sendOutbound(o, connection)
-    );
+    WebsocketOutbound.outbounds.forEach(async (o) => {
+      if (!o.requestingRequired) await this.sendOutbound(o, connection);
+    });
   }
 
   private async sendOutbound(
@@ -34,6 +37,7 @@ export class WebsocketOutbound {
     method: string,
     connection: WebsocketConnection
   ) {
+    throw Error(`Websocket: mimimi`);
     const outbounds = WebsocketOutbound.outbounds.filter(
       (o) => o.method === method
     );
