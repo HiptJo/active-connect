@@ -15,7 +15,8 @@ export class StubWebsocketConnection extends WebsocketConnection {
   }
 
   send(method: string, data: any) {
-    this.expectedMessages.get(method)(data);
+    const func = this.expectedMessages.get(method);
+    if (func) func(data);
   }
   private expectedMessages: Map<string, Function> = new Map();
   awaitMessage<T>(method: string): Promise<T> {

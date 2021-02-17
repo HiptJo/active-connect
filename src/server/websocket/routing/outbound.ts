@@ -37,7 +37,6 @@ export class WebsocketOutbound {
     method: string,
     connection: WebsocketConnection
   ) {
-    throw Error(`Websocket: mimimi`);
     const outbounds = WebsocketOutbound.outbounds.filter(
       (o) => o.method === method
     );
@@ -46,5 +45,11 @@ export class WebsocketOutbound {
     } else {
       throw Error(`Websocket: Outbound ${method} has not been found.`);
     }
+  }
+  static get count(): number {
+    return WebsocketOutbound.outbounds.length;
+  }
+  static clear() {
+    this.outbounds = [];
   }
 }

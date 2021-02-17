@@ -5,7 +5,9 @@ import {
 } from "../../../../src/server/websocket/routing/outbound";
 import * as assert from "assert";
 import { WebsocketMocks } from "../../websocket-mocks";
-
+beforeEach(() => {
+  WebsocketOutbound.clear();
+});
 it("should be possible to create a new outbound", () => {
   const outbound = new Outbound(
     "testing.delivery",
@@ -25,6 +27,7 @@ it("should be possible to send a outbound", (d) => {
       };
     })
   );
+
   const conn = WebsocketMocks.getConnectionStub();
   conn.awaitMessage("testing.delivery").then((data: { value: string }) => {
     assert.strictEqual(data.value, "ok");
@@ -37,7 +40,7 @@ it("should be possible to send a outbound", (d) => {
 it("should be possible to receive a requesting outbound", (d) => {
   WebsocketOutbound.addOutbound(
     new Outbound(
-      "testing.delivery",
+      "testing.requested",
       async () => {
         return {
           value: "ok1",
@@ -47,10 +50,14 @@ it("should be possible to receive a requesting outbound", (d) => {
     )
   );
   const conn = WebsocketMocks.getConnectionStub();
-  conn.awaitMessage("testing.delivery").then((data: { value: string }) => {
+  conn.awaitMessage("testing.requested").then((data: { value: string }) => {
     assert.strictEqual(data.value, "ok1");
     d();
   });
   const outbound = new WebsocketOutbound();
-  outbound.requestOutbound("testing.delivery", conn);
+  outbound.requestOutbound("testing.requested", conn);
+});
+
+it("should not be any outbound defined at the beginning", () => {
+  expect(WebsocketOutbound.count).toBe(0);
 });
