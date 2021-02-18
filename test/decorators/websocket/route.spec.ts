@@ -88,3 +88,21 @@ it("should throw when creating a method to another base route when that route do
     d();
   }
 });
+
+it("should be possible to decorate multiple methods within a route", () => {
+  @Route("testingmultiple")
+  class Testing {
+    @Route("m1")
+    method1(data: any, conn: WebsocketConnection) {}
+
+    @Route("m2")
+    method2(data: any, conn: WebsocketConnection) {}
+  }
+  expect(Testing).toBeDefined();
+
+  const base = WebsocketRouter.Routes.filter(
+    (r) => r.Method == "testingmultiple"
+  );
+  expect(base).toHaveLength(1);
+  expect(base[0].Children).toHaveLength(2);
+});
