@@ -21,6 +21,15 @@ describe("accessor testing", () => {
     expect(route.Method).toBe("testing");
     expect(route.Children).toHaveLength(0);
     expect(route.Func).toBeDefined();
+    route.Method = "test1";
+    expect(route.Method).toBe("test1");
+  });
+  it("should throw when a route method is modified and the new method contains the separator", (d) => {
+    try {
+      route.Method = "test.test";
+    } catch (e) {
+      d();
+    }
   });
 });
 describe("children management", () => {

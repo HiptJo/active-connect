@@ -5,10 +5,12 @@ import { WebsocketResponse } from "../message/response";
 export class WebsocketRoute {
   constructor(
     private method: string,
-    private func: (
-      data: any | void,
-      connection: WebsocketConnection
-    ) => void | WebsocketResponse
+    private func:
+      | ((
+          data: any | void,
+          connection: WebsocketConnection
+        ) => void | WebsocketResponse)
+      | null
   ) {
     if (method.indexOf(".") >= 0)
       throw Error(
@@ -18,6 +20,13 @@ export class WebsocketRoute {
 
   public get Method(): string {
     return this.method;
+  }
+  public set Method(method: string) {
+    if (method.indexOf(".") >= 0)
+      throw Error(
+        `Websocket Routing: method must not contain a separator (.) ${this.method}`
+      );
+    this.method = method;
   }
 
   public get Func(): (
@@ -59,12 +68,12 @@ export class WebsocketRoute {
     }
     return false;
   }
-  private routeChildren(
+  private async routeChildren(
     request: WebsocketRequest,
     path: Array<string>
-  ): boolean {
+  ): Promise<boolean> {
     for (const child of this.children) {
-      if (child.route(request, path)) {
+      if (await child.route(request, path)) {
         return true;
       }
     }
@@ -72,6 +81,9 @@ export class WebsocketRoute {
   }
 
   private async call(request: WebsocketRequest): Promise<any> {
-    return this.func(request ? request.data : null, request.connection);
+    if (this.func) {
+      return this.func(request ? request.data : null, request.connection);
+    } else
+      throw Error("Websocket: Function not defined for route " + this.method);
   }
 }
