@@ -10,9 +10,8 @@ This project is developed right now. Stay tuned.
 
 ```javascript
 @Route("xy") for class and function
-@Outbound("xy",requireRequesting?: boolean) for function
 @StandaloneRoute("xy.xy")
-@StandaloneOutbound("xy.xy")
+@Outbound("xy",requireRequesting?: boolean) for function
 @Authenticate(Authenticator)
 @SubscribeChanges
 @SendUpdates(method... Array<String>)

@@ -1,6 +1,7 @@
 import { WebsocketConnection } from "../../../../src/server/websocket/connection/connection";
 import { WebsocketRequest } from "../../../../src/server/websocket/message/request";
 import { WebsocketRoute } from "../../../../src/server/websocket/routing/route";
+import { StandaloneWebsocketRoute } from "../../../../src/server/websocket/routing/route-standalone";
 import { WebsocketRouter } from "../../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../websocket-mocks";
 
@@ -110,4 +111,15 @@ it("should be possible to call a route without data", async (d) => {
   expect(
     await router.route(new WebsocketRequest("testing", original, conn))
   ).toBeTruthy();
+});
+
+it("should be possible to register a standalone route", () => {
+  WebsocketRouter.registerStandaloneRoute(
+    new StandaloneWebsocketRoute(
+      "method.standalone",
+      (data: any, conn: WebsocketConnection) => {
+        return { value: "standalone" };
+      }
+    )
+  );
 });

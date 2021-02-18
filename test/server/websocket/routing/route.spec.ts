@@ -1,5 +1,4 @@
 import { WebsocketRequest } from "../../../../src/server/websocket/message/request";
-import { WebsocketResponse } from "../../../../src/server/websocket/message/response";
 import { WebsocketRoute } from "../../../../src/server/websocket/routing/route";
 import { WebsocketMocks } from "../../websocket-mocks";
 
@@ -36,7 +35,7 @@ describe("children management", () => {
   const route = new WebsocketRoute("testing", () => {});
   const child = new WebsocketRoute("child", (data: any) => {
     expect(data).toEqual({ in: "here" });
-    return new WebsocketResponse({ value: "anything" });
+    return { value: "anything" };
   });
   it("should be possible to add a child to a route", async () => {
     route.addChild(child);

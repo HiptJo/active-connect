@@ -1,4 +1,7 @@
-import { Route } from "../../../src/decorators/websocket/route";
+import {
+  Route,
+  StandaloneRoute,
+} from "../../../src/decorators/websocket/route";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
 import { WebsocketRequest } from "../../../src/server/websocket/message/request";
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
@@ -141,4 +144,41 @@ it("should be possible to call any method", async (d) => {
     await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
   });
   await router.route(new WebsocketRequest("testingmultiple1.m2", null, conn));
+});
+
+it("should be possible to create a standalone routed method", () => {
+  class Testing {
+    @StandaloneRoute("standalone.route")
+    async route(data: any, conn: WebsocketConnection) {
+      return { value: "ok-standalone" };
+    }
+  }
+  expect(Testing).toBeDefined();
+  expect(
+    WebsocketRouter.StandaloneRoutes.filter(
+      (r) => r.Method == "standalone.route"
+    )
+  ).toHaveLength(1);
+});
+
+it("should be possible to call a standalone routed method", (d) => {
+  class Testing {
+    @StandaloneRoute("standalone.call")
+    async route(data: any, conn: WebsocketConnection) {
+      return { value: "ok-standalone" };
+    }
+  }
+  expect(Testing).toBeDefined();
+  expect(
+    WebsocketRouter.StandaloneRoutes.filter(
+      (r) => r.Method == "standalone.route"
+    )
+  ).toHaveLength(1);
+  const conn = WebsocketMocks.getConnectionStub();
+  const router = new WebsocketRouter();
+  conn.awaitMessage("m.standalone.route").then((data) => {
+    expect(data).toStrictEqual({ value: "ok-standalone" });
+    d();
+  });
+  router.route(new WebsocketRequest("standalone.route", null, conn));
 });

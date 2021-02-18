@@ -1,4 +1,5 @@
 import { WebsocketRoute } from "../../server/websocket/routing/route";
+import { StandaloneWebsocketRoute } from "../../server/websocket/routing/route-standalone";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 
 export function Route(method: string, baseRoute?: string) {
@@ -38,5 +39,15 @@ export function Route(method: string, baseRoute?: string) {
       }
     }
     return target;
+  };
+}
+
+export function StandaloneRoute(method: string) {
+  return function (target: any, propertyKey: string): any {
+    // method annotation
+    // register standalone route
+    WebsocketRouter.registerStandaloneRoute(
+      new StandaloneWebsocketRoute(method, target[propertyKey])
+    );
   };
 }

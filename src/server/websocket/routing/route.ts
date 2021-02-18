@@ -1,21 +1,15 @@
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
-import { WebsocketResponse } from "../message/response";
 
 export class WebsocketRoute {
+  protected method: string;
   constructor(
-    private method: string,
-    private func:
-      | ((
-          data: any | void,
-          connection: WebsocketConnection
-        ) => void | WebsocketResponse)
+    method: string,
+    protected func:
+      | ((data: any | void, connection: WebsocketConnection) => void | any)
       | null
   ) {
-    if (method.indexOf(".") >= 0)
-      throw Error(
-        `Websocket Routing: method must not contain a separator (.) ${this.method}`
-      );
+    this.Method = method;
   }
 
   public get Method(): string {
@@ -32,11 +26,11 @@ export class WebsocketRoute {
   public get Func(): (
     data: any | void,
     connection: WebsocketConnection
-  ) => void | WebsocketResponse {
+  ) => void {
     return this.func;
   }
 
-  private children: Array<WebsocketRoute> = [];
+  protected children: Array<WebsocketRoute> = [];
   public get Children(): Array<WebsocketRoute> {
     return this.children;
   }
@@ -68,7 +62,7 @@ export class WebsocketRoute {
     }
     return false;
   }
-  private async routeChildren(
+  protected async routeChildren(
     request: WebsocketRequest,
     path: Array<string>
   ): Promise<boolean> {
@@ -80,7 +74,7 @@ export class WebsocketRoute {
     return false;
   }
 
-  private async call(request: WebsocketRequest): Promise<any> {
+  protected async call(request: WebsocketRequest): Promise<any> {
     if (this.func) {
       return this.func(request.data, request.connection);
     } else
