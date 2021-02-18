@@ -13,4 +13,9 @@ This project is developed right now. Stay tuned.
 @Outbound("xy",requireRequesting?: boolean) for function
 @StandaloneRoute("xy.xy")
 @StandaloneOutbound("xy.xy")
+@Authenticate(Authenticator)
+@SubscribeChanges
+@SendUpdates(method... Array<String>)
+@ProvidesFile(label)
+@ProvidesImage(label)
 ```
