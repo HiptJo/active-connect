@@ -1,4 +1,5 @@
 import * as WebSocket from "ws";
+import { WebsocketRequest } from "../message/request";
 import { WebsocketOutbound } from "../routing/outbound";
 import { WebsocketRouter } from "../routing/router";
 
@@ -18,7 +19,10 @@ export class WebsocketConnection {
     }
   }
   protected onMessage(message: string) {
-    WebsocketConnection.router.route(JSON.parse(message));
+    const data = JSON.parse(message);
+    WebsocketConnection.router.route(
+      new WebsocketRequest(data.method, data.value, this)
+    );
   }
   private onError(message: string) {
     throw Error(message);
