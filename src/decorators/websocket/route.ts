@@ -19,9 +19,8 @@ export function Route(method: string, baseRoute?: string) {
       } else {
         WebsocketRouter.registerRoute(target.prototype.routeDefinition);
       }
-    } else if (propertyKey) {
+    } else {
       // method annotation
-
       if (baseRoute) {
         // overrideBaseRoute
         WebsocketRouter.getRouteByMethod(baseRoute).addChild(
