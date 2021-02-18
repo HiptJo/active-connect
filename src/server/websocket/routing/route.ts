@@ -42,8 +42,8 @@ export class WebsocketRoute {
     // check if responsible for handling
     if (path.length === 1 && path[0] === this.method) {
       const response = await this.call(request);
-      if (typeof response != null) {
-        request.connection.send(`m.${request.path}`, response);
+      if (response && typeof response != null && response.data) {
+        request.connection.send(`m.${request.path}`, response.data);
       }
       return true;
     }
@@ -72,6 +72,6 @@ export class WebsocketRoute {
   }
 
   private async call(request: WebsocketRequest): Promise<any> {
-    return this.func(request.data, request.connection);
+    return this.func(request ? request.data : null, request.connection);
   }
 }

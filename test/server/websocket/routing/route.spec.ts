@@ -33,7 +33,7 @@ describe("children management", () => {
     route.addChild(child);
     const conn = WebsocketMocks.getConnectionStub();
     conn.awaitMessage("m.testing.child").then((data: any) => {
-      expect(data).toBe({ value: "anything" });
+      expect(data).toStrictEqual({ value: "anything" });
     });
     const res = await route.route(
       new WebsocketRequest("testing.child", { in: "here" }, conn),

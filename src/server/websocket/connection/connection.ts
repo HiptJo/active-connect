@@ -3,7 +3,7 @@ import { WebsocketOutbound } from "../routing/outbound";
 import { WebsocketRouter } from "../routing/router";
 
 export class WebsocketConnection {
-  private static router: WebsocketRouter = new WebsocketRouter();
+  public static router: WebsocketRouter = new WebsocketRouter();
   private static outbound: WebsocketOutbound = new WebsocketOutbound();
   constructor(protected connection: WebSocket | null) {
     this.initializeListeners();
