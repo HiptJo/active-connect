@@ -4,7 +4,7 @@ import { WebsocketRouter } from "../routing/router";
 
 export class WebsocketConnection {
   public static router: WebsocketRouter = new WebsocketRouter();
-  private static outbound: WebsocketOutbound = new WebsocketOutbound();
+  public static outbound: WebsocketOutbound = new WebsocketOutbound();
   constructor(protected connection: WebSocket | null) {
     this.initializeListeners();
     this.sendWelcomeMessages();

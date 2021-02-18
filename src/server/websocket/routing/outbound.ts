@@ -8,8 +8,7 @@ export class Outbound {
   constructor(
     public method: string,
     public func: (connection: WebsocketConnection) => Promise<any>,
-    public requestingRequired?: boolean,
-    public auth?: Array<WebsocketAuthorizationCheckable>
+    public requestingRequired?: boolean
   ) {}
 }
 
