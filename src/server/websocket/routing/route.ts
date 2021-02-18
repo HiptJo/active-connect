@@ -59,7 +59,7 @@ export class WebsocketRoute {
 
     // check for children
     if (
-      path.length > 0 &&
+      path.length > 1 &&
       path[0] === this.method &&
       this.children &&
       this.children.length > 0
