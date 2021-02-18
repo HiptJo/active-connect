@@ -19,3 +19,20 @@ it("should be possible to create a outbound", (d) => {
   });
   out.sendToConnection(conn);
 });
+
+it("should be possible to create a requestable outbound", (d) => {
+  class Out {
+    @Outbound("out.requesting", true)
+    async send(conn: WebsocketConnection) {
+      return { value: "anything" };
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+  conn.awaitMessage("out.example").then((data) => {
+    expect(data).toStrictEqual({ value: "anything" });
+    d();
+  });
+  out.requestOutbound("out.requesting", conn);
+});
