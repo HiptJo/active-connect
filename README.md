@@ -8,5 +8,9 @@ This project is developed right now. Stay tuned.
 
 ## Annotations
 
+```javascript
 @Route("xy") for class and function
 @Outbound("xy",requireRequesting?: boolean) for function
+@StandaloneRoute("xy.xy")
+@StandaloneOutbound("xy.xy")
+```
