@@ -27,4 +27,7 @@ export class WebsocketClient {
   send(method: string, data: any) {
     this.connection.send(JSON.stringify({ method: method, value: data }));
   }
+  close() {
+    this.connection.close();
+  }
 }

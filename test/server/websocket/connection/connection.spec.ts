@@ -33,4 +33,8 @@ describe("test connection event handling", () => {
     });
     client.send("connection.create", null);
   });
+
+  it("should be possible to close the connection", () => {
+    client.close();
+  });
 });
