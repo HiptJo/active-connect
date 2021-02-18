@@ -12,9 +12,11 @@ This project is developed right now. Stay tuned.
 @Route("xy") for class and function
 @StandaloneRoute("xy.xy")
 @Outbound("xy",requireRequesting?: boolean) for function
+
 @Authenticate(Authenticator)
 @SubscribeChanges
-@SendUpdates(method... Array<String>)
+@Modifies(method... Array<String>)
 @ProvidesFile(label)
 @ProvidesImage(label)
+DB Auth integration
 ```
