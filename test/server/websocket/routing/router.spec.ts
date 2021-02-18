@@ -94,3 +94,20 @@ it("should throw when routing a non-existing baseroute", (d) => {
     d();
   });
 });
+
+it("should be possible to call a route without data", async (d) => {
+  const original: null = null;
+  const route = new WebsocketRoute(
+    "testing",
+    (data: any, connection: WebsocketConnection) => {
+      expect(data).toStrictEqual(original);
+      d();
+    }
+  );
+  WebsocketRouter.registerRoute(route);
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+  expect(
+    await router.route(new WebsocketRequest("testing", original, conn))
+  ).toBeTruthy();
+});

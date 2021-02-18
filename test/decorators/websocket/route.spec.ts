@@ -1,6 +1,8 @@
 import { Route } from "../../../src/decorators/websocket/route";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
+import { WebsocketRequest } from "../../../src/server/websocket/message/request";
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
+import { WebsocketMocks } from "../../server/websocket-mocks";
 
 it("should be possible to annotate a class", () => {
   @Route("annotationtesting1")
@@ -105,4 +107,38 @@ it("should be possible to decorate multiple methods within a route", () => {
   );
   expect(base).toHaveLength(1);
   expect(base[0].Children).toHaveLength(2);
+});
+
+it("should be possible to call any method", async (d) => {
+  @Route("testingmultiple1")
+  class Testing {
+    @Route("m1")
+    method1(data: any, conn: WebsocketConnection) {
+      return 1;
+    }
+
+    @Route("m2")
+    method2(data: any, conn: WebsocketConnection) {
+      return 2;
+    }
+  }
+  expect(Testing).toBeDefined();
+
+  const base = WebsocketRouter.Routes.filter(
+    (r) => r.Method == "testingmultiple1"
+  );
+  expect(base).toHaveLength(1);
+  expect(base[0].Children).toHaveLength(2);
+
+  const conn = WebsocketMocks.getConnectionStub();
+  const router = new WebsocketRouter();
+  conn.awaitMessage("m.testingmultiple1.m2").then(async (data) => {
+    expect(data).toBe(2);
+    conn.awaitMessage("m.testingmultiple1.m1").then(async (data) => {
+      expect(data).toBe(1);
+      d();
+    });
+    await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
+  });
+  await router.route(new WebsocketRequest("testingmultiple1.m2", null, conn));
 });
