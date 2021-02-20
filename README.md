@@ -16,7 +16,7 @@ This project is developed right now. Stay tuned.
 
 @SubscribeChanges
 @Modifies(method... Array<String>)
-@ProvidesFile(label)
-@ProvidesImage(label)
-DB Auth integration
+
+@ProvidesFile(label) + ProvidedFile
+@ProvidesImage(label) + ProvidedImage
 ```

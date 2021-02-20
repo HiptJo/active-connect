@@ -17,6 +17,18 @@ export class WebsocketOutbound {
   public static addOutbound(outbound: Outbound) {
     WebsocketOutbound.outbounds.push(outbound);
   }
+  private static outboundSubscriptions: Map<string, () => void> = new Map();
+  public static addOutboundSubscription(
+    outbound: string,
+    sendUpdates: () => void
+  ) {
+    WebsocketOutbound.outboundSubscriptions.set(outbound, sendUpdates);
+  }
+  public static async sendUpdates(routes: string[]) {
+    await Promise.all(
+      routes.map((route) => this.outboundSubscriptions.get(route)())
+    );
+  }
 
   public sendToConnection(connection: WebsocketConnection) {
     WebsocketOutbound.outbounds.forEach(async (o) => {
