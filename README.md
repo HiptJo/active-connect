@@ -20,3 +20,5 @@ This project is developed right now. Stay tuned.
 @ProvidesFile(label) + ProvidedFile
 @ProvidesImage(label) + ProvidedImage
 ```
+
+awaitMessage should show recently sent messages
