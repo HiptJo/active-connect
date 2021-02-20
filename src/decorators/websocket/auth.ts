@@ -16,6 +16,7 @@ export function Auth(auth: WebsocketAuthenticator) {
           return original(data, conn);
         } else {
           conn.send("m.error", "auth:unauthorized:" + auth.label);
+          return "error:auth:unauthorized";
         }
       };
     }
