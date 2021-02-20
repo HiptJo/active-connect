@@ -4,6 +4,7 @@ export class WebsocketClient {
   constructor(port: number) {
     this.connection = new ws(`ws://127.0.0.1:${port || 9000}`);
   }
+  private messageHistory: Map<string, any> = new Map();
   public async awaitConnection(): Promise<boolean> {
     return new Promise((resolve) => {
       this.connection.on("open", () => {
@@ -14,19 +15,28 @@ export class WebsocketClient {
         const callback = this.expectedMessages.get(data.method);
         if (callback) {
           callback(data.value);
-        }
+        } else this.messageHistory.set(data.method, data.value);
       });
     });
   }
+
   private expectedMessages: Map<string, Function> = new Map();
   awaitMessage<T>(method: string): Promise<T> {
     return new Promise((resolve) => {
-      this.expectedMessages.set(method, resolve);
+      const historyElement = this.messageHistory.get(method);
+      if (historyElement) {
+        this.expectedMessages.set(method, null);
+        resolve(historyElement);
+      } else {
+        this.expectedMessages.set(method, resolve);
+      }
     });
   }
+
   send(method: string, data: any) {
     this.connection.send(JSON.stringify({ method: method, value: data }));
   }
+
   close() {
     this.connection.close();
   }

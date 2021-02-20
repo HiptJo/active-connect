@@ -13,12 +13,9 @@ This project is developed right now. Stay tuned.
 @StandaloneRoute("xy.xy",baseRoute?)
 @Outbound("xy",requireRequesting?: boolean) for function
 @Auth(x extends WebsocketAuthenticator)
-
 @SubscribeChanges
 @Modifies(method... Array<String>)
 
 @ProvidesFile(label) + ProvidedFile
 @ProvidesImage(label) + ProvidedImage
 ```
-
-awaitMessage should show recently sent messages

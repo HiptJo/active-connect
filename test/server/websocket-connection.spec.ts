@@ -20,4 +20,12 @@ describe("connection testing", () => {
       });
     conn.send("message.testing", value);
   });
+  it("should be possible to await sent data", async () => {
+    const value = { value: "i am okay" };
+
+    conn.send("message.testing", value);
+
+    const data = await conn.awaitMessage<{ value: string }>("message.testing");
+    expect(data).toStrictEqual(value);
+  });
 });
