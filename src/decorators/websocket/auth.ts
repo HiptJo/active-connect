@@ -2,7 +2,7 @@ import { WebsocketAuthenticator } from "../../server/websocket/auth/authenticato
 import { WebsocketConnection } from "../../server/websocket/connection/connection";
 
 export function Auth(auth: WebsocketAuthenticator) {
-  return function (target: any, propertyKey?: string): any {
+  return function (target: any, propertyKey: string): any {
     // initialize routeDefinition
     if (!propertyKey) {
       throw Error("@Auth is not implemented for classes");
@@ -15,7 +15,10 @@ export function Auth(auth: WebsocketAuthenticator) {
         if (await auth.authenticate(conn)) {
           return original(data, conn);
         } else {
-          conn.send("m.error", "auth:unauthorized:" + auth.label);
+          // check if it is a route (not a outlet)
+          if (!(target.___wsoutbound && target.___wsoutbound[propertyKey])) {
+            conn.send("m.error", "auth:unauthorized:" + auth.label);
+          }
           return "error:auth:unauthorized";
         }
       };
