@@ -8,12 +8,13 @@ export function Auth(auth: WebsocketAuthenticator) {
       throw Error("@Auth is not implemented for classes");
     } else {
       const original = target[propertyKey];
-      target[propertyKey] = async function (
-        data: any,
-        conn: WebsocketConnection
-      ) {
+      target[propertyKey] = async function (...data: any[]) {
+        let conn: WebsocketConnection;
+        if (data.length == 1) conn = data[0];
+        if (data.length > 1) conn = data[1];
+
         if (await auth.authenticate(conn)) {
-          return original(data, conn);
+          return original(...data);
         } else {
           // check if it is a route (not a outlet)
           if (!(target.___wsoutbound && target.___wsoutbound[propertyKey])) {

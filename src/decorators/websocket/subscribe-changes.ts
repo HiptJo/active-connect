@@ -24,8 +24,11 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
     }
   );
   const original = target[propertyKey];
-  target[propertyKey] = async function (data: any, conn: WebsocketConnection) {
-    const res = await original(data, conn);
+  target[propertyKey] = async function (...data: any[]) {
+    let conn: WebsocketConnection;
+    if (data.length == 1) conn = data[0];
+    if (data.length > 1) conn = data[2];
+    const res = await original(...data);
     if (res != "error:auth:unauthorized") {
       // subscribe for changes
       if (!target.___outboundSubscriptions)
