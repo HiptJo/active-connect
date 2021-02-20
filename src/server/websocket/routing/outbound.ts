@@ -17,6 +17,13 @@ export class WebsocketOutbound {
   public static addOutbound(outbound: Outbound) {
     WebsocketOutbound.outbounds.push(outbound);
   }
+  public static getOutbound(method: string): Outbound | null {
+    const vars = WebsocketOutbound.outbounds.filter((o) => o.method == method);
+    if (vars.length > 0) {
+      return vars[0];
+    }
+    return null;
+  }
   private static outboundSubscriptions: Map<string, () => void> = new Map();
   public static addOutboundSubscription(
     outbound: string,

@@ -19,5 +19,6 @@ export function Outbound(method: string, requestingRequired?: boolean) {
     ) {
       registerSubscription(target, propertyKey);
     }
+    return target;
   };
 }

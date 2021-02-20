@@ -29,6 +29,7 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
     }
     return res;
   };
+  return target;
 }
 export function Modifies(...routes: string[]) {
   return function (target: any, propertyKey: string) {

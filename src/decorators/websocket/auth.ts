@@ -1,5 +1,6 @@
 import { WebsocketAuthenticator } from "../../server/websocket/auth/authenticator";
 import { WebsocketConnection } from "../../server/websocket/connection/connection";
+import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
 
 export function Auth(auth: WebsocketAuthenticator) {
   return function (target: any, propertyKey: string): any {
@@ -20,5 +21,16 @@ export function Auth(auth: WebsocketAuthenticator) {
         return "error:auth:unauthorized";
       }
     };
+    // check if it is an outlet
+    if (target.___wsoutbound && target.___wsoutbound[propertyKey]) {
+      // update outbound definition
+      const out = WebsocketOutbound.getOutbound(
+        target.___wsoutbound[propertyKey]
+      );
+      if (out) {
+        out.method = target[propertyKey];
+      }
+    }
+    return target;
   };
 }

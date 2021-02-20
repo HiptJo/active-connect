@@ -54,5 +54,6 @@ export function StandaloneRoute(method: string) {
     WebsocketRouter.registerStandaloneRoute(
       new StandaloneWebsocketRoute(method, target[propertyKey])
     );
+    return target;
   };
 }
