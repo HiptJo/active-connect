@@ -24,6 +24,12 @@ it("should resend subscribed data", (d) => {
     public async modify(value: any, conn: WebsocketConnection) {
       Testing.value = value;
     }
+
+    @Modifies("out.subscribe2", "out.xyz")
+    @StandaloneRoute("modify.subscribe2")
+    public async modify1(value: any, conn: WebsocketConnection) {
+      Testing.value = value;
+    }
   }
 
   expect(Testing).toBeDefined();
