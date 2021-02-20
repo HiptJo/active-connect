@@ -7,18 +7,26 @@ export function Route(method: string, baseRoute?: string) {
     // initialize routeDfinition
     if (!propertyKey) {
       // class annotation
+      const route = new WebsocketRoute(method, null);
+
       if (target.prototype.routeDefinition) {
-        target.prototype.routeDefinition.Method = method;
-      } else {
-        target.prototype.routeDefinition = new WebsocketRoute(method, null);
+        // initialize children
+        target.prototype.routeDefinition.forEach(
+          (child: { method: string; propertyKey: string }) => {
+            route.addChild(
+              new WebsocketRoute(
+                child.method,
+                target.prototype[child.propertyKey]
+              )
+            );
+          }
+        );
       }
 
       if (baseRoute) {
-        WebsocketRouter.getRouteByMethod(baseRoute).addChild(
-          target.prototype.routeDefinition
-        );
+        WebsocketRouter.getRouteByMethod(baseRoute).addChild(route);
       } else {
-        WebsocketRouter.registerRoute(target.prototype.routeDefinition);
+        WebsocketRouter.registerRoute(route);
       }
     } else {
       // method annotation
@@ -30,12 +38,9 @@ export function Route(method: string, baseRoute?: string) {
       } else {
         // add route to class
         if (!target.routeDefinition) {
-          target.routeDefinition = new WebsocketRoute("", null);
+          target.routeDefinition = [];
         }
-
-        target.routeDefinition.Children.push(
-          new WebsocketRoute(method, target[propertyKey])
-        );
+        target.routeDefinition.push({ method, propertyKey });
       }
     }
     return target;
