@@ -40,13 +40,14 @@ describe("children management", () => {
   it("should be possible to add a child to a route", async () => {
     route.addChild(child);
     const conn = WebsocketMocks.getConnectionStub();
-    conn.awaitMessage("m.testing.child").then((data: any) => {
-      expect(data).toStrictEqual({ value: "anything" });
-    });
+
     const res = await route.route(
       new WebsocketRequest("testing.child", { in: "here" }, conn),
       ["testing", "child"]
     );
     expect(res).toBeTruthy();
+
+    const data = await conn.awaitMessage("m.testing.child");
+    expect(data).toStrictEqual({ value: "anything" });
   });
 });

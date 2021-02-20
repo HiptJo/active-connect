@@ -17,8 +17,10 @@ export class StubWebsocketConnection extends WebsocketConnection {
   private messageHistory: Map<string, any> = new Map();
   send(method: string, data: any) {
     const func = this.expectedMessages.get(method);
-    if (func) func(data);
-    else this.messageHistory.set(method, data);
+    if (func) {
+      func(data);
+      this.expectedMessages.set(method, null);
+    } else this.messageHistory.set(method, data);
   }
 
   private expectedMessages: Map<string, Function> = new Map();

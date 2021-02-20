@@ -15,6 +15,7 @@ export class WebsocketClient {
         const callback = this.expectedMessages.get(data.method);
         if (callback) {
           callback(data.value);
+          this.expectedMessages.set(data.method, null);
         } else this.messageHistory.set(data.method, data.value);
       });
     });

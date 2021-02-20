@@ -3,7 +3,7 @@ import { WebsocketConnection } from "../../../src/server/websocket/connection/co
 import { WebsocketOutbound } from "../../../src/server/websocket/routing/outbound";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
-it("should be possible to create a outbound", (d) => {
+it("should be possible to create a outbound", async () => {
   class Out {
     @Outbound("out.example")
     async send(conn: WebsocketConnection) {
@@ -13,14 +13,14 @@ it("should be possible to create a outbound", (d) => {
   expect(Out).toBeDefined();
   const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
-  conn.awaitMessage("out.example").then((data) => {
-    expect(data).toStrictEqual({ value: "anything" });
-    d();
-  });
+
   out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("out.example");
+  expect(data).toStrictEqual({ value: "anything" });
 });
 
-it("should be possible to create a requestable outbound", (d) => {
+it("should be possible to create a requestable outbound", async () => {
   class Out {
     @Outbound("out.requesting", true)
     async send(conn: WebsocketConnection) {
@@ -30,9 +30,9 @@ it("should be possible to create a requestable outbound", (d) => {
   expect(Out).toBeDefined();
   const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
-  conn.awaitMessage("out.example").then((data) => {
-    expect(data).toStrictEqual({ value: "anything" });
-    d();
-  });
+
   out.requestOutbound("out.requesting", conn);
+
+  const data = await conn.awaitMessage("out.example");
+  expect(data).toStrictEqual({ value: "anything" });
 });

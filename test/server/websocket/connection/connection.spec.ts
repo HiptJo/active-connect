@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 describe("test connection event handling", () => {
-  it("should be possible to send a message", (d) => {
+  it("should be possible to send a message", async () => {
     @Route("connection")
     class Testing {
       @Route("create")
@@ -25,13 +25,11 @@ describe("test connection event handling", () => {
       }
     }
     expect(Testing).toBeDefined();
-    client.awaitMessage("m.connection.create").then((data) => {
-      expect(data).toStrictEqual({
-        value: "connection established successfully",
-      });
-      d();
-    });
     client.send("connection.create", null);
+    const data = await client.awaitMessage("m.connection.create");
+    expect(data).toStrictEqual({
+      value: "connection established successfully",
+    });
   });
 
   it("should be possible to close the connection", () => {

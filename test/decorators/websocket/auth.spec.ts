@@ -18,7 +18,7 @@ class FalseAuthenticator extends WebsocketAuthenticator {
   }
 }
 
-it("should be possible to use authenticators for methods", async (d) => {
+it("should be possible to use authenticators for methods", async () => {
   @Route("testingmultiple1")
   class Testing {
     @Route("m1")
@@ -43,18 +43,17 @@ it("should be possible to use authenticators for methods", async (d) => {
 
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
-  conn.awaitMessage("m.testingmultiple1.m2").then(async (data) => {
-    expect(data).toBe(2);
-    conn.awaitMessage("m.testingmultiple1.m1").then(async (data) => {
-      expect(data).toBe(1);
-      d();
-    });
-    await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
-  });
+
   await router.route(new WebsocketRequest("testingmultiple1.m2", null, conn));
+  await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
+  const data1 = await conn.awaitMessage("m.testingmultiple1.m1");
+  const data2 = await conn.awaitMessage("m.testingmultiple1.m2");
+
+  expect(data1).toBe(1);
+  expect(data2).toBe(2);
 });
 
-it("should recejt a unauthorized request", async (d) => {
+it("should recejt a unauthorized request", async () => {
   @Route("testrj")
   class Testing {
     @Route("m1")
@@ -77,9 +76,7 @@ it("should recejt a unauthorized request", async (d) => {
 
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
-  conn.awaitMessage("m.error").then(async (data) => {
-    expect(data).toBe("auth:unauthorized:test-auth");
-    d();
-  });
   await router.route(new WebsocketRequest("testrj.m2", null, conn));
+  const data = await conn.awaitMessage("m.error");
+  expect(data).toBe("auth:unauthorized:test-auth");
 });

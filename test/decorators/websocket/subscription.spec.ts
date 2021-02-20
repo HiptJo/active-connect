@@ -10,7 +10,7 @@ import { WebsocketOutbound } from "../../../src/server/websocket/routing/outboun
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
-it("should resend subscribed data", (d) => {
+it("should resend subscribed data", async () => {
   class Testing {
     private static value: any = { value: "oldvalue" };
     @Outbound("out.subscribe1")
@@ -36,15 +36,13 @@ it("should resend subscribed data", (d) => {
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
   const outbound = new WebsocketOutbound();
-  conn.awaitMessage("out.subscribe1").then((data) => {
-    expect(data).toStrictEqual({ value: "oldvalue" });
-    conn.awaitMessage("out.subscribe1").then((data) => {
-      expect(data).toStrictEqual({ value: "hereiam" });
-      d();
-    });
-    router.route(
-      new WebsocketRequest("modify.subscribe1", { value: "hereiam" }, conn)
-    );
-  });
+
   outbound.sendToConnection(conn);
+  const data = await conn.awaitMessage("out.subscribe1");
+  expect(data).toStrictEqual({ value: "oldvalue" });
+  await router.route(
+    new WebsocketRequest("modify.subscribe1", { value: "hereiam" }, conn)
+  );
+  const resentData = await conn.awaitMessage("out.subscribe1");
+  expect(resentData).toStrictEqual({ value: "hereiam" });
 });

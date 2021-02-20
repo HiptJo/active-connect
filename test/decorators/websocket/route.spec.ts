@@ -112,7 +112,7 @@ it("should be possible to decorate multiple methods within a route", () => {
   expect(base[0].Children).toHaveLength(2);
 });
 
-it("should be possible to call any method", async (d) => {
+it("should be possible to call any method", async () => {
   @Route("testingmultiple1")
   class Testing {
     @Route("m1")
@@ -135,15 +135,14 @@ it("should be possible to call any method", async (d) => {
 
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
-  conn.awaitMessage("m.testingmultiple1.m2").then(async (data) => {
-    expect(data).toBe(2);
-    conn.awaitMessage("m.testingmultiple1.m1").then(async (data) => {
-      expect(data).toBe(1);
-      d();
-    });
-    await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
-  });
+
   await router.route(new WebsocketRequest("testingmultiple1.m2", null, conn));
+  await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
+  const data1 = await conn.awaitMessage("m.testingmultiple1.m1");
+  const data2 = await conn.awaitMessage("m.testingmultiple1.m2");
+
+  expect(data1).toBe(1);
+  expect(data2).toBe(2);
 });
 
 it("should be possible to create a standalone routed method", () => {
@@ -161,7 +160,7 @@ it("should be possible to create a standalone routed method", () => {
   ).toHaveLength(1);
 });
 
-it("should be possible to call a standalone routed method", (d) => {
+it("should be possible to call a standalone routed method", async () => {
   class Testing {
     @StandaloneRoute("standalone.call")
     async route(data: any, conn: WebsocketConnection) {
@@ -176,9 +175,8 @@ it("should be possible to call a standalone routed method", (d) => {
   ).toHaveLength(1);
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
-  conn.awaitMessage("m.standalone.route").then((data) => {
-    expect(data).toStrictEqual({ value: "ok-standalone" });
-    d();
-  });
+
   router.route(new WebsocketRequest("standalone.route", null, conn));
+  const data = await conn.awaitMessage("m.standalone.route");
+  expect(data).toStrictEqual({ value: "ok-standalone" });
 });
