@@ -9,9 +9,9 @@ export function Route(method: string, baseRoute?: string) {
       // class annotation
       const route = new WebsocketRoute(method, null);
 
-      if (target.prototype.routeDefinition) {
+      if (target.prototype.___routeDefinition) {
         // initialize children
-        target.prototype.routeDefinition.forEach(
+        target.prototype.___routeDefinition.forEach(
           (child: { method: string; propertyKey: string }) => {
             route.addChild(
               new WebsocketRoute(
@@ -37,10 +37,10 @@ export function Route(method: string, baseRoute?: string) {
         );
       } else {
         // add route to class
-        if (!target.routeDefinition) {
-          target.routeDefinition = [];
+        if (!target.___routeDefinition) {
+          target.___routeDefinition = [];
         }
-        target.routeDefinition.push({ method, propertyKey });
+        target.___routeDefinition.push({ method, propertyKey });
       }
     }
     return target;
