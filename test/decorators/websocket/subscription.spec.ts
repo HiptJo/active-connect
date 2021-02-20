@@ -10,7 +10,7 @@ import { WebsocketOutbound } from "../../../src/server/websocket/routing/outboun
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
-it.only("should resend subscribed data", async () => {
+it("should resend subscribed data (sub first)", async () => {
   class Testing {
     public static value: any = { value: "oldvalue1" };
 
@@ -49,23 +49,23 @@ it.only("should resend subscribed data", async () => {
   expect(resentData).toStrictEqual({ value: "hereiam" });
 });
 
-it("should resend subscribed data", async () => {
+it("should resend subscribed data (out first)", async () => {
   class Testing {
     private static value: any = { value: "oldvalue" };
-    @Outbound("out.subscribe1")
+    @Outbound("out1.subscribe1")
     @SubscribeChanges
     public async sendData(conn: WebsocketConnection) {
       return Testing.value;
     }
 
-    @StandaloneRoute("modify.subscribe1")
-    @Modifies("out.subscribe1", "out.xyz")
+    @StandaloneRoute("modify1.subscribe1")
+    @Modifies("out1.subscribe1", "out.xyz")
     public async modify(value: any, conn: WebsocketConnection) {
       Testing.value = value;
     }
 
-    @Modifies("out.subscribe2", "out.xyz")
-    @StandaloneRoute("modify.subscribe2")
+    @Modifies("out1.subscribe2", "out.xyz")
+    @StandaloneRoute("modify1.subscribe2")
     public async modify1(value: any, conn: WebsocketConnection) {
       Testing.value = value;
     }
@@ -77,11 +77,11 @@ it("should resend subscribed data", async () => {
   const outbound = new WebsocketOutbound();
 
   outbound.sendToConnection(conn);
-  const data = await conn.awaitMessage("out.subscribe1");
+  const data = await conn.awaitMessage("out1.subscribe1");
   expect(data).toStrictEqual({ value: "oldvalue" });
   await router.route(
-    new WebsocketRequest("modify.subscribe1", { value: "hereiam" }, conn)
+    new WebsocketRequest("modify1.subscribe1", { value: "hereiam" }, conn)
   );
-  const resentData = await conn.awaitMessage("out.subscribe1");
+  const resentData = await conn.awaitMessage("out1.subscribe1");
   expect(resentData).toStrictEqual({ value: "hereiam" });
 });
