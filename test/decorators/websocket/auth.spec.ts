@@ -11,6 +11,12 @@ class Authenticator extends WebsocketAuthenticator {
     return true;
   }
 }
+class FalseAuthenticator extends WebsocketAuthenticator {
+  public readonly label: string = "test-auth";
+  public async authenticate(conn: WebsocketConnection): Promise<boolean> {
+    return false;
+  }
+}
 
 it("should be possible to use authenticators for methods", async (d) => {
   @Route("testingmultiple1")
@@ -46,4 +52,34 @@ it("should be possible to use authenticators for methods", async (d) => {
     await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
   });
   await router.route(new WebsocketRequest("testingmultiple1.m2", null, conn));
+});
+
+it("should recejt a unauthorized request", async (d) => {
+  @Route("testrj")
+  class Testing {
+    @Route("m1")
+    @Auth(new Authenticator())
+    method1(data: any, conn: WebsocketConnection) {
+      return 1;
+    }
+
+    @Route("m2")
+    @Auth(new FalseAuthenticator())
+    method2(data: any, conn: WebsocketConnection) {
+      return 2;
+    }
+  }
+  expect(Testing).toBeDefined();
+
+  const base = WebsocketRouter.Routes.filter((r) => r.Method == "testrj");
+  expect(base).toHaveLength(1);
+  expect(base[0].Children).toHaveLength(2);
+
+  const conn = WebsocketMocks.getConnectionStub();
+  const router = new WebsocketRouter();
+  conn.awaitMessage("m.error").then(async (data) => {
+    expect(data).toBe("auth:unauthorized:test-auth");
+    d();
+  });
+  await router.route(new WebsocketRequest("testrj.m2", null, conn));
 });
