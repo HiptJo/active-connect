@@ -81,10 +81,27 @@ it("should recejt a unauthorized request", async () => {
   const data = await conn.awaitMessage("m.error");
   expect(data).toBe("auth:unauthorized:test-auth");
 });
-it("should be possible to use authenticators for outbounds", async () => {
+it("should be possible to use authenticators for outbounds (out decorator first)", async () => {
   class Out {
-    @Outbound("out.example")
+    @Outbound("out.example1")
     @Auth(new Authenticator())
+    async send(conn: WebsocketConnection) {
+      return { value: "anything" };
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("out.example1");
+  expect(data).toStrictEqual({ value: "anything" });
+});
+it("should be possible to use authenticators for outbounds (auth decorator first)", async () => {
+  class Out {
+    @Auth(new Authenticator())
+    @Outbound("out.example")
     async send(conn: WebsocketConnection) {
       return { value: "anything" };
     }
@@ -113,16 +130,16 @@ it("should not send unauthorized data to a outbound (auth decorator first)", asy
 
   out.sendToConnection(conn);
 
-  conn.awaitMessage("out.restricted").then(() => {
-    fail();
+  conn.awaitMessage("out.restricted").then((d) => {
+    fail(d);
   });
 });
 it("should not send unauthorized data to a outbound (out decorator first)", async () => {
   class Out {
-    @Outbound("out.restricted")
+    @Outbound("out.restricted1")
     @Auth(new FalseAuthenticator())
     async send(conn: WebsocketConnection) {
-      return { value: "anything" };
+      return { value: "anything1" };
     }
   }
   expect(Out).toBeDefined();
@@ -131,7 +148,7 @@ it("should not send unauthorized data to a outbound (out decorator first)", asyn
 
   out.sendToConnection(conn);
 
-  conn.awaitMessage("out.restricted").then(() => {
-    fail();
+  conn.awaitMessage("out.restricted1").then((d) => {
+    fail(d);
   });
 });

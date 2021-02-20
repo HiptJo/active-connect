@@ -28,7 +28,7 @@ export function Auth(auth: WebsocketAuthenticator) {
         target.___wsoutbound[propertyKey]
       );
       if (out) {
-        out.method = target[propertyKey];
+        out.func = target[propertyKey];
       }
     }
     return target;
