@@ -3,16 +3,14 @@ import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
 
 export function SubscribeChanges(target: any, propertyKey: string): any {
   // initialize routeDefinition
-  if (target.___wsoutbound && target.___wsoutbound[propertyKey]) {
-    // outbound has been registered already, add subscription
-    registerSubscription(target, propertyKey);
-  } else {
-    // outbound has not been registered, add subscription later on
-    if (!target.___registerSubscription) target.___registerSubscription = [];
-    target.___registerSubscription[propertyKey] = true;
-  }
+  if (!target.___registerSubscription) target.___registerSubscription = {};
+  target.___registerSubscription[propertyKey] = true;
 
   const original = target[propertyKey];
+  if (!target.___outboundSubscriptions) target.___outboundSubscriptions = {};
+  if (!target.___outboundSubscriptions[propertyKey])
+    target.___outboundSubscriptions[propertyKey] = [];
+
   target[propertyKey] = async function (...data: any[]) {
     let conn: WebsocketConnection;
     if (data.length == 1) conn = data[0];
@@ -20,16 +18,16 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
     const res = await original(...data);
     if (res != "error:auth:unauthorized") {
       // subscribe for changes
-      if (!target.___outboundSubscriptions)
-        target.___outboundSubscriptions = [];
-      if (!target.___outboundSubscriptions[propertyKey])
-        target.___outboundSubscriptions[propertyKey] = [];
-      if (target.___outboundSubscriptions[propertyKey].indexOf(conn) < 0)
+      if (target.___outboundSubscriptions[propertyKey].indexOf(conn) < 0) {
         target.___outboundSubscriptions[propertyKey].push(conn);
+      }
     }
     return res;
   };
-  return target;
+  if (target.___wsoutbound && target.___wsoutbound[propertyKey]) {
+    // outbound has been registered already, add subscription
+    registerSubscription(target, propertyKey);
+  }
 }
 export function Modifies(...routes: string[]) {
   return function (target: any, propertyKey: string) {
@@ -38,9 +36,13 @@ export function Modifies(...routes: string[]) {
       await original(...params);
       await WebsocketOutbound.sendUpdates(routes);
     };
+    return target;
   };
 }
 export function registerSubscription(target: any, propertyKey: string) {
+  const out = WebsocketOutbound.getOutbound(target.___wsoutbound[propertyKey]);
+  if (out) out.func = target[propertyKey];
+
   WebsocketOutbound.addOutboundSubscription(
     target.___wsoutbound[propertyKey],
     async () => {

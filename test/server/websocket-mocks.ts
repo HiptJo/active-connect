@@ -18,17 +18,19 @@ export class StubWebsocketConnection extends WebsocketConnection {
   send(method: string, data: any) {
     const func = this.expectedMessages.get(method);
     if (func) {
+      this.expectedMessages.delete(method);
       func(data);
-      this.expectedMessages.set(method, null);
-    } else this.messageHistory.set(method, data);
+    } else {
+      this.messageHistory.set(method, data);
+    }
   }
 
-  private expectedMessages: Map<string, Function> = new Map();
+  private expectedMessages: Map<string, Function | null> = new Map();
   awaitMessage<T>(method: string): Promise<T> {
     return new Promise((resolve) => {
       const historyElement = this.messageHistory.get(method);
       if (historyElement) {
-        this.expectedMessages.set(method, null);
+        this.messageHistory.delete(method);
         resolve(historyElement);
       } else {
         this.expectedMessages.set(method, resolve);

@@ -7,7 +7,7 @@ import { registerSubscription } from "./subscription";
 export function Outbound(method: string, requestingRequired?: boolean) {
   return function (target: any, propertyKey: string): any {
     // method annotation
-    if (!target.___wsoutbound) target.___wsoutbound = [];
+    if (!target.___wsoutbound) target.___wsoutbound = {};
     target.___wsoutbound[propertyKey] = method;
     WebsocketOutbound.addOutbound(
       new WSOutbound(method, target[propertyKey], requestingRequired)

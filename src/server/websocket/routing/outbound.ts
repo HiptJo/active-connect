@@ -35,7 +35,7 @@ export class WebsocketOutbound {
     await Promise.all(
       routes.map((route) => {
         const out = this.outboundSubscriptions.get(route);
-        if (out) out();
+        if (out) return out();
       })
     );
   }

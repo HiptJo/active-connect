@@ -26,7 +26,7 @@ export class WebsocketClient {
     return new Promise((resolve) => {
       const historyElement = this.messageHistory.get(method);
       if (historyElement) {
-        this.expectedMessages.set(method, null);
+        this.messageHistory.set(method, null);
         resolve(historyElement);
       } else {
         this.expectedMessages.set(method, resolve);
