@@ -9,11 +9,11 @@ This project is developed right now. Stay tuned.
 ## Annotations
 
 ```javascript
-@Route("xy") for class and function
-@StandaloneRoute("xy.xy")
+@Route("xy",baseRoute?) for class and function
+@StandaloneRoute("xy.xy",baseRoute?)
 @Outbound("xy",requireRequesting?: boolean) for function
+@Auth(x extends WebsocketAuthenticator)
 
-@Authenticate(Authenticator)
 @SubscribeChanges
 @Modifies(method... Array<String>)
 @ProvidesFile(label)
