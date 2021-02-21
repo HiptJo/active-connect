@@ -4,7 +4,7 @@ import * as assert from "assert";
 it("should be possible to create a new WebsocketConnection mock", () => {
   WebsocketMocks.getConnectionStub();
 });
-describe("connection testing", () => {
+describe("connection testing (stub)", () => {
   let conn: StubWebsocketConnection;
   beforeEach(() => {
     conn = WebsocketMocks.getConnectionStub();
