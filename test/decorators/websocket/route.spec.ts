@@ -280,3 +280,20 @@ it("should be possible to get a standalone route by method", () => {
     WebsocketRouter.getRouteByMethod("standalone.route.by.method")
   ).toBeDefined();
 });
+
+describe("error management", () => {
+  it("should send a m.error when a route throws an string", async () => {
+    @Route("error")
+    class Testing {
+      @Route("throws")
+      func() {
+        throw "I am an error";
+      }
+    }
+    expect(Testing).toBeDefined();
+    const router = new WebsocketRouter();
+    const conn = WebsocketMocks.getConnectionStub();
+    await router.route(new WebsocketRequest("error.throws", null, conn));
+    expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+  });
+});

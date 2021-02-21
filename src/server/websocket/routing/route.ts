@@ -76,7 +76,11 @@ export class WebsocketRoute {
 
   protected async call(request: WebsocketRequest): Promise<any> {
     if (this.func) {
-      return this.func(request.data, request.connection);
+      try {
+        return await this.func(request.data, request.connection);
+      } catch (e) {
+        request.connection.send("m.error", e);
+      }
     } else
       throw Error("Websocket: Function not defined for route " + this.method);
   }
