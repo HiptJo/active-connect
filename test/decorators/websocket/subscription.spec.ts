@@ -172,12 +172,46 @@ it("should be possible to access the `this` object within a modifying route (rou
   const data = await conn.awaitMessage("m.checkthis_a.child");
   expect(data).toStrictEqual(original);
 });
-it.todo(
-  "should be possible to access the `this` object within a modifying standalone route (mod first)"
-);
-it.todo(
-  "should be possible to access the `this` object within a modifying standalone route (route first)"
-);
+it("should be possible to access the `this` object within a modifying standalone route (route first)", async () => {
+  const original = { value: "accessible data" };
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @StandaloneRoute("check_s_a")
+    @Modifies("d.anything")
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("check_s_a", null, conn));
+  const data = await conn.awaitMessage("m.check_s_a");
+  expect(data).toStrictEqual(original);
+});
+it("should be possible to access the `this` object within a modifying standalone route (mod first)", async () => {
+  const original = { value: "accessible data" };
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @Modifies("d.anything")
+    @StandaloneRoute("check_s_a")
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("check_s_a", null, conn));
+  const data = await conn.awaitMessage("m.check_s_a");
+  expect(data).toStrictEqual(original);
+});
 
 it.todo(
   "should be possible to access the `this` object within a subscribing requestable outbound (out first)"
