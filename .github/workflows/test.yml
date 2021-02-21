@@ -2,8 +2,8 @@ name: Run Jest Tests
 
 on: [push, pull_request]
 jobs:
-  build:
-    runs-on: ubuntu:latest
+  test:
+    runs-on: ubuntu-latest
     steps:
       - name: clone code repository
         uses: actions/checkout@v1
