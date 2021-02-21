@@ -1,8 +1,10 @@
 import * as express from "express";
 import * as http from "http";
 import { ProvidedFile } from "../../content/files/provided-file";
+import { ProvidedImage } from "../../content/images/provided-image";
 import { WebsocketServer } from "../websocket/server";
 import { FileProvider } from "./file-provider";
+import { ImageProvider } from "./image-provider";
 
 export class HttpServer {
   private app: express.Application;
@@ -18,6 +20,7 @@ export class HttpServer {
       this.initializeWebsocket();
     }
     this.initializeFileProvider();
+    this.initializeImageProvider();
   }
 
   private isServerStarted: boolean = false;
@@ -68,9 +71,61 @@ export class HttpServer {
       );
     });
   }
+  private initializeImageProvider() {
+    const sendImage = this.sendImage;
+    HttpServer.imageProvider.forEach((provider) => {
+      this.app.get(
+        `/image/${provider.label}/:id/:auth`,
+        async function provideFile(
+          req: express.Request,
+          res: express.Response
+        ) {
+          const id = req.params.id;
+          const auth = req.params.auth;
+          await sendImage(res, provider, id, auth);
+        }
+      );
+      this.app.get(
+        `/image/${provider.label}/:id`,
+        async function provideFileWithoutAuth(
+          req: express.Request,
+          res: express.Response
+        ) {
+          const id = req.params.id;
+          await sendImage(res, provider, id);
+        }
+      );
+      this.app.get(
+        `/image/${provider.label}`,
+        async function provideFileWithoutId(
+          req: express.Request,
+          res: express.Response
+        ) {
+          await sendImage(res, provider);
+        }
+      );
+    });
+  }
   private async sendFile(
     res: express.Response,
     provider: FileProvider,
+    id?: string,
+    auth?: string
+  ) {
+    try {
+      const data: ProvidedFile = await provider.callback(id, auth);
+      res.writeHead(200, {
+        "Content-Type": data.contentType,
+        "Cache-Control": "must-revalidate",
+      });
+      res.end(data.data);
+    } catch (e) {
+      res.sendStatus(404);
+    }
+  }
+  private async sendImage(
+    res: express.Response,
+    provider: ImageProvider,
     id?: string,
     auth?: string
   ) {
@@ -103,6 +158,14 @@ export class HttpServer {
     callback: (id: string, auth: string) => Promise<ProvidedFile>
   ) {
     HttpServer.fileProvider.push(new FileProvider(label, callback));
+  }
+
+  private static imageProvider: Array<ImageProvider> = new Array();
+  public static registerImageProvider(
+    label: string,
+    callback: (id: string, auth: string) => Promise<ProvidedImage>
+  ) {
+    HttpServer.imageProvider.push(new ImageProvider(label, callback));
   }
 
   public stop() {
