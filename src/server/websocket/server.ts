@@ -24,4 +24,8 @@ export class WebsocketServer {
   public close() {
     this.server.close();
   }
+
+  public loadFile(obj: any) {
+    obj;
+  }
 }
