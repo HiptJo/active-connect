@@ -213,9 +213,45 @@ it("should be possible to access the `this` object within a modifying standalone
   expect(data).toStrictEqual(original);
 });
 
-it.todo(
-  "should be possible to access the `this` object within a subscribing requestable outbound (out first)"
-);
-it.todo(
-  "should be possible to access the `this` object within a subscribing requestable outbound (sub first)"
-);
+it("should be possible to access the `this` object within a requestable subscribing outbound (sub first)", async () => {
+  class Testing {
+    @Shared({ value: "accessible" })
+    content: any;
+
+    @SubscribeChanges
+    @Outbound("r.subscribe1", true)
+    send() {
+      return this.content;
+    }
+  }
+
+  expect(Testing).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.requestOutbound("r.subscribe1", conn);
+
+  const data = await conn.awaitMessage("r.subscribe1");
+  expect(data).toStrictEqual({ value: "accessible" });
+});
+it("should be possible to access the `this` object within a requestable subscribing outbound (out first)", async () => {
+  class Testing {
+    @Shared({ value: "accessible" })
+    content: any;
+
+    @Outbound("r.subscribe2", true)
+    @SubscribeChanges
+    send() {
+      return this.content;
+    }
+  }
+
+  expect(Testing).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.requestOutbound("r.subscribe2", conn);
+
+  const data = await conn.awaitMessage("r.subscribe2");
+  expect(data).toStrictEqual({ value: "accessible" });
+});
