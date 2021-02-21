@@ -31,17 +31,18 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
 }
 export function Modifies(...routes: string[]) {
   return function (target: any, propertyKey: string) {
-    const original = target[propertyKey];
+    const original = target[propertyKey].bind(target.___data);
     target[propertyKey] = async function (...params: any[]) {
-      await original(...params);
+      const data = await original(...params);
       await WebsocketOutbound.sendUpdates(routes);
+      return data;
     };
     return target;
   };
 }
 export function registerSubscription(target: any, propertyKey: string) {
   const out = WebsocketOutbound.getOutbound(target.___wsoutbound[propertyKey]);
-  if (out) out.func = target[propertyKey];
+  if (out) out.func = target[propertyKey].bind(target.___data);
 
   WebsocketOutbound.addOutboundSubscription(
     target.___wsoutbound[propertyKey],
