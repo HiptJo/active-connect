@@ -1,10 +1,16 @@
-import { Shared } from "../../../src/active-connect";
+import {
+  Modifies,
+  Shared,
+  SubscribeChanges,
+  Outbound,
+} from "../../../src/active-connect";
 import {
   Route,
   StandaloneRoute,
 } from "../../../src/decorators/websocket/route";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
 import { WebsocketRequest } from "../../../src/server/websocket/message/request";
+import { WebsocketOutbound } from "../../../src/server/websocket/routing/outbound";
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
@@ -220,4 +226,39 @@ it("should be possible to access the `this` object within a standalone route", a
   await router.route(new WebsocketRequest("check1.standalone", null, conn));
   const data = await conn.awaitMessage("m.check1.standalone");
   expect(data).toStrictEqual(original);
+});
+
+it.only("should be possible to modify a shared variable", async () => {
+  @Route("modification")
+  class SharedModificationTesting {
+    @Shared(1)
+    private value: number;
+
+    @Modifies("d.modification")
+    @Route("modify")
+    modify(value: number) {
+      this.value = value;
+    }
+
+    @Outbound("d.modification")
+    @SubscribeChanges
+    send() {
+      return this.value;
+    }
+  }
+  expect(SharedModificationTesting).toBeDefined();
+
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("d.modification");
+  expect(data).toStrictEqual(1);
+  const router = new WebsocketRouter();
+  router.route(new WebsocketRequest("modification.modify", 5, conn));
+  const res = await conn.awaitMessage("m.modification.modify");
+  expect(res).toBeUndefined();
+  const updated = await conn.awaitMessage("d.modification");
+  expect(updated).toBe(5);
 });
