@@ -4,6 +4,7 @@ import {
   Route,
   Shared,
   StandaloneRoute,
+  SubscribeChanges,
 } from "../../../src/active-connect";
 import { WebsocketAuthenticator } from "../../../src/server/websocket/auth/authenticator";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
@@ -311,4 +312,39 @@ it("should not send data for unauthorized user (auth decorator first)", async ()
   out.sendToConnection(conn);
 
   conn.awaitMessage("outu.example2").then(fail);
+});
+
+it("should subscribe for changes after unauthorized request (sub first)", async () => {
+  class Out {
+    @SubscribeChanges
+    @Auth(new FalseAuthenticator())
+    @Outbound("outu.example3")
+    async send() {
+      return { value: "anything" };
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  conn.awaitMessage("outu.example3").then(fail);
+});
+it("should subscribe for changes after unauthorized request (auth first)", async () => {
+  class Out {
+    @Auth(new FalseAuthenticator())
+    @SubscribeChanges
+    @Outbound("outu.example4")
+    async send() {
+      return { value: "anything" };
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  conn.awaitMessage("outu.example4").then(fail);
 });
