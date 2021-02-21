@@ -30,8 +30,7 @@ it("should be possible to send a outbound", async () => {
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  const outbound = new WebsocketOutbound();
-  outbound.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data: any = await conn.awaitMessage("testing.delivery");
   assert.strictEqual(data.value, "ok");

@@ -97,10 +97,10 @@ it("should be possible to use authenticators for outbounds (out decorator first)
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.example1");
   expect(data).toStrictEqual({ value: "anything" });
@@ -114,10 +114,10 @@ it("should be possible to use authenticators for outbounds (auth decorator first
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.example");
   expect(data).toStrictEqual({ value: "anything" });
@@ -132,10 +132,10 @@ it("should not send unauthorized data to a outbound (auth decorator first)", asy
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   conn.awaitMessage("out.restricted").then((d) => {
     fail(d);
@@ -150,10 +150,10 @@ it("should not send unauthorized data to a outbound (out decorator first)", asyn
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   conn.awaitMessage("out.restricted1").then((d) => {
     fail(d);
@@ -253,10 +253,10 @@ it("should be possible to access the `this` object within a authenticated outbou
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.this1");
   expect(data).toStrictEqual({ content: "something" });
@@ -272,10 +272,10 @@ it("should be possible to access the `this` object within a authenticated outbou
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.this2");
   expect(data).toStrictEqual({ content: "something" });
@@ -290,10 +290,10 @@ it("should not send data for unauthorized user (out decorator first)", async () 
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   conn.awaitMessage("outu.example1").then(fail);
 });
@@ -306,10 +306,10 @@ it("should not send data for unauthorized user (auth decorator first)", async ()
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   conn.awaitMessage("outu.example2").then(fail);
 });
@@ -324,10 +324,10 @@ it("should subscribe for changes after unauthorized request (sub first)", async 
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   conn.awaitMessage("outu.example3").then(fail);
 });
@@ -341,10 +341,10 @@ it("should subscribe for changes after unauthorized request (auth first)", async
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
+
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   conn.awaitMessage("outu.example4").then(fail);
 });

@@ -253,10 +253,9 @@ it("should be possible to modify a shared variable", async () => {
   }
   expect(SharedModificationTesting).toBeDefined();
 
-  const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("d.modification");
   expect(data).toStrictEqual(1);

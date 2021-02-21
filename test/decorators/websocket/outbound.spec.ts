@@ -11,10 +11,9 @@ it("should be possible to create a outbound", async () => {
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.example");
   expect(data).toStrictEqual({ value: "anything" });
@@ -47,10 +46,9 @@ it("should be possible to access the `this` object within a outbound", async () 
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.this");
   expect(data).toStrictEqual({ content: "something" });
@@ -68,10 +66,9 @@ it("should be possible to create multiple outbounds", async () => {
     }
   }
   expect(Out).toBeDefined();
-  const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("outm.1");
   expect(data).toStrictEqual(1);
@@ -96,3 +93,5 @@ describe("error management", () => {
     } catch (e) {}
   });
 });
+
+// it("should be possible to request a outbound using the requesting method", async () => {});

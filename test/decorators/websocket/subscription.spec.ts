@@ -38,9 +38,8 @@ it("should resend subscribed data (sub first)", async () => {
   expect(Testing).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
-  const outbound = new WebsocketOutbound();
 
-  outbound.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
   const data = await conn.awaitMessage("out.subscribe1");
   expect(data).toStrictEqual({ value: "oldvalue1" });
   await router.route(
@@ -76,9 +75,8 @@ it("should resend subscribed data (out first)", async () => {
   expect(Testing).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
-  const outbound = new WebsocketOutbound();
 
-  outbound.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
   const data = await conn.awaitMessage("out1.subscribe1");
   expect(data).toStrictEqual({ value: "oldvalue" });
   await router.route(
@@ -101,10 +99,9 @@ it("should be possible to access the `this` object within a subscribing outbound
   }
 
   expect(Testing).toBeDefined();
-  const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("d.subscribe1");
   expect(data).toStrictEqual({ value: "accessible" });
@@ -122,10 +119,9 @@ it("should be possible to access the `this` object within a subscribing outbound
   }
 
   expect(Testing).toBeDefined();
-  const out = new WebsocketOutbound();
   const conn = WebsocketMocks.getConnectionStub();
 
-  out.sendToConnection(conn);
+  WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("d.subscribe2");
   expect(data).toStrictEqual({ value: "accessible" });
