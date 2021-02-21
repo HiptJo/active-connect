@@ -33,5 +33,5 @@ jobs:
       - name: publish code cov
         uses: actions/upload-artifact@v2
         with:
-          name: code covarege report
+          name: code coverage report
           path: coverage/lcov-report/index.html
