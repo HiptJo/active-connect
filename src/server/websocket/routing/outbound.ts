@@ -21,7 +21,7 @@ export class WebsocketOutbound {
     if (outbound.requestingRequired) {
       WebsocketRouter.registerStandaloneRoute(
         new StandaloneWebsocketRoute(
-          outbound.method,
+          `request.${outbound.method}`,
           async (data: any, conn: WebsocketConnection) => {
             await WebsocketOutbound.requestOutbound(outbound.method, conn);
           }
