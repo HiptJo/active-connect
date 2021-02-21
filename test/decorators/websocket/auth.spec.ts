@@ -1,4 +1,10 @@
-import { Auth, Outbound, Route } from "../../../src/active-connect";
+import {
+  Auth,
+  Outbound,
+  Route,
+  Shared,
+  StandaloneRoute,
+} from "../../../src/active-connect";
 import { WebsocketAuthenticator } from "../../../src/server/websocket/auth/authenticator";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
 import { WebsocketRequest } from "../../../src/server/websocket/message/request";
@@ -152,3 +158,92 @@ it("should not send unauthorized data to a outbound (out decorator first)", asyn
     fail(d);
   });
 });
+
+it("should be possible to access the `this` object within a authenticated route (auth first)", async () => {
+  const original = { value: "accessible data" };
+  @Route("auththischeck1")
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @Auth(new Authenticator())
+    @Route("child")
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("auththischeck1.child", null, conn));
+  const data = await conn.awaitMessage("m.auththischeck1.child");
+  expect(data).toStrictEqual(original);
+});
+it("should be possible to access the `this` object within a authenticated route (route first)", async () => {
+  const original = { value: "accessible data" };
+  @Route("auththischeck2")
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @Route("child")
+    @Auth(new Authenticator())
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("auththischeck2.child", null, conn));
+  const data = await conn.awaitMessage("m.auththischeck2.child");
+  expect(data).toStrictEqual(original);
+});
+it("should be possible to access the `this` object within a authenticated standalone route (auth first)", async () => {
+  const original = { value: "accessible data" };
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @Auth(new Authenticator())
+    @StandaloneRoute("check1.standalone")
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("check1.standalone", null, conn));
+  const data = await conn.awaitMessage("m.check1.standalone");
+  expect(data).toStrictEqual(original);
+});
+it.only("should be possible to access the `this` object within a authenticated standalone route (route first)", async () => {
+  const original = { value: "accessible data" };
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @StandaloneRoute("check1.standalone")
+    @Auth(new Authenticator())
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("check1.standalone", null, conn));
+  const data = await conn.awaitMessage("m.check1.standalone");
+  expect(data).toStrictEqual(original);
+});
+it.todo(
+  "should be possible to access the `this` object within a authenticated outbound (auth first)"
+);
+it.todo(
+  "should be possible to access the `this` object within a authenticated outbound (out first)"
+);

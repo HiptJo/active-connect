@@ -5,7 +5,7 @@ import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
 export function Auth(auth: WebsocketAuthenticator) {
   return function (target: any, propertyKey: string): any {
     // initialize routeDefinition
-    const original = target[propertyKey];
+    const original = target[propertyKey].bind(target.___data);
     target[propertyKey] = async function (...data: any[]) {
       let conn: WebsocketConnection;
       if (data.length == 1) conn = data[0];
