@@ -279,3 +279,36 @@ it("should be possible to access the `this` object within a authenticated outbou
   const data = await conn.awaitMessage("out.this2");
   expect(data).toStrictEqual({ content: "something" });
 });
+
+it("should not send data for unauthorized user (out decorator first)", async () => {
+  class Out {
+    @Outbound("outu.example1")
+    @Auth(new FalseAuthenticator())
+    async send(conn: WebsocketConnection) {
+      return { value: "anything" };
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  conn.awaitMessage("outu.example1").then(fail);
+});
+it("should not send data for unauthorized user (auth decorator first)", async () => {
+  class Out {
+    @Auth(new FalseAuthenticator())
+    @Outbound("outu.example2")
+    async send(conn: WebsocketConnection) {
+      return { value: "anything" };
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  conn.awaitMessage("outu.example2").then(fail);
+});
