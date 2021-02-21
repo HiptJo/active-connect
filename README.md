@@ -1,3 +1,5 @@
+[![Run Jest Tests](https://github.com/HiptJo/active-connect/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/HiptJo/active-connect/actions/workflows/test.yml)
+
 # Active-Connect
 
 Connection framework built for smart web-based projects using NodeJS, Angular and Websockets.
