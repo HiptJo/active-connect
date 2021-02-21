@@ -64,8 +64,14 @@ export class WebsocketOutbound {
     outbound: Outbound,
     connection: WebsocketConnection
   ) {
-    const res = await outbound.func(connection);
-    if (res != "error:auth:unauthorized") connection.send(outbound.method, res);
+    try {
+      const res = await outbound.func(connection);
+      if (res != "error:auth:unauthorized")
+        connection.send(outbound.method, res);
+    } catch (e) {
+      console.error(e);
+      connection.send("m.error", e?.message || e);
+    }
   }
 
   public async requestOutbound(

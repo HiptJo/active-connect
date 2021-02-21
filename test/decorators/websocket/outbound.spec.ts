@@ -78,3 +78,19 @@ it("should be possible to create multiple outbounds", async () => {
   const data1 = await conn.awaitMessage("outm.2");
   expect(data1).toStrictEqual(2);
 });
+
+describe("error management", () => {
+  it("should send a m.error when a route throws an string", async () => {
+    class Testing {
+      @Outbound("throws.error.1")
+      func() {
+        throw Error("I am an error1");
+      }
+    }
+    expect(Testing).toBeDefined();
+    const out = new WebsocketOutbound();
+    const conn = WebsocketMocks.getConnectionStub();
+    out.sendToConnection(conn);
+    expect(await conn.awaitMessage("m.error")).toBe("I am an error1");
+  });
+});
