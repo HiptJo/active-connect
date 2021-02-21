@@ -10,9 +10,6 @@ export class StubWebsocketConnection extends WebsocketConnection {
   constructor() {
     super(null);
   }
-  triggerMessage(method: string, value: any) {
-    this.onMessage(JSON.stringify({ method: method, value: value }));
-  }
 
   private messageHistory: Map<string, any> = new Map();
   send(method: string, data: any) {
