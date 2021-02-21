@@ -79,8 +79,8 @@ export class WebsocketRoute {
       try {
         return await this.func(request.data, request.connection);
       } catch (e) {
-        console.error(e);
         request.connection.send("m.error", e?.message || e);
+        throw e;
       }
     } else
       throw Error("Websocket: Function not defined for route " + this.method);

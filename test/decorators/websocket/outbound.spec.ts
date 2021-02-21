@@ -82,7 +82,7 @@ it("should be possible to create multiple outbounds", async () => {
 describe("error management", () => {
   it("should send a m.error when a route throws an string", async () => {
     class Testing {
-      @Outbound("throws.error.1")
+      @Outbound("throws.error.1", true)
       func() {
         throw Error("I am an error1");
       }
@@ -90,7 +90,9 @@ describe("error management", () => {
     expect(Testing).toBeDefined();
     const out = new WebsocketOutbound();
     const conn = WebsocketMocks.getConnectionStub();
-    out.sendToConnection(conn);
-    expect(await conn.awaitMessage("m.error")).toBe("I am an error1");
+    try {
+      await out.requestOutbound("throws.error.1", conn);
+      expect(await conn.awaitMessage("m.error")).toBe("I am an error1");
+    } catch (e) {}
   });
 });

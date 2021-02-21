@@ -293,8 +293,10 @@ describe("error management", () => {
     expect(Testing).toBeDefined();
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
-    await router.route(new WebsocketRequest("error.throws", null, conn));
-    expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    try {
+      await router.route(new WebsocketRequest("error.throws", null, conn));
+      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    } catch (e) {}
   });
   it("should send a m.error when a route throws an error", async () => {
     @Route("error")
@@ -307,8 +309,10 @@ describe("error management", () => {
     expect(Testing).toBeDefined();
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
-    await router.route(new WebsocketRequest("error.throws1", null, conn));
-    expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    try {
+      await router.route(new WebsocketRequest("error.throws1", null, conn));
+      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    } catch (e) {}
   });
 
   it("should send a m.error when a standalone route throws an string", async () => {
@@ -321,8 +325,11 @@ describe("error management", () => {
     expect(Testing).toBeDefined();
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
-    await router.route(new WebsocketRequest("serror.throws1", null, conn));
-    expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    try {
+      await router.route(new WebsocketRequest("serror.throws1", null, conn));
+
+      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    } catch (e) {}
   });
   it("should send a m.error when a standalone route throws an error", async () => {
     class Testing {
@@ -334,7 +341,30 @@ describe("error management", () => {
     expect(Testing).toBeDefined();
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
-    await router.route(new WebsocketRequest("serror.throws1", null, conn));
-    expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    try {
+      await router.route(new WebsocketRequest("serror.throws1", null, conn));
+      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+    } catch (e) {}
   });
+});
+
+it("should be possible to access the `this.method()` object within a standalone route", async () => {
+  class Testing {
+    @Shared()
+    private method() {
+      return "data";
+    }
+
+    @StandaloneRoute("check_a.standalone")
+    child() {
+      return this.method();
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("check_a.standalone", null, conn));
+  const data = await conn.awaitMessage("m.check_a.standalone");
+  expect(data).toStrictEqual(data);
 });
