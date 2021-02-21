@@ -6,7 +6,7 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
   if (!target.___registerSubscription) target.___registerSubscription = {};
   target.___registerSubscription[propertyKey] = true;
 
-  const original = target[propertyKey];
+  const original = target[propertyKey].bind(target.___data);
   if (!target.___outboundSubscriptions) target.___outboundSubscriptions = {};
   if (!target.___outboundSubscriptions[propertyKey])
     target.___outboundSubscriptions[propertyKey] = [];

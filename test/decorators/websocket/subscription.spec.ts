@@ -1,6 +1,7 @@
 import {
   Modifies,
   Outbound,
+  Shared,
   StandaloneRoute,
   SubscribeChanges,
 } from "../../../src/active-connect";
@@ -85,3 +86,58 @@ it("should resend subscribed data (out first)", async () => {
   const resentData = await conn.awaitMessage("out1.subscribe1");
   expect(resentData).toStrictEqual({ value: "hereiam" });
 });
+
+it("should be possible to access the `this` object within a subscribing outbound (sub first)", async () => {
+  class Testing {
+    @Shared({ value: "accessible" })
+    content: any;
+
+    @SubscribeChanges
+    @Outbound("d.subscribe1")
+    send() {
+      return this.content;
+    }
+  }
+
+  expect(Testing).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("d.subscribe1");
+  expect(data).toStrictEqual({ value: "accessible" });
+});
+it.only("should be possible to access the `this` object within a subscribing outbound (out first)", async () => {
+  class Testing {
+    @Shared({ value: "accessible" })
+    content: any;
+
+    @Outbound("d.subscribe2")
+    @SubscribeChanges
+    send() {
+      return this.content;
+    }
+  }
+
+  expect(Testing).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("d.subscribe2");
+  expect(data).toStrictEqual({ value: "accessible" });
+});
+it.todo(
+  "should be possible to access the `this` object within a modifying route (sub first)"
+);
+it.todo(
+  "should be possible to access the `this` object within a modifying route (out first)"
+);
+it.todo(
+  "should be possible to access the `this` object within a modifying standalone route (sub first)"
+);
+it.todo(
+  "should be possible to access the `this` object within a modifying standalone route (out first)"
+);
