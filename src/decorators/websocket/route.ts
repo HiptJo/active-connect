@@ -16,7 +16,9 @@ export function Route(method: string, baseRoute?: string) {
             route.addChild(
               new WebsocketRoute(
                 child.method,
-                target.prototype[child.propertyKey]
+                target.prototype[child.propertyKey].bind(
+                  target.prototype.___data
+                )
               )
             );
           }
@@ -33,7 +35,7 @@ export function Route(method: string, baseRoute?: string) {
       if (baseRoute) {
         // overrideBaseRoute
         WebsocketRouter.getRouteByMethod(baseRoute).addChild(
-          new WebsocketRoute(method, target[propertyKey])
+          new WebsocketRoute(method, target[propertyKey].bind(target.___data))
         );
       } else {
         // add route to class
@@ -52,7 +54,10 @@ export function StandaloneRoute(method: string) {
     // method annotation
     // register standalone route
     WebsocketRouter.registerStandaloneRoute(
-      new StandaloneWebsocketRoute(method, target[propertyKey])
+      new StandaloneWebsocketRoute(
+        method,
+        target[propertyKey].bind(target.___data)
+      )
     );
     return target;
   };

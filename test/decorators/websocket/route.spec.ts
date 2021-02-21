@@ -1,3 +1,4 @@
+import { Shared } from "../../../src/active-connect";
 import {
   Route,
   StandaloneRoute,
@@ -179,4 +180,44 @@ it("should be possible to call a standalone routed method", async () => {
   router.route(new WebsocketRequest("standalone.route", null, conn));
   const data = await conn.awaitMessage("m.standalone.route");
   expect(data).toStrictEqual({ value: "ok-standalone" });
+});
+
+it("should be possible to access the `this` object within a route", async () => {
+  const original = { value: "accessible data" };
+  @Route("checkthis1")
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @Route("child")
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("checkthis1.child", null, conn));
+  const data = await conn.awaitMessage("m.checkthis1.child");
+  expect(data).toStrictEqual(original);
+});
+it("should be possible to access the `this` object within a standalone route", async () => {
+  const original = { value: "accessible data" };
+  class Testing {
+    @Shared(original)
+    public data: any;
+
+    @StandaloneRoute("check1.standalone")
+    child() {
+      return this.data;
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  await router.route(new WebsocketRequest("check1.standalone", null, conn));
+  const data = await conn.awaitMessage("m.check1.standalone");
+  expect(data).toStrictEqual(original);
 });

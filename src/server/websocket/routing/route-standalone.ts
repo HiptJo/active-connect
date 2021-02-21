@@ -15,7 +15,7 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
     // check if responsible for handling
     if (request.path === this.method) {
       const response = await this.call(request);
-      if (response && typeof response != null) {
+      if (response != "error:auth:unauthorized") {
         request.connection.send(`m.${request.path}`, response);
       }
       return true;
