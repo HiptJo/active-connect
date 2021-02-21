@@ -234,15 +234,20 @@ it("should be possible to modify a shared variable", async () => {
     @Shared(1)
     private value: number;
 
+    @Shared(2)
+    private valueCopy: number;
+
     @Modifies("d.modification")
     @Route("modify")
     modify(value: number) {
       this.value = value;
+      this.valueCopy = value + 1;
     }
 
     @Outbound("d.modification")
     @SubscribeChanges
     send() {
+      expect(this.valueCopy).toBe(this.value + 1);
       return this.value;
     }
   }
