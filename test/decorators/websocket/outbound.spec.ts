@@ -55,3 +55,26 @@ it("should be possible to access the `this` object within a outbound", async () 
   const data = await conn.awaitMessage("out.this");
   expect(data).toStrictEqual({ content: "something" });
 });
+
+it("should be possible to create multiple outbounds", async () => {
+  class Out {
+    @Outbound("outm.1")
+    async sendA() {
+      return 1;
+    }
+    @Outbound("outm.2")
+    async sendB() {
+      return 2;
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("outm.1");
+  expect(data).toStrictEqual(1);
+  const data1 = await conn.awaitMessage("outm.2");
+  expect(data1).toStrictEqual(2);
+});
