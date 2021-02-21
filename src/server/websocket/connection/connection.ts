@@ -4,6 +4,12 @@ import { WebsocketOutbound } from "../routing/outbound";
 import { WebsocketRouter } from "../routing/router";
 
 export class WebsocketConnection {
+  private static AUTO_INCREMENT = 0;
+  public _id: number = ++WebsocketConnection.AUTO_INCREMENT;
+  get id(): number {
+    return this._id;
+  }
+
   public static router: WebsocketRouter = new WebsocketRouter();
   public static outbound: WebsocketOutbound = new WebsocketOutbound();
   constructor(protected connection: WebSocket | null) {
@@ -28,7 +34,7 @@ export class WebsocketConnection {
     throw Error(message);
   }
   private onClose() {
-    // @todo remove from all subscriptions
+    WebsocketOutbound.clearConnectionSubscriptions(this);
   }
 
   private sendWelcomeMessages() {

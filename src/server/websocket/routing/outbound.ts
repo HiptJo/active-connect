@@ -40,6 +40,20 @@ export class WebsocketOutbound {
     );
   }
 
+  private static connectionDisconnectHandler: Array<
+    (conn: WebsocketConnection) => void
+  > = Array();
+  public static addConnectionDisconnectHandler(
+    callback: (conn: WebsocketConnection) => void
+  ) {
+    WebsocketOutbound.connectionDisconnectHandler.push(callback);
+  }
+  public static clearConnectionSubscriptions(conn: WebsocketConnection) {
+    WebsocketOutbound.connectionDisconnectHandler.forEach((handler) =>
+      handler(conn)
+    );
+  }
+
   public sendToConnection(connection: WebsocketConnection) {
     WebsocketOutbound.outbounds.forEach(async (o) => {
       if (!o.requestingRequired) await this.sendOutbound(o, connection);

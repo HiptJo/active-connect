@@ -1,4 +1,8 @@
-import { HttpServer, Outbound } from "../../../src/active-connect";
+import {
+  HttpServer,
+  Outbound,
+  SubscribeChanges,
+} from "../../../src/active-connect";
 import * as assert from "assert";
 import { WebsocketClient } from "../websocket-client";
 
@@ -35,5 +39,24 @@ describe("server creation", () => {
 
     const msg = await client.awaitMessage("await.message");
     expect(msg).toBe("hellomsg");
+  });
+
+  it("should be possible to close a websocket client", async () => {
+    assert.strictEqual(await server.awaitStart(), true);
+    class Testing {
+      @Outbound("await.message1")
+      @SubscribeChanges
+      message() {
+        return "hellomsg";
+      }
+    }
+    expect(Testing).toBeDefined();
+
+    const client = new WebsocketClient(null);
+    assert.strictEqual(await client.awaitConnection(), true);
+
+    const msg = await client.awaitMessage("await.message1");
+    expect(msg).toBe("hellomsg");
+    client.close();
   });
 });

@@ -10,6 +10,16 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
   if (!target.___outboundSubscriptions) target.___outboundSubscriptions = {};
   target.___outboundSubscriptions[propertyKey] = [];
 
+  WebsocketOutbound.addConnectionDisconnectHandler(
+    (conn: WebsocketConnection) => {
+      target.___outboundSubscriptions[
+        propertyKey
+      ] = target.___outboundSubscriptions[propertyKey].filter(
+        (c: WebsocketConnection) => c.id && c.id != conn.id
+      );
+    }
+  );
+
   target[propertyKey] = async function (...data: any[]) {
     let conn: WebsocketConnection;
     conn = data[0];
