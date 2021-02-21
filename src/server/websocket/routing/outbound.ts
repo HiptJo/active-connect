@@ -1,4 +1,6 @@
 import { WebsocketConnection } from "../connection/connection";
+import { StandaloneWebsocketRoute } from "./route-standalone";
+import { WebsocketRouter } from "./router";
 
 export interface WebsocketAuthorizationCheckable {
   checkAuth(authToken: string): Promise<boolean>;
@@ -16,7 +18,18 @@ export class WebsocketOutbound {
   private static outbounds: Array<Outbound> = [];
   public static addOutbound(outbound: Outbound) {
     WebsocketOutbound.outbounds.push(outbound);
+    if (outbound.requestingRequired) {
+      WebsocketRouter.registerStandaloneRoute(
+        new StandaloneWebsocketRoute(
+          outbound.method,
+          async (data: any, conn: WebsocketConnection) => {
+            await WebsocketOutbound.requestOutbound(outbound.method, conn);
+          }
+        )
+      );
+    }
   }
+
   public static getOutbound(method: string): Outbound | null {
     const vars = WebsocketOutbound.outbounds.filter((o) => o.method == method);
     if (vars.length > 0) {
@@ -34,7 +47,7 @@ export class WebsocketOutbound {
   public static async sendUpdates(routes: string[]) {
     await Promise.all(
       routes.map((route) => {
-        const out = this.outboundSubscriptions.get(route);
+        const out = WebsocketOutbound.outboundSubscriptions.get(route);
         if (out) return out();
       })
     );
@@ -54,13 +67,14 @@ export class WebsocketOutbound {
     );
   }
 
-  public sendToConnection(connection: WebsocketConnection) {
+  public static sendToConnection(connection: WebsocketConnection) {
     WebsocketOutbound.outbounds.forEach(async (o) => {
-      if (!o.requestingRequired) await this.sendOutbound(o, connection);
+      if (!o.requestingRequired)
+        await WebsocketOutbound.sendOutbound(o, connection);
     });
   }
 
-  private async sendOutbound(
+  private static async sendOutbound(
     outbound: Outbound,
     connection: WebsocketConnection
   ) {
@@ -78,11 +92,17 @@ export class WebsocketOutbound {
     method: string,
     connection: WebsocketConnection
   ) {
+    return WebsocketOutbound.requestOutbound(method, connection);
+  }
+  public static async requestOutbound(
+    method: string,
+    connection: WebsocketConnection
+  ) {
     const outbounds = WebsocketOutbound.outbounds.filter(
       (o) => o.method === method
     );
     if (outbounds.length > 0) {
-      await this.sendOutbound(outbounds[0], connection);
+      await WebsocketOutbound.sendOutbound(outbounds[0], connection);
     } else {
       throw Error(`Websocket: Outbound ${method} has not been found.`);
     }
@@ -91,6 +111,6 @@ export class WebsocketOutbound {
     return WebsocketOutbound.outbounds.length;
   }
   static clear() {
-    this.outbounds = [];
+    WebsocketOutbound.outbounds = [];
   }
 }

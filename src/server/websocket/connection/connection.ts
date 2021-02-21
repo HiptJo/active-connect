@@ -11,7 +11,6 @@ export class WebsocketConnection {
   }
 
   public static router: WebsocketRouter = new WebsocketRouter();
-  public static outbound: WebsocketOutbound = new WebsocketOutbound();
   constructor(protected connection: WebSocket | null) {
     this.initializeListeners();
     this.sendWelcomeMessages();
@@ -38,7 +37,7 @@ export class WebsocketConnection {
   }
 
   private sendWelcomeMessages() {
-    WebsocketConnection.outbound.sendToConnection(this);
+    WebsocketOutbound.sendToConnection(this);
   }
 
   public send(method: string, value: any) {
