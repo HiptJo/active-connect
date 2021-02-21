@@ -267,3 +267,16 @@ it("should be possible to modify a shared variable", async () => {
   const updated = await conn.awaitMessage("d.modification");
   expect(updated).toBe(5);
 });
+
+it("should be possible to get a standalone route by method", () => {
+  class Testing {
+    @StandaloneRoute("standalone.route.by.method")
+    async route(data: any, conn: WebsocketConnection) {
+      return { value: "ok-standalone" };
+    }
+  }
+  expect(Testing).toBeDefined();
+  expect(
+    WebsocketRouter.getRouteByMethod("standalone.route.by.method")
+  ).toBeDefined();
+});
