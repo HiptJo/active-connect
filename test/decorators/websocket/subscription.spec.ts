@@ -255,3 +255,19 @@ it("should be possible to access the `this` object within a requestable subscrib
   const data = await conn.awaitMessage("r.subscribe2");
   expect(data).toStrictEqual({ value: "accessible" });
 });
+
+it("should be possible to create multiple @SubscribeChanges per class", async () => {
+  class Testing {
+    @SubscribeChanges
+    @Outbound("subm.1")
+    m1() {
+      return 1;
+    }
+    @SubscribeChanges
+    @Outbound("subm.2")
+    m2() {
+      return 2;
+    }
+  }
+  expect(Testing).toBeDefined();
+});
