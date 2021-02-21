@@ -8,13 +8,11 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
 
   const original = target[propertyKey].bind(target.___data);
   if (!target.___outboundSubscriptions) target.___outboundSubscriptions = {};
-  if (!target.___outboundSubscriptions[propertyKey])
-    target.___outboundSubscriptions[propertyKey] = [];
+  target.___outboundSubscriptions[propertyKey] = [];
 
   target[propertyKey] = async function (...data: any[]) {
     let conn: WebsocketConnection;
-    if (data.length == 1) conn = data[0];
-    if (data.length > 1) conn = data[2];
+    conn = data[0];
     const res = await original(...data);
     if (res != "error:auth:unauthorized") {
       // subscribe for changes
