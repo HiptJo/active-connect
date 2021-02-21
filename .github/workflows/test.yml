@@ -1,0 +1,25 @@
+name: Run Jest Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches: 
+      - *
+jobs:
+  build:
+    runs-on: ubuntu:latest
+    steps:
+      - name: clone code repository
+        uses: actions/checkout@v1
+      - name: install nodejs
+        uses: actions/setup-node@v1
+        with:
+          node-version: "15.x"
+      - name: setup nodejs
+        run: |
+          npm install
+      - name: test nodejs
+        run: |
+          npm run test:prod
