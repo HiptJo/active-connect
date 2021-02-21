@@ -221,7 +221,7 @@ it("should be possible to access the `this` object within a authenticated standa
   const data = await conn.awaitMessage("m.check1.standalone");
   expect(data).toStrictEqual(original);
 });
-it.only("should be possible to access the `this` object within a authenticated standalone route (route first)", async () => {
+it("should be possible to access the `this` object within a authenticated standalone route (route first)", async () => {
   const original = { value: "accessible data" };
   class Testing {
     @Shared(original)
@@ -241,9 +241,41 @@ it.only("should be possible to access the `this` object within a authenticated s
   const data = await conn.awaitMessage("m.check1.standalone");
   expect(data).toStrictEqual(original);
 });
-it.todo(
-  "should be possible to access the `this` object within a authenticated outbound (auth first)"
-);
-it.todo(
-  "should be possible to access the `this` object within a authenticated outbound (out first)"
-);
+it("should be possible to access the `this` object within a authenticated outbound (auth first)", async () => {
+  class Out {
+    @Shared({ content: "something" }) private content: any;
+
+    @Auth(new Authenticator())
+    @Outbound("out.this1")
+    async send() {
+      return this.content;
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("out.this1");
+  expect(data).toStrictEqual({ content: "something" });
+});
+it("should be possible to access the `this` object within a authenticated outbound (out first)", async () => {
+  class Out {
+    @Shared({ content: "something" }) private content: any;
+
+    @Outbound("out.this2")
+    @Auth(new Authenticator())
+    async send() {
+      return this.content;
+    }
+  }
+  expect(Out).toBeDefined();
+  const out = new WebsocketOutbound();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  out.sendToConnection(conn);
+
+  const data = await conn.awaitMessage("out.this2");
+  expect(data).toStrictEqual({ content: "something" });
+});
