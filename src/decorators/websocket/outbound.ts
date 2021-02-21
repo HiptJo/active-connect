@@ -10,7 +10,11 @@ export function Outbound(method: string, requestingRequired?: boolean) {
     if (!target.___wsoutbound) target.___wsoutbound = {};
     target.___wsoutbound[propertyKey] = method;
     WebsocketOutbound.addOutbound(
-      new WSOutbound(method, target[propertyKey], requestingRequired)
+      new WSOutbound(
+        method,
+        target[propertyKey].bind(target.___data),
+        requestingRequired
+      )
     );
 
     if (
