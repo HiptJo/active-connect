@@ -296,4 +296,18 @@ describe("error management", () => {
     await router.route(new WebsocketRequest("error.throws", null, conn));
     expect(await conn.awaitMessage("m.error")).toBe("I am an error");
   });
+  it("should send a m.error when a route throws an error", async () => {
+    @Route("error")
+    class Testing {
+      @Route("throws")
+      func() {
+        throw Error("I am an error");
+      }
+    }
+    expect(Testing).toBeDefined();
+    const router = new WebsocketRouter();
+    const conn = WebsocketMocks.getConnectionStub();
+    await router.route(new WebsocketRequest("error.throws", null, conn));
+    expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+  });
 });
