@@ -12,10 +12,10 @@ export class WebsocketClient {
       });
       this.connection.on("message", (message: string) => {
         const data = JSON.parse(message);
-        const callback = this.expectedMessages.get(data.method);
-        if (callback) {
+        if (this.expectedMessages.has(data.method)) {
+          const callback = this.expectedMessages.get(data.method);
+          this.expectedMessages.delete(data.method);
           callback(data.value);
-          this.expectedMessages.set(data.method, null);
         } else this.messageHistory.set(data.method, data.value);
       });
     });
@@ -24,9 +24,9 @@ export class WebsocketClient {
   private expectedMessages: Map<string, Function> = new Map();
   awaitMessage<T>(method: string): Promise<T> {
     return new Promise((resolve) => {
-      const historyElement = this.messageHistory.get(method);
-      if (historyElement) {
-        this.messageHistory.set(method, null);
+      if (this.messageHistory.has(method)) {
+        const historyElement = this.messageHistory.get(method);
+        this.messageHistory.delete(method);
         resolve(historyElement);
       } else {
         this.expectedMessages.set(method, resolve);

@@ -16,8 +16,8 @@ export class StubWebsocketConnection extends WebsocketConnection {
 
   private messageHistory: Map<string, any> = new Map();
   send(method: string, data: any) {
-    const func = this.expectedMessages.get(method);
-    if (func) {
+    if (this.expectedMessages.has(method)) {
+      const func = this.expectedMessages.get(method);
       this.expectedMessages.delete(method);
       func(data);
     } else {
@@ -28,8 +28,8 @@ export class StubWebsocketConnection extends WebsocketConnection {
   private expectedMessages: Map<string, Function | null> = new Map();
   awaitMessage<T>(method: string): Promise<T> {
     return new Promise((resolve) => {
-      const historyElement = this.messageHistory.get(method);
-      if (historyElement) {
+      if (this.messageHistory.has(method)) {
+        const historyElement = this.messageHistory.get(method);
         this.messageHistory.delete(method);
         resolve(historyElement);
       } else {
