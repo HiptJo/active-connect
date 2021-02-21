@@ -228,7 +228,7 @@ it("should be possible to access the `this` object within a standalone route", a
   expect(data).toStrictEqual(original);
 });
 
-it.only("should be possible to modify a shared variable", async () => {
+it("should be possible to modify a shared variable", async () => {
   @Route("modification")
   class SharedModificationTesting {
     @Shared(1)
