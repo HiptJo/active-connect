@@ -18,7 +18,7 @@ export class WebsocketConnection {
     this.interval = setInterval(() => {
       connection.ping();
     }, 45000);
-    process.on("beforeExit", () => {
+    process.on("exit", () => {
       clearInterval(this.interval);
     });
   }
