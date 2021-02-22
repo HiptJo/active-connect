@@ -123,7 +123,7 @@ export class HttpServer {
     }
   }
   public addBasicCredentials(user: string, password: string) {
-    this.credentials.push({ user, password });
+    this.credentials.push({ user: user, password: password });
   }
 
   private initializeFileProvider() {

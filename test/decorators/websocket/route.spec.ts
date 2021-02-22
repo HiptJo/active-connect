@@ -286,7 +286,7 @@ describe("error management", () => {
     class Testing {
       @Route("throws")
       func() {
-        throw "I am an error";
+        throw new String("I am an error");
       }
     }
     expect(Testing).toBeDefined();
@@ -318,7 +318,7 @@ describe("error management", () => {
     class Testing {
       @StandaloneRoute("serror.throws1")
       func() {
-        throw "I am an error";
+        throw new Error("I am an error");
       }
     }
     expect(Testing).toBeDefined();

@@ -44,7 +44,7 @@ export class WebsocketOutbound {
   ) {
     WebsocketOutbound.outboundSubscriptions.set(outbound, sendUpdates);
   }
-  public static async sendUpdates(routes: string[]) {
+  public static async sendUpdates(routes: Array<string>) {
     await Promise.all(
       routes.map((route) => {
         const out = WebsocketOutbound.outboundSubscriptions.get(route);

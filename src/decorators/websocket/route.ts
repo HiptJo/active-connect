@@ -42,7 +42,7 @@ export function Route(method: string, baseRoute?: string) {
         if (!target.___routeDefinition) {
           target.___routeDefinition = [];
         }
-        target.___routeDefinition.push({ method, propertyKey });
+        target.___routeDefinition.push({ method: method, propertyKey: propertyKey });
       }
     }
     return target;

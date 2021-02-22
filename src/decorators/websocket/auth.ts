@@ -6,7 +6,7 @@ export function Auth(auth: WebsocketAuthenticator) {
   return function (target: any, propertyKey: string): any {
     // initialize routeDefinition
     const original = target[propertyKey].bind(target.___data);
-    target[propertyKey] = async function (...data: any[]) {
+    target[propertyKey] = async function (...data: Array<any>) {
       let conn: WebsocketConnection;
       if (data.length == 1) conn = data[0];
       if (data.length > 1) conn = data[1];

@@ -20,7 +20,7 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
     }
   );
 
-  target[propertyKey] = async function (...data: any[]) {
+  target[propertyKey] = async function (...data: Array<any>) {
     let conn: WebsocketConnection;
     conn = data[0];
     const res = await original(...data);
@@ -37,10 +37,10 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
     registerSubscription(target, propertyKey);
   }
 }
-export function Modifies(...routes: string[]) {
+export function Modifies(...routes: Array<string>) {
   return function (target: any, propertyKey: string) {
     const original = target[propertyKey].bind(target.___data);
-    target[propertyKey] = async function (...params: any[]) {
+    target[propertyKey] = async function (...params: Array<any>) {
       const data = await original(...params);
       await WebsocketOutbound.sendUpdates(routes);
       return data;
@@ -59,7 +59,7 @@ export function registerSubscription(target: any, propertyKey: string) {
         target.___outboundSubscriptions &&
         target.___outboundSubscriptions[propertyKey]
       ) {
-        const connections: WebsocketConnection[] =
+        const connections: Array<WebsocketConnection> =
           target.___outboundSubscriptions[propertyKey];
         const res = await Promise.all(
           connections.map((conn: WebsocketConnection) => {
