@@ -10,6 +10,8 @@ export class WebsocketConnection {
     return this._id;
   }
 
+  public token: string | null = null;
+
   public static router: WebsocketRouter = new WebsocketRouter();
   private interval;
   constructor(protected connection: WebSocket | null) {
