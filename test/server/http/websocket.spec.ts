@@ -59,4 +59,22 @@ describe("server creation", () => {
     expect(msg).toBe("hellomsg");
     client.close();
   });
+  it("should be possible to receive a large data-amount", async () => {
+    assert.strictEqual(await server.awaitStart(), true);
+    class Testing {
+      @Outbound("await.message1")
+      @SubscribeChanges
+      message() {
+        return "hellomsg".repeat(1000);
+      }
+    }
+    expect(Testing).toBeDefined();
+
+    const client = new WebsocketClient(null);
+    assert.strictEqual(await client.awaitConnection(), true);
+
+    const msg = await client.awaitMessage("await.message1");
+    expect(msg).toBe("hellomsg".repeat(1000));
+    client.close();
+  });
 });
