@@ -6,6 +6,7 @@ import { WebsocketServer } from "../websocket/server";
 import { FileProvider } from "./file-provider";
 import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
+import * as compression from "compression";
 
 export class HttpServer {
   private app: express.Application;
@@ -33,6 +34,7 @@ export class HttpServer {
       this.serverStarted();
     });
     this.app.disable("x-powered-by");
+    this.app.use(compression());
   }
 
   private initializeWebsocket() {
