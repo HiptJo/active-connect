@@ -1,1 +1,2 @@
-export interface HttpResponse extends Express.Response {}
+import { Response } from "express";
+export interface HttpResponse extends Response {}
