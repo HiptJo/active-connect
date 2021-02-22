@@ -32,6 +32,7 @@ export class HttpServer {
       this.isServerStarted = true;
       this.serverStarted();
     });
+    this.app.disable("x-powered-by");
   }
 
   private initializeWebsocket() {
