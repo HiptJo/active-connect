@@ -8,6 +8,7 @@ import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
 import * as compression from "compression";
 import * as fs from "fs-extra";
+import { isThisTypeNode } from "typescript";
 
 export class HttpServer {
   private app: express.Application;
@@ -78,6 +79,52 @@ export class HttpServer {
   }
   public setupAssetFileServing(path: string) {
     this.app.use(express.static(path));
+  }
+
+  private basicAuthenticationEnabled = false;
+  private credentials: Array<{ user: string; password: string }> = new Array();
+  public enableBasicAuthentication() {
+    if (!this.basicAuthenticationEnabled) {
+      this.basicAuthenticationEnabled = true;
+      this.app.use(
+        (
+          req: express.Request,
+          res: express.Response,
+          next: express.NextFunction
+        ) => {
+          if ("OPTIONS" == req.method) {
+            res.send("{}");
+          } else {
+            // -----------------------------------------------------------------------
+            // authentication middleware
+            const b64auth =
+              (req.headers.authorization || "").split(" ")[1] || "";
+            const [user, password] = Buffer.from(b64auth, "base64")
+              .toString()
+              .split(":");
+
+            // Verify user and password are set and correct
+            const authorized = this.credentials.filter(
+              (a) => a.user == user && a.password == password
+            );
+
+            if (authorized.length > 0) {
+              // Access granted...
+              return next();
+            } else {
+              // Access denied...
+              res.set("WWW-Authenticate", 'Basic realm="401"'); // change this
+              res.status(401).send("Authentication required."); // custom message
+              return;
+            }
+          }
+          return next();
+        }
+      );
+    }
+  }
+  public addBasicCredentials(user: string, password: string) {
+    this.credentials.push({ user, password });
   }
 
   private initializeFileProvider() {

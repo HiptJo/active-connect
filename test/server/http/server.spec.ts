@@ -47,3 +47,30 @@ describe("angular asset serving", () => {
       });
   });
 });
+
+describe("basic auth", () => {
+  let server: HttpServer;
+  afterEach(() => {
+    server.stop();
+  });
+
+  it("should be possible to authenticate http requests", async () => {
+    server = new HttpServer(9000, false);
+    server.enableBasicAuthentication();
+    server.addBasicCredentials("admin", "password");
+    server.setupAngularFileServing("./test/data/angular");
+    await server.awaitStart();
+    assert.strictEqual(await server.awaitStart(), true);
+    await test(server.App)
+      .get("/assets/sample.html")
+      .then((response) => {
+        expect(response.status).toBe(401);
+      });
+    await test(server.App)
+      .get("/assets/sample.html")
+      .set("authorization", "Basic YWRtaW46cGFzc3dvcmQ=")
+      .then((response) => {
+        expect(response.status).toBe(200);
+      });
+  });
+});
