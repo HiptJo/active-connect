@@ -12,3 +12,4 @@ export * from "./decorators/http/get";
 export * from "./decorators/http/post";
 export * from "./server/http/http-request";
 export * from "./server/http/http-response";
+export * from "./server/websocket/connection/connection";
