@@ -8,7 +8,6 @@ import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
 import * as compression from "compression";
 import * as fs from "fs-extra";
-import { isThisTypeNode } from "typescript";
 
 export class HttpServer {
   private app: express.Application;
