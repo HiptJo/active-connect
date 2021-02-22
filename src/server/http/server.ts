@@ -7,6 +7,7 @@ import { FileProvider } from "./file-provider";
 import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
 import * as compression from "compression";
+import * as fs from "fs-extra";
 
 export class HttpServer {
   private app: express.Application;
@@ -48,6 +49,35 @@ export class HttpServer {
     HttpServer.postMethods.forEach((get) => {
       this.app.post(get.method, get.callback);
     });
+  }
+
+  private indexCache: Buffer | undefined;
+  public setupAngularFileServing(path: string) {
+    this.setupAssetFileServing(path);
+    this.app.get("*", (req: express.Request, res: express.Response) => {
+      if (!this.indexCache) {
+        fs.readFile(
+          `${path}/index.html`,
+          (error: any | null, content: Buffer) => {
+            if (error) {
+              res.sendStatus(500);
+              throw Error(
+                "Express: Angular File Serving: index.html has not been found"
+              );
+            }
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(content, "utf-8");
+            this.indexCache = content;
+          }
+        );
+      } else {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(this.indexCache, "utf-8");
+      }
+    });
+  }
+  public setupAssetFileServing(path: string) {
+    this.app.use(express.static(path));
   }
 
   private initializeFileProvider() {
