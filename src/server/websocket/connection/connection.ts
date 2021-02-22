@@ -11,12 +11,16 @@ export class WebsocketConnection {
   }
 
   public static router: WebsocketRouter = new WebsocketRouter();
+  private interval;
   constructor(protected connection: WebSocket | null) {
     this.initializeListeners();
     this.sendWelcomeMessages();
-    setInterval(() => {
+    this.interval = setInterval(() => {
       connection.ping();
     }, 45000);
+    process.on("beforeExit", () => {
+      clearInterval(this.interval);
+    });
   }
 
   private initializeListeners() {
@@ -36,6 +40,7 @@ export class WebsocketConnection {
     throw Error(message);
   }
   private onClose() {
+    clearInterval(this.interval);
     WebsocketOutbound.clearConnectionSubscriptions(this);
   }
 
