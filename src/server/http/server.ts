@@ -4,6 +4,7 @@ import { ProvidedFile } from "../../content/files/provided-file";
 import { ProvidedImage } from "../../content/images/provided-image";
 import { WebsocketServer } from "../websocket/server";
 import { FileProvider } from "./file-provider";
+import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
 
 export class HttpServer {
@@ -19,6 +20,7 @@ export class HttpServer {
     if (this.supportWebsocket) {
       this.initializeWebsocket();
     }
+    this.initializeHttpMethods();
     this.initializeFileProvider();
     this.initializeImageProvider();
   }
@@ -34,6 +36,15 @@ export class HttpServer {
 
   private initializeWebsocket() {
     this.websocket = new WebsocketServer(this.server);
+  }
+
+  private initializeHttpMethods() {
+    HttpServer.getMethods.forEach((get) => {
+      this.app.get(get.method, get.callback);
+    });
+    HttpServer.postMethods.forEach((get) => {
+      this.app.post(get.method, get.callback);
+    });
   }
 
   private initializeFileProvider() {
@@ -166,6 +177,21 @@ export class HttpServer {
     callback: (id: string, auth: string) => Promise<ProvidedImage>
   ) {
     HttpServer.imageProvider.push(new ImageProvider(label, callback));
+  }
+
+  private static getMethods: Array<HttpMethod> = new Array();
+  public static registerGet(
+    method: string,
+    callback: (req: Express.Request, res: Express.Response) => void
+  ) {
+    HttpServer.getMethods.push(new HttpMethod(method, callback));
+  }
+  private static postMethods: Array<HttpMethod> = new Array();
+  public static registerPost(
+    method: string,
+    callback: (req: Express.Request, res: Express.Response) => void
+  ) {
+    HttpServer.postMethods.push(new HttpMethod(method, callback));
   }
 
   public stop() {
