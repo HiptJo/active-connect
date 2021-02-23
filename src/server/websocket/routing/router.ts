@@ -1,4 +1,5 @@
 import { WebsocketRequest } from "../message/request";
+import { WebsocketOutbound } from "./outbound";
 import { WebsocketRoute } from "./route";
 import { StandaloneWebsocketRoute } from "./route-standalone";
 

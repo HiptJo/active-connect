@@ -4,7 +4,11 @@ import {
 } from "../../server/websocket/routing/outbound";
 import { registerSubscription } from "./subscription";
 
-export function Outbound(method: string, requestingRequired?: boolean) {
+export function Outbound(
+  method: string,
+  requestingRequired?: boolean,
+  resendAfterAuthentication?: boolean
+) {
   return function _Outbound(target: any, propertyKey: string): any {
     // method annotation
     if (!target.___wsoutbound) target.___wsoutbound = {};
@@ -13,7 +17,8 @@ export function Outbound(method: string, requestingRequired?: boolean) {
       new WSOutbound(
         method,
         target[propertyKey].bind(target.___data),
-        requestingRequired
+        requestingRequired,
+        resendAfterAuthentication
       )
     );
 

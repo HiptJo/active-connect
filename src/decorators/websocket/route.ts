@@ -2,7 +2,11 @@ import { WebsocketRoute } from "../../server/websocket/routing/route";
 import { StandaloneWebsocketRoute } from "../../server/websocket/routing/route-standalone";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 
-export function Route(method: string, baseRoute?: string) {
+export function Route(
+  method: string,
+  baseRoute?: string,
+  modifiesAuthentication?: boolean
+) {
   return function _Route(target: any, propertyKey?: string): any {
     // initialize routeDfinition
     if (!propertyKey) {
@@ -15,13 +19,15 @@ export function Route(method: string, baseRoute?: string) {
           function _registerChild(child: {
             method: string;
             propertyKey: string;
+            modifiesAuthentication: boolean;
           }) {
             route.addChild(
               new WebsocketRoute(
                 child.method,
                 target.prototype[child.propertyKey].bind(
                   target.prototype.___data
-                )
+                ),
+                child.modifiesAuthentication
               )
             );
           }
@@ -48,6 +54,7 @@ export function Route(method: string, baseRoute?: string) {
         target.___routeDefinition.push({
           method: method,
           propertyKey: propertyKey,
+          modifiesAuthentication: modifiesAuthentication,
         });
       }
     }
@@ -56,13 +63,18 @@ export function Route(method: string, baseRoute?: string) {
 }
 
 export function StandaloneRoute(method: string) {
-  return function _StandaloneRoute(target: any, propertyKey: string): any {
+  return function _StandaloneRoute(
+    target: any,
+    propertyKey: string,
+    modifiesAuthentication?: boolean
+  ): any {
     // method annotation
     // register standalone route
     WebsocketRouter.registerStandaloneRoute(
       new StandaloneWebsocketRoute(
         method,
-        target[propertyKey].bind(target.___data)
+        target[propertyKey].bind(target.___data),
+        modifiesAuthentication
       )
     );
     return target;

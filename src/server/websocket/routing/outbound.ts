@@ -10,7 +10,8 @@ export class Outbound {
   constructor(
     public method: string,
     public func: (connection: WebsocketConnection) => Promise<any>,
-    public requestingRequired?: boolean
+    public requestingRequired?: boolean,
+    public resendAfterAuthentication?: boolean
   ) {}
 }
 
@@ -112,6 +113,14 @@ export class WebsocketOutbound {
       throw Error(`Websocket: Outbound ${method} has not been found.`);
     }
   }
+
+  public static async resendDataAfterAuth(connection: WebsocketConnection) {
+    WebsocketOutbound.outbounds.forEach(async function sendOutbound(o) {
+      if (!o.requestingRequired && o.resendAfterAuthentication)
+        await WebsocketOutbound.sendOutbound(o, connection);
+    });
+  }
+
   static get count(): number {
     return WebsocketOutbound.outbounds.length;
   }

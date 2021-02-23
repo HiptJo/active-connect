@@ -1,5 +1,6 @@
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
+import { WebsocketOutbound } from "./outbound";
 
 export class WebsocketRoute {
   protected method: string;
@@ -7,7 +8,8 @@ export class WebsocketRoute {
     method: string,
     protected func:
       | ((data: any | void, connection: WebsocketConnection) => void | any)
-      | null
+      | null,
+    private modifiesAuthentication?: boolean
   ) {
     this.Method = method;
   }
@@ -77,7 +79,10 @@ export class WebsocketRoute {
   protected async call(request: WebsocketRequest): Promise<any> {
     if (this.func) {
       try {
-        return await this.func(request.data, request.connection);
+        const data = await this.func(request.data, request.connection);
+        if (this.modifiesAuthentication)
+          WebsocketOutbound.resendDataAfterAuth(request.connection).then();
+        return data;
       } catch (e) {
         request.connection.send("m.error", e?.message || e);
         throw e;
