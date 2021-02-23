@@ -62,12 +62,11 @@ export function Route(
   };
 }
 
-export function StandaloneRoute(method: string) {
-  return function _StandaloneRoute(
-    target: any,
-    propertyKey: string,
-    modifiesAuthentication?: boolean
-  ): any {
+export function StandaloneRoute(
+  method: string,
+  modifiesAuthentication?: boolean
+) {
+  return function _StandaloneRoute(target: any, propertyKey: string): any {
     // method annotation
     // register standalone route
     WebsocketRouter.registerStandaloneRoute(
