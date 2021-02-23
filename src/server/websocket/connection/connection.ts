@@ -18,7 +18,7 @@ export class WebsocketConnection {
     this.initializeListeners();
     this.sendWelcomeMessages();
     if (connection) {
-      this.interval = setInterval(() => {
+      this.interval = setInterval(function pingConnection() {
         connection.ping();
       }, 45000);
     }

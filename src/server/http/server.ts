@@ -30,9 +30,10 @@ export class HttpServer {
   private isServerStarted: boolean = false;
   private initializeServer() {
     this.app = express();
-    this.server = this.app.listen(this.port, () => {
-      this.isServerStarted = true;
-      this.serverStarted();
+    const t = this;
+    this.server = this.app.listen(this.port, function serverStarted() {
+      t.isServerStarted = true;
+      t.serverStarted();
     });
     this.app.disable("x-powered-by");
     this.app.use(compression());
@@ -43,38 +44,45 @@ export class HttpServer {
   }
 
   private initializeHttpMethods() {
-    HttpServer.getMethods.forEach((get) => {
+    HttpServer.getMethods.forEach(function registerGetMethod(get) {
       this.app.get(get.method, get.callback);
     });
-    HttpServer.postMethods.forEach((get) => {
-      this.app.post(get.method, get.callback);
+    HttpServer.postMethods.forEach(function registerPostMethod(post) {
+      this.app.post(post.method, post.callback);
     });
   }
 
   private indexCache: Buffer | undefined;
   public setupAngularFileServing(path: string) {
     this.setupAssetFileServing(path);
-    this.app.get("*", (req: express.Request, res: express.Response) => {
-      if (!this.indexCache) {
-        fs.readFile(
-          `${path}/index.html`,
-          (error: any | null, content: Buffer) => {
-            if (error) {
-              res.sendStatus(500);
-              throw Error(
-                "Express: Angular File Serving: index.html has not been found"
-              );
+    const t = this;
+    this.app.get(
+      "*",
+      function serveAngularIndex(req: express.Request, res: express.Response) {
+        if (!t.indexCache) {
+          fs.readFile(
+            `${path}/index.html`,
+            function readAngularIndexCallback(
+              error: any | null,
+              content: Buffer
+            ) {
+              if (error) {
+                res.sendStatus(500);
+                throw Error(
+                  "Express: Angular File Serving: index.html has not been found"
+                );
+              }
+              res.writeHead(200, { "Content-Type": "text/html" });
+              res.end(content, "utf-8");
+              t.indexCache = content;
             }
-            res.writeHead(200, { "Content-Type": "text/html" });
-            res.end(content, "utf-8");
-            this.indexCache = content;
-          }
-        );
-      } else {
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(this.indexCache, "utf-8");
+          );
+        } else {
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(t.indexCache, "utf-8");
+        }
       }
-    });
+    );
   }
   public setupAssetFileServing(path: string) {
     this.app.use(express.static(path));
@@ -128,7 +136,7 @@ export class HttpServer {
 
   private initializeFileProvider() {
     const sendFile = this.sendFile;
-    HttpServer.fileProvider.forEach((provider) => {
+    HttpServer.fileProvider.forEach(function provideFileForEach(provider) {
       this.app.get(
         `/file/${provider.label}/:id/:auth`,
         async function provideFile(
@@ -163,7 +171,7 @@ export class HttpServer {
   }
   private initializeImageProvider() {
     const sendImage = this.sendImage;
-    HttpServer.imageProvider.forEach((provider) => {
+    HttpServer.imageProvider.forEach(function registerImageProvider(provider) {
       this.app.get(
         `/image/${provider.label}/:id/:auth`,
         async function provideFile(
@@ -233,11 +241,13 @@ export class HttpServer {
 
   private serverStartedResolves: Array<Function> = [];
   private serverStarted() {
-    this.serverStartedResolves.forEach((r) => r(true));
+    this.serverStartedResolves.forEach(function resolveServerStarted(r) {
+      r(true);
+    });
   }
   public async awaitStart(): Promise<boolean> {
     if (this.isServerStarted) return true;
-    return new Promise((resolve) => {
+    return new Promise(function onServerStarted(resolve) {
       this.serverStartedResolves.push(resolve);
     });
   }

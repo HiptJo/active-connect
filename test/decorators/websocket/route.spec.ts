@@ -177,14 +177,14 @@ it("should be possible to call a standalone routed method", async () => {
   expect(Testing).toBeDefined();
   expect(
     WebsocketRouter.StandaloneRoutes.filter(
-      (r) => r.Method == "standalone.route"
+      (r) => r.Method == "standalone.call"
     )
   ).toHaveLength(1);
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
 
-  router.route(new WebsocketRequest("standalone.route", null, conn));
-  const data = await conn.awaitMessage("m.standalone.route");
+  router.route(new WebsocketRequest("standalone.call", null, conn));
+  const data = await conn.awaitMessage("m.standalone.call");
   expect(data).toStrictEqual({ value: "ok-standalone" });
 });
 

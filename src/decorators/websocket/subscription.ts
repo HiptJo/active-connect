@@ -64,7 +64,7 @@ export function registerSubscription(target: any, propertyKey: string) {
         const connections: Array<WebsocketConnection> =
           target.___outboundSubscriptions[propertyKey];
         const res = await Promise.all(
-          connections.map((conn: WebsocketConnection) => {
+          connections.map(function map(conn: WebsocketConnection) {
             return target[propertyKey](conn);
           })
         );

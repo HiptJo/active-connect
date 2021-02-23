@@ -22,7 +22,10 @@ export class WebsocketOutbound {
       WebsocketRouter.registerStandaloneRoute(
         new StandaloneWebsocketRoute(
           `request.${outbound.method}`,
-          async (data: any, conn: WebsocketConnection) => {
+          async function fetchOutboundData(
+            data: any,
+            conn: WebsocketConnection
+          ) {
             await WebsocketOutbound.requestOutbound(outbound.method, conn);
           }
         )
@@ -46,7 +49,7 @@ export class WebsocketOutbound {
   }
   public static async sendUpdates(routes: Array<string>) {
     await Promise.all(
-      routes.map((route) => {
+      routes.map(function sendUpdatesForRoute(route) {
         const out = WebsocketOutbound.outboundSubscriptions.get(route);
         if (out) return out();
       })
@@ -62,13 +65,15 @@ export class WebsocketOutbound {
     WebsocketOutbound.connectionDisconnectHandler.push(callback);
   }
   public static clearConnectionSubscriptions(conn: WebsocketConnection) {
-    WebsocketOutbound.connectionDisconnectHandler.forEach((handler) =>
-      handler(conn)
+    WebsocketOutbound.connectionDisconnectHandler.forEach(
+      function clearConnectionSubscriptionHandler(handler) {
+        handler(conn);
+      }
     );
   }
 
   public static sendToConnection(connection: WebsocketConnection) {
-    WebsocketOutbound.outbounds.forEach(async (o) => {
+    WebsocketOutbound.outbounds.forEach(async function sendOutbound(o) {
       if (!o.requestingRequired)
         await WebsocketOutbound.sendOutbound(o, connection);
     });
