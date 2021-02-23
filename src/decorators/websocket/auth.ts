@@ -11,7 +11,7 @@ export function Auth(auth: WebsocketAuthenticator) {
       if (data.length == 1) conn = data[0];
       if (data.length > 1) conn = data[1];
 
-      if (await auth.authenticate(conn)) {
+      if (await auth.authenticate(conn, data.length > 1 ? data[0] : null)) {
         return original(...data);
       } else {
         // check if it is a route (not a outlet)

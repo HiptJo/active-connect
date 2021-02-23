@@ -348,3 +348,35 @@ it("should subscribe for changes after unauthorized request (auth first)", async
 
   conn.awaitMessage("outu.example4").then(fail);
 });
+
+it("should be possible to access the request data from a authenticator", async () => {
+  class DataAuth extends WebsocketAuthenticator {
+    public label: string = "data-auth";
+    public async authenticate(
+      conn: WebsocketConnection,
+      requestData: any
+    ): Promise<boolean> {
+      expect(requestData).toBe("data-string");
+      return true;
+    }
+  }
+  @Route("testauthdata")
+  class Testing {
+    @Route("d")
+    @Auth(new DataAuth())
+    method1(data: any, conn: WebsocketConnection) {
+      return 1;
+    }
+  }
+  expect(Testing).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+  const router = new WebsocketRouter();
+
+  await router.route(
+    new WebsocketRequest("testauthdata.d", "data-string", conn)
+  );
+  const data1 = await conn.awaitMessage("m.testauthdata.d");
+
+  expect(data1).toBe(1);
+});
