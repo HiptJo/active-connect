@@ -17,9 +17,11 @@ export class WebsocketConnection {
   constructor(protected connection: WebSocket | null) {
     this.initializeListeners();
     this.sendWelcomeMessages();
-    this.interval = setInterval(() => {
-      connection.ping();
-    }, 45000);
+    if (connection) {
+      this.interval = setInterval(() => {
+        connection.ping();
+      }, 45000);
+    }
   }
 
   private initializeListeners() {
