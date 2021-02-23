@@ -1,6 +1,6 @@
 {
   "name": "active-connect",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Connection framework built for smart web-based projects using NodeJS, Angular and Websockets.",
   "author": "Jonas Hiptmair <office@hiptmairit.at>",
   "keywords": [
