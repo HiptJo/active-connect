@@ -11,7 +11,7 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
   target.___outboundSubscriptions[propertyKey] = [];
 
   WebsocketOutbound.addConnectionDisconnectHandler(
-    (conn: WebsocketConnection) => {
+    function onConnectionDisconnect(conn: WebsocketConnection) {
       target.___outboundSubscriptions[
         propertyKey
       ] = target.___outboundSubscriptions[propertyKey].filter(
@@ -20,7 +20,7 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
     }
   );
 
-  target[propertyKey] = async function (...data: Array<any>) {
+  target[propertyKey] = async function _subscribeChanges(...data: Array<any>) {
     let conn: WebsocketConnection;
     conn = data[0];
     const res = await original(...data);
@@ -38,9 +38,11 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
   }
 }
 export function Modifies(...routes: Array<string>) {
-  return function (target: any, propertyKey: string) {
+  return function _Modifies(target: any, propertyKey: string) {
     const original = target[propertyKey].bind(target.___data);
-    target[propertyKey] = async function (...params: Array<any>) {
+    target[propertyKey] = async function _subscribeModification(
+      ...params: Array<any>
+    ) {
       const data = await original(...params);
       await WebsocketOutbound.sendUpdates(routes);
       return data;
@@ -54,7 +56,7 @@ export function registerSubscription(target: any, propertyKey: string) {
 
   WebsocketOutbound.addOutboundSubscription(
     target.___wsoutbound[propertyKey],
-    async () => {
+    async function onAddOutboundSubscription() {
       if (
         target.___outboundSubscriptions &&
         target.___outboundSubscriptions[propertyKey]
@@ -66,7 +68,7 @@ export function registerSubscription(target: any, propertyKey: string) {
             return target[propertyKey](conn);
           })
         );
-        connections.forEach((conn, i) => {
+        connections.forEach(function sendUpdate(conn, i) {
           conn.send(target.___wsoutbound[propertyKey], res[i]);
         });
       }

@@ -3,7 +3,7 @@ import { StandaloneWebsocketRoute } from "../../server/websocket/routing/route-s
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 
 export function Route(method: string, baseRoute?: string) {
-  return function (target: any, propertyKey?: string): any {
+  return function _Route(target: any, propertyKey?: string): any {
     // initialize routeDfinition
     if (!propertyKey) {
       // class annotation
@@ -12,7 +12,10 @@ export function Route(method: string, baseRoute?: string) {
       if (target.prototype.___routeDefinition) {
         // initialize children
         target.prototype.___routeDefinition.forEach(
-          (child: { method: string; propertyKey: string }) => {
+          function _registerChild(child: {
+            method: string;
+            propertyKey: string;
+          }) {
             route.addChild(
               new WebsocketRoute(
                 child.method,
@@ -42,7 +45,10 @@ export function Route(method: string, baseRoute?: string) {
         if (!target.___routeDefinition) {
           target.___routeDefinition = [];
         }
-        target.___routeDefinition.push({ method: method, propertyKey: propertyKey });
+        target.___routeDefinition.push({
+          method: method,
+          propertyKey: propertyKey,
+        });
       }
     }
     return target;
@@ -50,7 +56,7 @@ export function Route(method: string, baseRoute?: string) {
 }
 
 export function StandaloneRoute(method: string) {
-  return function (target: any, propertyKey: string): any {
+  return function _StandaloneRoute(target: any, propertyKey: string): any {
     // method annotation
     // register standalone route
     WebsocketRouter.registerStandaloneRoute(
