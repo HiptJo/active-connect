@@ -14,6 +14,7 @@ export function Outbound(method: string, requestingRequired?: boolean) {
       configurable: true,
       writeable: true,
       get() {
+        if (!target.___received) target.___received = {};
         if (!target.___received[propertyKey] && requestingRequired) {
           WebsocketClient.send("request." + method, null).then();
         }
