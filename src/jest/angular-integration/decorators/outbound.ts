@@ -8,7 +8,7 @@ export function Outbound(method: string, requestingRequired?: boolean) {
     WebsocketClient.expectOutbound(method, function setOutbound(data: any) {
       if (!target.___received) target.___received = {};
       target.___received[propertyKey] = true;
-      target[propertyKey] = data;
+      target.___data[propertyKey] = data;
     });
     return {
       configurable: true,
