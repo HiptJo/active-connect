@@ -13,8 +13,12 @@ export class WebsocketClient {
     this._token = val;
   }
 
+  private callback: (method: string, data: any) => any | null;
+  public defineSocketCallback(callback: (method: string, data: any) => any) {
+    this.callback = callback;
+  }
   protected sendToSocket(method: string, data: any) {
-    JSON.stringify({ method, data });
+    this.callback(method, data);
   }
 
   auth(token: string) {
