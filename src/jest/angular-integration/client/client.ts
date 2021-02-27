@@ -33,7 +33,7 @@ export class WebsocketClient {
     });
   }
 
-  private messageReceived({ method, data }: { method: string; data: any }) {
+  public messageReceived({ method, data }: { method: string; data: any }) {
     const callback = this.expectedMethods.get(method);
     if (callback) {
       this.expectedMethods.delete(method);
