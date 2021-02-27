@@ -85,7 +85,7 @@ export class WebsocketRoute {
         return data;
       } catch (e) {
         request.connection.send("m.error", e?.message || e);
-        throw e;
+        if (!process.env.jest) throw e;
       }
     } else
       throw Error("Websocket: Function not defined for route " + this.method);

@@ -3,6 +3,8 @@ import {
   Shared,
   SubscribeChanges,
   Outbound,
+  WebsocketAuthenticator,
+  Auth,
 } from "../../../src/active-connect";
 import {
   Route,
@@ -366,4 +368,31 @@ it("should be possible to access the `this.method()` object within a standalone 
   await router.route(new WebsocketRequest("check_a.standalone", null, conn));
   const data = await conn.awaitMessage("m.check_a.standalone");
   expect(data).toStrictEqual(data);
+});
+
+it.only("should be possible to catch error", async () => {
+  class Auth1 extends WebsocketAuthenticator {
+    public label: string = "auth";
+    public async authenticate(
+      conn: WebsocketConnection,
+      requestData: any
+    ): Promise<boolean> {
+      return true;
+    }
+  }
+  @Route("throws")
+  class Testing {
+    @Route("t")
+    @Auth(new Auth1())
+    @Modifies("xyz")
+    child() {
+      throw Error("can you catch me?");
+    }
+  }
+  expect(Testing).toBeDefined();
+  const router = new WebsocketRouter();
+  const conn = WebsocketMocks.getConnectionStub();
+
+  router.route(new WebsocketRequest("throws.t", null, conn));
+  await conn.awaitMessage("m.error");
 });
