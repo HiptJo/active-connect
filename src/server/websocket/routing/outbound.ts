@@ -1,7 +1,6 @@
 import { WebsocketConnection } from "../connection/connection";
-import { StandaloneWebsocketRoute } from "./route-standalone";
+import { StandaloneWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
-
 export interface WebsocketAuthorizationCheckable {
   checkAuth(authToken: string): Promise<boolean>;
 }

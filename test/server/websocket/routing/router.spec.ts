@@ -1,7 +1,9 @@
 import { WebsocketConnection } from "../../../../src/server/websocket/connection/connection";
 import { WebsocketRequest } from "../../../../src/server/websocket/message/request";
-import { WebsocketRoute } from "../../../../src/server/websocket/routing/route";
-import { StandaloneWebsocketRoute } from "../../../../src/server/websocket/routing/route-standalone";
+import {
+  StandaloneWebsocketRoute,
+  WebsocketRoute,
+} from "../../../../src/server/websocket/routing/route";
 import { WebsocketRouter } from "../../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../websocket-mocks";
 

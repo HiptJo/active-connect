@@ -1,6 +1,5 @@
 import { WebsocketRequest } from "../message/request";
-import { WebsocketRoute } from "./route";
-import { StandaloneWebsocketRoute } from "./route-standalone";
+import { StandaloneWebsocketRoute, WebsocketRoute } from "./route";
 
 export class WebsocketRouter {
   private static routes: Array<WebsocketRoute> = [];

@@ -1,5 +1,7 @@
-import { WebsocketRoute } from "../../server/websocket/routing/route";
-import { StandaloneWebsocketRoute } from "../../server/websocket/routing/route-standalone";
+import {
+  StandaloneWebsocketRoute,
+  WebsocketRoute,
+} from "../../server/websocket/routing/route";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 
 export function Route(
