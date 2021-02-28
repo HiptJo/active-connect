@@ -47,10 +47,12 @@ export class WebsocketOutbound {
   ) {
     WebsocketOutbound.outboundSubscriptions.set(outbound, sendUpdates);
   }
-  public static async sendUpdates(routes: Array<string>) {
+  public static async sendUpdates(routes: Array<string>, pattern?: any) {
     await Promise.all(
       routes.map(function sendUpdatesForRoute(route) {
-        const out = WebsocketOutbound.outboundSubscriptions.get(route);
+        const out = WebsocketOutbound.outboundSubscriptions.get(
+          pattern ? route + ":" + pattern : route
+        );
         if (out) return out();
       })
     );
