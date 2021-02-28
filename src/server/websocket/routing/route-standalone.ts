@@ -1,7 +1,19 @@
+import { WebsocketConnection } from "../../../active-connect";
 import { WebsocketRequest } from "../message/request";
 import { WebsocketRoute } from "./route";
 
 export class StandaloneWebsocketRoute extends WebsocketRoute {
+  constructor(
+    method: string,
+    func:
+      | ((data: any | void, connection: WebsocketConnection) => void | any)
+      | null,
+    modifiesAuthentication?: boolean
+  ) {
+    super(method, func, modifiesAuthentication);
+    this.Method = method;
+  }
+
   public set Method(method: string) {
     this.method = method;
   }
