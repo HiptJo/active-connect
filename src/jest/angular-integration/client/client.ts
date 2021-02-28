@@ -71,4 +71,6 @@ export class WebsocketClient {
   static registerHandle(method: string, target: any, property: string) {
     WebsocketClient.handles.set(method, { target, property });
   }
+
+  isConnected = true;
 }

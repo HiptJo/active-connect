@@ -4,3 +4,4 @@ export * from "./angular-integration/client/client";
 export * from "./angular-integration/decorators/handle";
 export * from "./angular-integration/decorators/outbound";
 export * from "./angular-integration/decorators/route";
+export * from "./angular-integration/loading-status";
