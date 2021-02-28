@@ -42,10 +42,12 @@ export function SubscribeMatchingChanges(filter: MessageFilter) {
 
         // subscribe for changes
         if (!target.___outboundSubscriptionsF[propertyKey][pattern])
-          target.___outboundSubscriptionsF[propertyKey][pattern] = {};
+          target.___outboundSubscriptionsF[propertyKey][pattern] = [];
         if (
+          target.___outboundSubscriptionsF[propertyKey] &&
+          target.___outboundSubscriptionsF[propertyKey][pattern] &&
           target.___outboundSubscriptionsF[propertyKey][pattern].indexOf(conn) <
-          0
+            0
         ) {
           target.___outboundSubscriptionsF[propertyKey][pattern].push(conn);
         }
