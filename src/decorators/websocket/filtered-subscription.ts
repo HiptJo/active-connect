@@ -4,7 +4,7 @@ import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
 export function SubscribeMatchingChanges(filter: MessageFilter) {
   return function subscribe(target: any, propertyKey: string): any {
     // initialize routeDefinition
-    if (!target.___registerSubscriptionF) target.___registerSubscription = {};
+    if (!target.___registerSubscriptionF) target.___registerSubscriptionF = {};
     target.___registerSubscriptionF[propertyKey] = true;
 
     const original = target[propertyKey].bind(target.___data);
@@ -82,7 +82,7 @@ function registerSubscription(target: any, propertyKey: string, pattern: any) {
     target.___wsoutbound[propertyKey] + ":" + pattern,
     async function onAddOutboundSubscription() {
       if (
-        target.___outboundSubscriptions &&
+        target.___outboundSubscriptionsF &&
         target.___outboundSubscriptionsF[propertyKey]
       ) {
         const connections: Array<WebsocketConnection> =
