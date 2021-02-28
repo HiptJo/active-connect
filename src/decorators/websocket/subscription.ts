@@ -24,7 +24,11 @@ export function SubscribeChanges(target: any, propertyKey: string): any {
     let conn: WebsocketConnection;
     conn = data[0];
     const res = await original(...data);
-    if (res != "error:auth:unauthorized") {
+    if (
+      res &&
+      !res.toString().startsWith("auth:unauthorized") &&
+      !res.toString().startsWith("error:auth:unauthorized")
+    ) {
       // subscribe for changes
       if (target.___outboundSubscriptions[propertyKey].indexOf(conn) < 0) {
         target.___outboundSubscriptions[propertyKey].push(conn);

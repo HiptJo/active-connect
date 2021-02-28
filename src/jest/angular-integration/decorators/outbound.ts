@@ -7,6 +7,7 @@ export function Outbound(method: string, requestingRequired?: boolean) {
     // property annotation
     WebsocketClient.expectOutbound(method, function setOutbound(data: any) {
       if (!target.___received) target.___received = {};
+      if (!target.___data) target.___data = {};
       target.___received[propertyKey] = true;
       target.___data[propertyKey] = data;
     });
@@ -16,7 +17,7 @@ export function Outbound(method: string, requestingRequired?: boolean) {
       get() {
         if (!target.___received) target.___received = {};
         if (!target.___received[propertyKey] && requestingRequired) {
-          WebsocketClient.send("request." + method, null).then();
+          this.client.send("request." + method, null).then();
         }
         if (!target.___data) target.___data = {};
         if (!target.loading) target.loading = {};

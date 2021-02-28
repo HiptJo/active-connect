@@ -14,9 +14,13 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
   ): Promise<boolean> {
     // check if responsible for handling
     if (request.path === this.method) {
-      const response = await this.call(request);
-      if (response != "error:auth:unauthorized") {
-        request.connection.send(`m.${request.path}`, response);
+      const res = await this.call(request);
+      if (
+        res &&
+        !res.toString().startsWith("auth:unauthorized") &&
+        !res.toString().startsWith("error:auth:unauthorized")
+      ) {
+        request.connection.send(`m.${request.path}`, res);
       }
       return true;
     }

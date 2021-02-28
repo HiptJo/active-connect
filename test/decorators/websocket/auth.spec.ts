@@ -1,5 +1,6 @@
 import {
   Auth,
+  Modifies,
   Outbound,
   Route,
   Shared,
@@ -103,6 +104,26 @@ it("should be possible to use authenticators for outbounds (out decorator first)
   WebsocketOutbound.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.example1");
+  expect(data).toStrictEqual({ value: "anything" });
+});
+it("should be possible to use authenticators for requestable outbounds (out decorator first)", async () => {
+  class Out {
+    @Outbound("out.example1.a", true)
+    @Auth(new Authenticator())
+    @Modifies("xyz.asdf.asldkfasjkldföklas")
+    async send(conn: WebsocketConnection) {
+      return { value: "anything" };
+    }
+  }
+  expect(Out).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+
+  WebsocketOutbound.sendToConnection(conn);
+  await new WebsocketRouter().route(
+    new WebsocketRequest("request.out.example1.a", null, conn)
+  );
+  const data = await conn.awaitMessage("out.example1.a");
   expect(data).toStrictEqual({ value: "anything" });
 });
 it("should be possible to use authenticators for outbounds (auth decorator first)", async () => {
