@@ -393,6 +393,8 @@ it.only("should be possible to catch error", async () => {
   const router = new WebsocketRouter();
   const conn = WebsocketMocks.getConnectionStub();
 
-  router.route(new WebsocketRequest("throws.t", null, conn));
-  await conn.awaitMessage("m.error");
+  try {
+    router.route(new WebsocketRequest("throws.t", null, conn));
+    await conn.awaitMessage("m.error");
+  } catch (e) {}
 });

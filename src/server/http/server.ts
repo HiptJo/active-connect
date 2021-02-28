@@ -44,11 +44,12 @@ export class HttpServer {
   }
 
   private initializeHttpMethods() {
+    const t = this;
     HttpServer.getMethods.forEach(function registerGetMethod(get) {
-      this.app.get(get.method, get.callback);
+      t.app.get(get.method, get.callback);
     });
     HttpServer.postMethods.forEach(function registerPostMethod(post) {
-      this.app.post(post.method, post.callback);
+      t.app.post(post.method, post.callback);
     });
   }
 
@@ -92,42 +93,40 @@ export class HttpServer {
   private credentials: Array<{ user: string; password: string }> = new Array();
   public enableBasicAuthentication() {
     if (!this.basicAuthenticationEnabled) {
+      const t = this;
       this.basicAuthenticationEnabled = true;
-      this.app.use(
-        (
-          req: express.Request,
-          res: express.Response,
-          next: express.NextFunction
-        ) => {
-          if ("OPTIONS" == req.method) {
-            res.send("{}");
+      this.app.use(function auth(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+      ) {
+        if ("OPTIONS" == req.method) {
+          res.send("{}");
+        } else {
+          // -----------------------------------------------------------------------
+          // authentication middleware
+          const b64auth = (req.headers.authorization || "").split(" ")[1] || "";
+          const [user, password] = Buffer.from(b64auth, "base64")
+            .toString()
+            .split(":");
+
+          // Verify user and password are set and correct
+          const authorized = t.credentials.filter(
+            (a) => a.user == user && a.password == password
+          );
+
+          if (authorized.length > 0) {
+            // Access granted...
+            return next();
           } else {
-            // -----------------------------------------------------------------------
-            // authentication middleware
-            const b64auth =
-              (req.headers.authorization || "").split(" ")[1] || "";
-            const [user, password] = Buffer.from(b64auth, "base64")
-              .toString()
-              .split(":");
-
-            // Verify user and password are set and correct
-            const authorized = this.credentials.filter(
-              (a) => a.user == user && a.password == password
-            );
-
-            if (authorized.length > 0) {
-              // Access granted...
-              return next();
-            } else {
-              // Access denied...
-              res.set("WWW-Authenticate", 'Basic realm="401"'); // change this
-              res.status(401).send("Authentication required."); // custom message
-              return;
-            }
+            // Access denied...
+            res.set("WWW-Authenticate", 'Basic realm="401"'); // change this
+            res.status(401).send("Authentication required."); // custom message
+            return;
           }
-          return next();
         }
-      );
+        return next();
+      });
     }
   }
   public addBasicCredentials(user: string, password: string) {
@@ -136,8 +135,9 @@ export class HttpServer {
 
   private initializeFileProvider() {
     const sendFile = this.sendFile;
+    const t = this;
     HttpServer.fileProvider.forEach(function provideFileForEach(provider) {
-      this.app.get(
+      t.app.get(
         `/file/${provider.label}/:id/:auth`,
         async function provideFile(
           req: express.Request,
@@ -148,7 +148,7 @@ export class HttpServer {
           await sendFile(res, provider, id, auth);
         }
       );
-      this.app.get(
+      t.app.get(
         `/file/${provider.label}/:id`,
         async function provideFileWithoutAuth(
           req: express.Request,
@@ -158,7 +158,7 @@ export class HttpServer {
           await sendFile(res, provider, id);
         }
       );
-      this.app.get(
+      t.app.get(
         `/file/${provider.label}`,
         async function provideFileWithoutId(
           req: express.Request,
@@ -171,8 +171,9 @@ export class HttpServer {
   }
   private initializeImageProvider() {
     const sendImage = this.sendImage;
+    const t = this;
     HttpServer.imageProvider.forEach(function registerImageProvider(provider) {
-      this.app.get(
+      t.app.get(
         `/image/${provider.label}/:id/:auth`,
         async function provideFile(
           req: express.Request,
@@ -183,7 +184,7 @@ export class HttpServer {
           await sendImage(res, provider, id, auth);
         }
       );
-      this.app.get(
+      t.app.get(
         `/image/${provider.label}/:id`,
         async function provideFileWithoutAuth(
           req: express.Request,
@@ -193,7 +194,7 @@ export class HttpServer {
           await sendImage(res, provider, id);
         }
       );
-      this.app.get(
+      t.app.get(
         `/image/${provider.label}`,
         async function provideFileWithoutId(
           req: express.Request,
@@ -247,8 +248,9 @@ export class HttpServer {
   }
   public async awaitStart(): Promise<boolean> {
     if (this.isServerStarted) return true;
+    const t = this;
     return new Promise(function onServerStarted(resolve) {
-      this.serverStartedResolves.push(resolve);
+      t.serverStartedResolves.push(resolve);
     });
   }
 
