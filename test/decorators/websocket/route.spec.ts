@@ -3,8 +3,6 @@ import {
   Shared,
   SubscribeChanges,
   Outbound,
-  WebsocketAuthenticator,
-  Auth,
 } from "../../../src/active-connect";
 import {
   Route,
