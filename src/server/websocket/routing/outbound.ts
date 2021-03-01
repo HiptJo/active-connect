@@ -40,22 +40,36 @@ export class WebsocketOutbound {
     }
     return null;
   }
-  private static outboundSubscriptions: Map<string, () => void> = new Map();
+  private static outboundSubscriptions: Map<
+    string,
+    () => Promise<void>
+  > = new Map();
   public static addOutboundSubscription(
     outbound: string,
-    sendUpdates: () => void
+    sendUpdates: () => Promise<void>
   ) {
     WebsocketOutbound.outboundSubscriptions.set(outbound, sendUpdates);
   }
   public static async sendUpdates(routes: Array<string>, pattern?: any) {
-    await Promise.all(
-      routes.map(function sendUpdatesForRoute(route) {
-        const out = WebsocketOutbound.outboundSubscriptions.get(
-          pattern ? route + ":" + pattern : route
-        );
-        if (out) return out();
-      })
-    );
+    const p: Promise<any>[] = routes.map(function sendUpdatesForRoute(route) {
+      const out = WebsocketOutbound.outboundSubscriptions.get(
+        pattern ? route + ":" + pattern : route
+      );
+      if (out) return out();
+      return new Promise<void>((resolve) => {
+        resolve();
+      });
+    });
+    if (p.length > 0) {
+      // await first update
+      await p[0];
+    }
+    if (p.length > 1) {
+      // send other updates without awaiting
+      for (let i = 1; i < p.length; i++) {
+        p[i].then();
+      }
+    }
   }
 
   private static connectionDisconnectHandler: Array<
