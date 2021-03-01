@@ -37,7 +37,7 @@ export function SubscribeMatchingChanges(filter: MessageFilter) {
         !res.toString().startsWith("auth:unauthorized") &&
         !res.toString().startsWith("error:auth:unauthorized")
       ) {
-        const pattern = filter.filter(res);
+        const pattern = await filter.filter(res, conn);
         registerSubscription(target, propertyKey, pattern);
 
         // subscribe for changes
@@ -57,6 +57,7 @@ export function SubscribeMatchingChanges(filter: MessageFilter) {
     if (target.___wsoutbound && target.___wsoutbound[propertyKey]) {
       // outbound has been registered already, add subscription
     }
+    return target;
   };
 }
 
@@ -70,7 +71,10 @@ export function ModifiesMatching(
       ...params: Array<any>
     ) {
       const data = await original(...params);
-      await WebsocketOutbound.sendUpdates(routes, filter.filter(params[0]));
+      await WebsocketOutbound.sendUpdates(
+        routes,
+        await filter.filter(params[0], params[1])
+      );
       return data;
     };
     return target;
@@ -103,5 +107,8 @@ function registerSubscription(target: any, propertyKey: string, pattern: any) {
 }
 
 export interface MessageFilter {
-  filter(response: any | any[]): number;
+  filter(
+    response: any | any[],
+    connection: WebsocketConnection
+  ): number | Promise<number>;
 }
