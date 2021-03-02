@@ -21,7 +21,7 @@ export class HttpServer {
 
     if (this.supportWebsocket) {
       this.initializeWebsocket();
-      this.App.get("wss", (req: express.Request, res: express.Response) => {
+      this.App.get("/wss", (req: express.Request, res: express.Response) => {
         res.status(200);
         res.end("wss entrypoint");
       });
