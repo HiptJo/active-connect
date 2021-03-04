@@ -4,7 +4,7 @@ import { WebsocketRouter } from "../../server/websocket/routing/router";
 
 export class TCWrapper extends WebsocketConnection {
   public static router = new WebsocketRouter();
-  private client: WebsocketClient;
+  protected client: WebsocketClient;
   public constructor(token?: string | undefined) {
     super(null);
     this.token = token || null;
