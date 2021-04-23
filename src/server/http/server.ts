@@ -153,6 +153,17 @@ export class HttpServer {
         }
       );
       t.app.get(
+        `/file/${provider.label}/:id/:auth/:filename`,
+        async function provideFile(
+          req: express.Request,
+          res: express.Response
+        ) {
+          const id = req.params.id;
+          const auth = req.params.auth;
+          await sendFile(res, provider, id, auth);
+        }
+      );
+      t.app.get(
         `/file/${provider.label}/:id`,
         async function provideFileWithoutAuth(
           req: express.Request,
