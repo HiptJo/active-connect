@@ -11,7 +11,20 @@ This project is developed right now. Stay tuned.
 ## Annotations
 
 ```javascript
-@Route("xy",baseRoute?) for class and function
+@Outbound("libraries")
+@SubscribeChanges
+function asdf() {
+
+}
+
+@Route("updatelibrary")
+@Modifies("libraries")
+function update(lib) {
+
+}
+
+
+for class and function
 @StandaloneRoute("xy.xy",baseRoute?)
 @Outbound("xy",requireRequesting?: boolean) for function
 @Auth(x extends WebsocketAuthenticator)
