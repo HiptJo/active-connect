@@ -41,7 +41,14 @@ export class WebsocketServer {
 
   private connections: Array<WebsocketConnection> = [];
   private onConnect(connection: WebSocket) {
-    this.connections.push(new WebsocketConnection(connection));
+    const conn = new WebsocketConnection(connection);
+    this.connections.push(conn);
+    connection.on("close", this.onClose(conn).bind(this));
+  }
+  private onClose(connection: WebsocketConnection) {
+    return () => {
+      this.connections = this.connections.filter((c) => c.id != connection.id);
+    };
   }
 
   public close() {
