@@ -16,6 +16,7 @@ export class HttpServer {
   }
   private server: http.Server;
   private websocket: WebsocketServer;
+
   constructor(private port: number, private supportWebsocket: boolean) {
     this.initializeServer();
 
@@ -298,6 +299,10 @@ export class HttpServer {
     callback: (req: Express.Request, res: Express.Response) => void
   ) {
     HttpServer.postMethods.push(new HttpMethod(method, callback));
+  }
+
+  public getWebsocketInstance(): WebsocketServer | null {
+    return this.websocket;
   }
 
   public stop() {

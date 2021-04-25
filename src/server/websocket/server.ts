@@ -35,6 +35,10 @@ export class WebsocketServer {
     };
   }
 
+  public getConnections(): Array<WebsocketConnection> {
+    return this.connections;
+  }
+
   private connections: Array<WebsocketConnection> = [];
   private onConnect(connection: WebSocket) {
     this.connections.push(new WebsocketConnection(connection));
