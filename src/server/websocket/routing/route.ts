@@ -48,9 +48,8 @@ export class WebsocketRoute {
     if (path.length === 1 && path[0] === this.method) {
       const res = await this.call(request);
       if (
-        !res ||
-        (!res.toString().startsWith("auth:unauthorized") &&
-          !res.toString().startsWith("error:auth:unauthorized"))
+        !res.toString().startsWith("auth:unauthorized") &&
+        !res.toString().startsWith("error:auth:unauthorized")
       ) {
         request.connection.send(`m.${request.path}`, res);
       }
