@@ -20,6 +20,16 @@ describe("connection testing (stub)", () => {
       });
     conn.send("message.testing", value);
   });
+  it("should be possible to send false", (d) => {
+    const value = false;
+    conn
+      .awaitMessage<{ value: string }>("message.testing")
+      .then((data: { value: string }) => {
+        assert.strictEqual(data, value);
+        d();
+      });
+    conn.send("message.testing", value);
+  });
   it("should be possible to await sent data", async () => {
     const value = { value: "i am okay" };
 

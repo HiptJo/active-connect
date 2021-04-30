@@ -152,6 +152,28 @@ it("should be possible to call any method", async () => {
   expect(data2).toBe(2);
 });
 
+it("should be possible to return false", async () => {
+  @Route("testfalse")
+  class Testing {
+    @Route("m1")
+    method1(data: any, conn: WebsocketConnection) {
+      return false;
+    }
+  }
+  expect(Testing).toBeDefined();
+
+  const base = WebsocketRouter.Routes.filter((r) => r.Method == "testfalse");
+  expect(base).toHaveLength(1);
+  expect(base[0].Children).toHaveLength(1);
+
+  const conn = WebsocketMocks.getConnectionStub();
+  const router = new WebsocketRouter();
+
+  await router.route(new WebsocketRequest("testfalse.m1", null, conn));
+  const data1 = await conn.awaitMessage("m.testfalse.m1");
+  expect(data1).toBe(false);
+});
+
 it("should be possible to create a standalone routed method", () => {
   class Testing {
     @StandaloneRoute("standalone.route")

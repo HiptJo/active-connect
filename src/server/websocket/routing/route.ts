@@ -121,9 +121,8 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
     if (request.path === this.method) {
       const res = await this.call(request);
       if (
-        res &&
-        !res.toString().startsWith("auth:unauthorized") &&
-        !res.toString().startsWith("error:auth:unauthorized")
+        !(res && res.toString().startsWith("auth:unauthorized")) &&
+        !(res && res.toString().startsWith("error:auth:unauthorized"))
       ) {
         request.connection.send(`m.${request.path}`, res);
       }
