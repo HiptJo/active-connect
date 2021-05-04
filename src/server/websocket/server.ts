@@ -2,6 +2,9 @@ import { Server as HttpServer } from "http";
 import { Server, ServerOptions } from "ws";
 import { WebsocketConnection } from "./connection/connection";
 import * as WebSocket from "ws";
+import { WebsocketRouter } from "./routing/router";
+import { StandaloneRoute } from "../../decorators/websocket/route";
+import { StandaloneWebsocketRoute } from "./routing/route";
 
 export class WebsocketServer {
   private server: Server;
@@ -11,6 +14,7 @@ export class WebsocketServer {
   private initializeWebsocketServer() {
     this.server = new Server(this.getConfiguration());
     this.server.on("connection", this.onConnect.bind(this));
+    this.initializeClientInformationExchange();
   }
   private getConfiguration(): ServerOptions {
     return {
@@ -33,6 +37,21 @@ export class WebsocketServer {
         threshold: 1024, // Size (in bytes) below which messages should not be compressed.
       },
     };
+  }
+
+  private initializeClientInformationExchange() {
+    WebsocketRouter.registerStandaloneRoute(
+      new StandaloneWebsocketRoute(
+        "___browser",
+        this.onClientInformationReceived.bind(this)
+      )
+    );
+  }
+  private onClientInformationReceived(
+    info: { browser: string },
+    conn: WebsocketConnection
+  ) {
+    conn.clientInformation.browser = info.browser;
   }
 
   public getConnections(): Array<WebsocketConnection> {
