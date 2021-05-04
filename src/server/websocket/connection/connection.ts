@@ -62,7 +62,7 @@ export class WebsocketConnection {
     location: string | undefined;
     browser: string | undefined;
   } {
-    const ip = (this.connection as any)._socket?.remoteAddress || "";
+    const ip = (this.connection as any)?._socket?.remoteAddress || "";
     const ipLookupResult = lookup(ip);
     let location = undefined;
     if (ipLookupResult) {

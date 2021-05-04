@@ -3,7 +3,6 @@ import { Server, ServerOptions } from "ws";
 import { WebsocketConnection } from "./connection/connection";
 import * as WebSocket from "ws";
 import { WebsocketRouter } from "./routing/router";
-import { StandaloneRoute } from "../../decorators/websocket/route";
 import { StandaloneWebsocketRoute } from "./routing/route";
 
 export class WebsocketServer {
