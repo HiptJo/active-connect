@@ -25,9 +25,11 @@
     "prepublish": "npm run build"
   },
   "dependencies": {
+    "@types/geoip-lite": "^1.4.1",
     "compression": "^1.7.4",
     "express": "^4.17.1",
     "fs-extra": "9.0.1",
+    "geoip-lite": "^1.4.2",
     "jest": "^26.6.3",
     "rimraf": "^3.0.2",
     "supertest": "^6.1.3",

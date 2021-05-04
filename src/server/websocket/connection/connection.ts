@@ -1,3 +1,4 @@
+import { lookup } from "geoip-lite";
 import * as WebSocket from "ws";
 import { WebsocketRequest } from "../message/request";
 import { WebsocketOutbound } from "../routing/outbound";
@@ -22,6 +23,8 @@ export class WebsocketConnection {
         connection.ping();
       }, 45000);
     }
+
+    this.clientInformation = this.prepareClientInformation();
   }
 
   private initializeListeners() {
@@ -53,4 +56,24 @@ export class WebsocketConnection {
     if (this.connection)
       this.connection.send(JSON.stringify({ method: method, value: value }));
   }
+
+  private prepareClientInformation(): {
+    ip: string;
+    location: string | undefined;
+    browser: string | undefined;
+  } {
+    const ip = (this.connection as any)?._socket?.remoteAddress || "";
+    const ipLookupResult = lookup(ip);
+    let location = undefined;
+    if (ipLookupResult) {
+      location = ipLookupResult.city + " / " + ipLookupResult.country;
+    }
+    return { ip, location, browser: undefined };
+  }
+
+  public readonly clientInformation: {
+    ip: string;
+    location: string | undefined;
+    browser: string | undefined;
+  };
 }
