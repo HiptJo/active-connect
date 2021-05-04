@@ -76,4 +76,13 @@ export class WebsocketConnection {
     location: string | undefined;
     browser: string | undefined;
   };
+
+  public setIp(ip: string) {
+    this.clientInformation.ip = ip;
+    const ipLookupResult = lookup(ip);
+    if (ipLookupResult) {
+      this.clientInformation.location =
+        ipLookupResult.city + " / " + ipLookupResult.country;
+    }
+  }
 }

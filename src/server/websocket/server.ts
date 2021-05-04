@@ -45,12 +45,18 @@ export class WebsocketServer {
         this.onClientInformationReceived.bind(this)
       )
     );
+    WebsocketRouter.registerStandaloneRoute(
+      new StandaloneWebsocketRoute("___ip", this.onClientIpReceived.bind(this))
+    );
   }
   private onClientInformationReceived(
     info: { browser: string },
     conn: WebsocketConnection
   ) {
     conn.clientInformation.browser = info.browser;
+  }
+  private onClientIpReceived(ip: string, conn: WebsocketConnection) {
+    conn.setIp(ip);
   }
 
   public getConnections(): Array<WebsocketConnection> {
