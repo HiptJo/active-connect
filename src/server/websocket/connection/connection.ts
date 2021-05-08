@@ -1,8 +1,9 @@
-import { lookup } from "geoip-lite";
 import * as WebSocket from "ws";
+
 import { WebsocketRequest } from "../message/request";
 import { WebsocketOutbound } from "../routing/outbound";
 import { WebsocketRouter } from "../routing/router";
+import { WebsocketServer } from "../server";
 
 export class WebsocketConnection {
   private static AUTO_INCREMENT = 0;
@@ -63,10 +64,12 @@ export class WebsocketConnection {
     browser: string | undefined;
   } {
     const ip = (this.connection as any)?._socket?.remoteAddress || "";
-    const ipLookupResult = lookup(ip);
     let location = undefined;
-    if (ipLookupResult) {
-      location = ipLookupResult.city + " / " + ipLookupResult.country;
+    if (WebsocketServer.fetchIpLocation) {
+      const ipLookupResult = WebsocketConnection.getLookup()(ip);
+      if (ipLookupResult) {
+        location = ipLookupResult.city + " / " + ipLookupResult.country;
+      }
     }
     return { ip, location, browser: undefined };
   }
@@ -79,10 +82,20 @@ export class WebsocketConnection {
 
   public setIp(ip: string) {
     this.clientInformation.ip = ip;
-    const ipLookupResult = lookup(ip);
-    if (ipLookupResult) {
-      this.clientInformation.location =
-        ipLookupResult.city + " / " + ipLookupResult.country;
+    if (WebsocketServer.fetchIpLocation) {
+      const ipLookupResult = WebsocketConnection.getLookup()(ip);
+      if (ipLookupResult) {
+        this.clientInformation.location =
+          ipLookupResult.city + " / " + ipLookupResult.country;
+      }
     }
+  }
+
+  private static lookup: any | null;
+  protected static getLookup() {
+    if (!WebsocketConnection.lookup) {
+      WebsocketConnection.lookup = require("geoip-lite").lookup;
+    }
+    return WebsocketConnection.lookup;
   }
 }

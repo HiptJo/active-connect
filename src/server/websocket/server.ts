@@ -1,9 +1,10 @@
 import { Server as HttpServer } from "http";
 import { Server, ServerOptions } from "ws";
-import { WebsocketConnection } from "./connection/connection";
 import * as WebSocket from "ws";
-import { WebsocketRouter } from "./routing/router";
+
+import { WebsocketConnection } from "./connection/connection";
 import { StandaloneWebsocketRoute } from "./routing/route";
+import { WebsocketRouter } from "./routing/router";
 
 export class WebsocketServer {
   private server: Server;
@@ -14,6 +15,13 @@ export class WebsocketServer {
     this.server = new Server(this.getConfiguration());
     this.server.on("connection", this.onConnect.bind(this));
     this.initializeClientInformationExchange();
+  }
+  private static _fetchIpLocation = false;
+  public static get fetchIpLocation(): boolean {
+    return WebsocketServer._fetchIpLocation;
+  }
+  public static enableIpLocationFetching() {
+    WebsocketServer._fetchIpLocation = true;
   }
   private getConfiguration(): ServerOptions {
     return {
