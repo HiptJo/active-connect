@@ -124,7 +124,11 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
         !(res && res.toString().startsWith("auth:unauthorized")) &&
         !(res && res.toString().startsWith("error:auth:unauthorized"))
       ) {
-        request.connection.send(`m.${request.path}`, res);
+        request.connection.send(
+          `m.${request.path}`,
+          res,
+          request.messageId || -1
+        );
       }
       return true;
     }

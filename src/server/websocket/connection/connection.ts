@@ -38,7 +38,7 @@ export class WebsocketConnection {
   protected onMessage(message: string) {
     const data = JSON.parse(message);
     WebsocketConnection.router.route(
-      new WebsocketRequest(data.method, data.value, this)
+      new WebsocketRequest(data.method, data.value, this, data.messageId || 0)
     );
   }
   private onError(message: string) {
@@ -53,9 +53,15 @@ export class WebsocketConnection {
     WebsocketOutbound.sendToConnection(this);
   }
 
-  public send(method: string, value: any) {
+  public send(method: string, value: any, messageId?: number | null) {
     if (this.connection)
-      this.connection.send(JSON.stringify({ method: method, value: value }));
+      this.connection.send(
+        JSON.stringify({
+          method: method,
+          value: value,
+          messageId: messageId || -1,
+        })
+      );
   }
 
   private prepareClientInformation(): {
