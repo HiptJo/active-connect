@@ -34,7 +34,7 @@ export class TCWrapper extends WebsocketConnection {
       }
     }
     if (method == "m.error") throw value;
-    this.client.messageReceived({ method, data: value });
+    this.client.messageReceived({ method, data: value, messageId: null });
   }
 
   async expectMethod(method: string): Promise<any> {
