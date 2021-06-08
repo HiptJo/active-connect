@@ -5,8 +5,6 @@ export class WebsocketRequest {
     public path: string,
     public data: any,
     public connection: WebsocketConnection,
-    public messageId?: number | null
-  ) {
-    if (!this.messageId) messageId = null;
-  }
+    public messageId?: number
+  ) {}
 }

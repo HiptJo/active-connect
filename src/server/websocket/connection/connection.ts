@@ -37,6 +37,8 @@ export class WebsocketConnection {
   }
   protected onMessage(message: string) {
     const data = JSON.parse(message);
+    if (!data.messageId)
+      throw Error("No Message-ID has been received by the server.");
     WebsocketConnection.router.route(
       new WebsocketRequest(data.method, data.value, this, data.messageId || 0)
     );

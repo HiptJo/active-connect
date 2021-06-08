@@ -31,3 +31,14 @@ export function Outbound(
     return target;
   };
 }
+/*
+// @todo add dataPool base decorator
+export function Pool(cls: any, attrs: any) {
+  return class extends cls {
+    constructor() {
+      throw "hehe i intercepted";
+      super();
+    }
+  };
+}
+*/

@@ -13,10 +13,11 @@ export class TCWrapper extends WebsocketConnection {
     const _this = this;
     this.client.defineSocketCallback(async function callback(
       method: string,
-      data: any
+      data: any,
+      messageId: number
     ) {
       return await TCWrapper.router.route(
-        new WebsocketRequest(method, data, _this)
+        new WebsocketRequest(method, data, _this, messageId)
       );
     });
   }
@@ -26,7 +27,7 @@ export class TCWrapper extends WebsocketConnection {
     func: Function;
   }[] = [];
 
-  send(method: string, value: any) {
+  send(method: string, value: any, messageId?: number) {
     if (this.stack.length > 0) {
       if (this.stack[0].method == method) {
         this.stack.shift()?.func(value);
@@ -34,7 +35,7 @@ export class TCWrapper extends WebsocketConnection {
       }
     }
     if (method == "m.error") throw value;
-    this.client.messageReceived({ method, data: value, messageId: null });
+    this.client.messageReceived({ method, data: value, messageId });
   }
 
   async expectMethod(method: string): Promise<any> {

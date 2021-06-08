@@ -96,13 +96,15 @@ describe("error management", () => {
   });
 });
 
-it("should be possible to request a outbound using the requesting method", async () => {
+it.only("should be possible to request a outbound using the requesting method", async () => {
+  // @injectAttributes
   class Testing {
     @Outbound("test.requesting.out", true)
     async send() {
       return "data";
     }
   }
+  new Testing();
   expect(Testing).toBeDefined();
 
   const conn = WebsocketMocks.getConnectionStub();
