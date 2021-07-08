@@ -34,8 +34,16 @@ export class WebsocketClient {
     });
   }
 
+  private messageId: number = 0;
+
   send(method: string, data: any) {
-    this.connection.send(JSON.stringify({ method: method, value: data }));
+    this.connection.send(
+      JSON.stringify({
+        method: method,
+        value: data,
+        messageId: ++this.messageId,
+      })
+    );
   }
 
   close() {
