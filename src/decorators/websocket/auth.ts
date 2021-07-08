@@ -16,7 +16,12 @@ export function Auth(auth: WebsocketAuthenticator) {
       } else {
         // check if it is a route (not a outlet)
         if (!(target.___wsoutbound && target.___wsoutbound[propertyKey])) {
-          conn.send("m.error", "auth:unauthorized:" + auth.label);
+          conn.send(
+            "m.error",
+            "Die Aktion wurde nicht durchgeführt. Haben Sie die notwendigen Berechtigungen? (" +
+              auth.label +
+              ")"
+          );
         }
         return "error:auth:unauthorized";
       }
