@@ -69,12 +69,13 @@ export class WebsocketConnection {
   }
 
   public send(method: string, value: any, messageId?: number | null) {
-    const message = JSON.stringify({
+    let message = JSON.stringify({
       method: method,
       value: value,
       messageId: messageId || -1,
     });
     if (this.logging) {
+      if (message.length > 200) message = message.slice(0, 200);
       console.log(
         "Sending message: " +
           message +
