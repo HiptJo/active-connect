@@ -28,6 +28,11 @@ export class WebsocketConnection {
     this.clientInformation = this.prepareClientInformation();
   }
 
+  private logging = false;
+  public enableLogging() {
+    this.logging = true;
+  }
+
   private initializeListeners() {
     if (this.connection) {
       this.connection.on("message", this.onMessage.bind(this));
@@ -36,6 +41,14 @@ export class WebsocketConnection {
     }
   }
   protected onMessage(message: string) {
+    if (this.logging) {
+      console.log(
+        "Received message: " +
+          message +
+          " for Client with Session-Token=" +
+          this.token
+      );
+    }
     const data = JSON.parse(message);
     if (!data.messageId)
       throw Error("No Message-ID has been received by the server.");
@@ -56,14 +69,20 @@ export class WebsocketConnection {
   }
 
   public send(method: string, value: any, messageId?: number | null) {
-    if (this.connection)
-      this.connection.send(
-        JSON.stringify({
-          method: method,
-          value: value,
-          messageId: messageId || -1,
-        })
+    const message = JSON.stringify({
+      method: method,
+      value: value,
+      messageId: messageId || -1,
+    });
+    if (this.logging) {
+      console.log(
+        "Sending message: " +
+          message +
+          " for Client with Session-Token=" +
+          this.token
       );
+    }
+    if (this.connection) this.connection.send(message);
   }
 
   private prepareClientInformation(): {

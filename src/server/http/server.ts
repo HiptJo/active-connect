@@ -1,13 +1,14 @@
+import * as compression from "compression";
 import * as express from "express";
+import * as fs from "fs-extra";
 import * as http from "http";
+
 import { ProvidedFile } from "../../content/files/provided-file";
 import { ProvidedImage } from "../../content/images/provided-image";
 import { WebsocketServer } from "../websocket/server";
 import { FileProvider } from "./file-provider";
 import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
-import * as compression from "compression";
-import * as fs from "fs-extra";
 
 export class HttpServer {
   private app: express.Application;
@@ -56,6 +57,10 @@ export class HttpServer {
     HttpServer.postMethods.forEach(function registerPostMethod(post) {
       t.app.post(post.method, post.callback);
     });
+  }
+
+  public enableLogging() {
+    this.websocket.enableLogging();
   }
 
   private indexCache: Buffer | undefined;

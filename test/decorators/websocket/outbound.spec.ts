@@ -96,7 +96,7 @@ describe("error management", () => {
   });
 });
 
-it.only("should be possible to request a outbound using the requesting method", async () => {
+it("should be possible to request a outbound using the requesting method", async () => {
   // @injectAttributes
   class Testing {
     @Outbound("test.requesting.out", true)

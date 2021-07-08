@@ -1,4 +1,5 @@
 import * as ws from "ws";
+
 export class WebsocketClient {
   private connection: ws;
   constructor(port: number) {

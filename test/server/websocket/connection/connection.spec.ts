@@ -1,7 +1,8 @@
-import { HttpServer, Route } from "../../../../src/active-connect";
-import { WebsocketClient } from "../../websocket-client";
 import * as assert from "assert";
+
+import { HttpServer, Route } from "../../../../src/active-connect";
 import { WebsocketConnection } from "../../../../src/server/websocket/connection/connection";
+import { WebsocketClient } from "../../websocket-client";
 
 let client: WebsocketClient;
 let server: HttpServer;

@@ -16,6 +16,10 @@ export class WebsocketServer {
     this.server.on("connection", this.onConnect.bind(this));
     this.initializeClientInformationExchange();
   }
+  private logging = false;
+  public enableLogging() {
+    this.logging = true;
+  }
   private static _fetchIpLocation = false;
   public static get fetchIpLocation(): boolean {
     return WebsocketServer._fetchIpLocation;
@@ -23,6 +27,7 @@ export class WebsocketServer {
   public static enableIpLocationFetching() {
     WebsocketServer._fetchIpLocation = true;
   }
+
   private getConfiguration(): ServerOptions {
     return {
       server: this.httpServer,
@@ -74,6 +79,7 @@ export class WebsocketServer {
   private connections: Array<WebsocketConnection> = [];
   private onConnect(connection: WebSocket) {
     const conn = new WebsocketConnection(connection);
+    if (this.logging) conn.enableLogging();
     this.connections.push(conn);
     connection.on("close", this.onClose(conn).bind(this));
   }
