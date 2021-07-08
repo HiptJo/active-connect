@@ -46,7 +46,8 @@ export class WebsocketConnection {
         "Received message: " +
           message +
           " for Client with Session-Token=" +
-          this.token
+          this.token?.slice(0, 10) +
+          "..."
       );
     }
     const data = JSON.parse(message);
@@ -74,13 +75,15 @@ export class WebsocketConnection {
       value: value,
       messageId: messageId || -1,
     });
-    if (this.logging) {
+    if (this.logging && method.startsWith("m.")) {
+      // only log replies
       if (message.length > 200) message = message.slice(0, 200);
       console.log(
         "Sending message: " +
           message +
           " for Client with Session-Token=" +
-          this.token
+          this.token?.slice(0, 10) +
+          "..."
       );
     }
     if (this.connection) this.connection.send(message);
