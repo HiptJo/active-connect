@@ -76,11 +76,12 @@ export class WebsocketConnection {
       messageId: messageId || -1,
     });
     if (this.logging && method.startsWith("m.")) {
+      let messageLog = message;
       // only log replies
-      if (message.length > 200) message = message.slice(0, 200);
+      if (messageLog.length > 200) messageLog = messageLog.slice(0, 200);
       console.log(
         "Sending message: " +
-          message +
+          messageLog +
           " for Client with Session-Token=" +
           this.token?.slice(0, 10) +
           "..."
