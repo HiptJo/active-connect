@@ -87,7 +87,9 @@ it("should recejt a unauthorized request", async () => {
   const router = new WebsocketRouter();
   await router.route(new WebsocketRequest("testrj.m2", null, conn));
   const data = await conn.awaitMessage("m.error");
-  expect(data).toBe("auth:unauthorized:test-auth");
+  expect(data).toBe(
+    "Die Aktion wurde nicht durchgeführt. Haben Sie die notwendigen Berechtigungen? (test-auth)"
+  );
 });
 it("should be possible to use authenticators for outbounds (out decorator first)", async () => {
   class Out {
