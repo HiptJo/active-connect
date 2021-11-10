@@ -1,5 +1,6 @@
 import * as compression from "compression";
 import * as express from "express";
+import * as bodyParser from "body-parser";
 import * as fs from "fs-extra";
 import * as http from "http";
 
@@ -36,6 +37,7 @@ export class HttpServer {
   private isServerStarted: boolean = false;
   private initializeServer() {
     this.app = express();
+    this.app.use(bodyParser.urlencoded({ extended: true }));
     const t = this;
     this.server = this.app.listen(this.port, function serverStarted() {
       t.isServerStarted = true;
