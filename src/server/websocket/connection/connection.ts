@@ -125,6 +125,9 @@ export class WebsocketConnection {
 
   private static lookup: any | null;
   protected static getLookup() {
+    if (process.env.jest) {
+      return () => "location";
+    }
     if (!WebsocketConnection.lookup) {
       WebsocketConnection.lookup = require("geoip-lite").lookup;
     }
