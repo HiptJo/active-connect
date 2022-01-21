@@ -1,6 +1,8 @@
 import * as test from "supertest";
+
 import { HttpServer, ProvideImage } from "../../../src/active-connect";
 import { ProvidedFile } from "../../../src/content/files/provided-file";
+import { ProvidedImage } from "../../../src/content/images/provided-image";
 
 let server: HttpServer;
 afterEach(() => {
@@ -10,11 +12,10 @@ it("should be possible to register a file provider", async () => {
   class Testing {
     @ProvideImage("sampleimage")
     public async getSampleFile(): Promise<ProvidedFile> {
-      return new ProvidedFile(
-        100,
-        "provided:samplefile",
-        "i am some plain text",
-        "plain/text"
+      return ProvidedImage.getFromDataURL(
+        "data:image/png;base64,iVasdfasdfasdf",
+        1,
+        ""
       );
     }
   }
@@ -25,6 +26,5 @@ it("should be possible to register a file provider", async () => {
     .get("/image/sampleimage")
     .then((response) => {
       expect(response.status).toBe(200);
-      expect(response.text).toBe("i am some plain text");
     });
 });
