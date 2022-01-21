@@ -258,7 +258,7 @@ export class HttpServer {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
       });
-      res.end(data.data);
+      res.end(data.data, "base64");
     } catch (e) {
       res.sendStatus(404);
     }
