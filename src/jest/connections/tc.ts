@@ -1,6 +1,7 @@
 import { WebsocketClient } from "..";
 import { WebsocketConnection, WebsocketRequest } from "../../active-connect";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
+import * as randomstring from "randomstring";
 
 export class TCWrapper extends WebsocketConnection {
   public static router = new WebsocketRouter();
@@ -9,6 +10,10 @@ export class TCWrapper extends WebsocketConnection {
     super(null);
     this.token = token || null;
     this.client = new WebsocketClient();
+
+    this.clientInformation.ip = randomstring.generate(20);
+    this.clientInformation.location = randomstring.generate(20);
+    this.clientInformation.browser = "jest";
 
     const _this = this;
     this.client.defineSocketCallback(async function callback(
