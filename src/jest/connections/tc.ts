@@ -2,6 +2,7 @@ import { WebsocketClient } from "..";
 import { WebsocketConnection, WebsocketRequest } from "../../active-connect";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 import * as randomstring from "randomstring";
+import { JsonParser } from "../../json/json-parser";
 
 export class TCWrapper extends WebsocketConnection {
   public static router = new WebsocketRouter();
@@ -33,14 +34,16 @@ export class TCWrapper extends WebsocketConnection {
   }[] = [];
 
   send(method: string, value: any, messageId?: number) {
+    // parsing the string provides real data situation (date parsing, ...)
+    const parsedValue = JsonParser.parse(JsonParser.stringify(value));
     if (this.stack.length > 0) {
       if (this.stack[0].method == method) {
-        this.stack.shift()?.func(value);
+        this.stack.shift()?.func(parsedValue);
         if (method == "m.error") return;
       }
     }
-    if (method == "m.error") throw value;
-    this.client.messageReceived({ method, data: value, messageId });
+    if (method == "m.error") throw new Error(parsedValue);
+    this.client.messageReceived({ method, data: parsedValue, messageId });
   }
 
   async expectMethod(method: string): Promise<any> {

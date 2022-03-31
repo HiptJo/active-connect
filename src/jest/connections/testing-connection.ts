@@ -1,4 +1,5 @@
 import { WebsocketConnection } from "../../active-connect";
+import { JsonParser } from "../../json/json-parser";
 import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
 
 export abstract class TestingConnectionWrapper<T> extends WebsocketConnection {
@@ -17,12 +18,14 @@ export abstract class TestingConnectionWrapper<T> extends WebsocketConnection {
   abstract handleReceivedMessages(data: { method: string; value: any }): void;
 
   public send(method: string, value: T) {
-    this.handleReceivedMessages({ method, value });
+    // parsing the string provides real data situation (date parsing, ...)
+    const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+    this.handleReceivedMessages({ method, value: parsedValue });
     if (method == this.expectedMethod && !this.expectedMethodCalled) {
-      this.callback(value);
+      this.callback(parsedValue);
       this.expectedMethodCalled = true;
     } else if (method == "message.error") {
-      fail(value);
+      fail(parsedValue);
     }
   }
 
