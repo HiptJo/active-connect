@@ -18,6 +18,9 @@ export class JsonParser {
   }
 
   static parse(str: string) {
-    return JSON.parse(str, JsonParser.parsingFunction);
+    if (str && str != "undefined") {
+      return JSON.parse(str, JsonParser.parsingFunction);
+    }
+    return str;
   }
 }
