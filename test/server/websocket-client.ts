@@ -1,4 +1,5 @@
 import * as ws from "ws";
+import { JsonParser } from "../../src/json/json-parser";
 
 export class WebsocketClient {
   private connection: ws;
@@ -12,7 +13,7 @@ export class WebsocketClient {
         resolve(true);
       });
       this.connection.on("message", (message: string) => {
-        const data = JSON.parse(message);
+        const data = JsonParser.parse(message);
         if (this.expectedMessages.has(data.method)) {
           const callback = this.expectedMessages.get(data.method);
           this.expectedMessages.delete(data.method);
@@ -39,7 +40,7 @@ export class WebsocketClient {
 
   send(method: string, data: any) {
     this.connection.send(
-      JSON.stringify({
+      JsonParser.stringify({
         method: method,
         value: data,
         messageId: ++this.messageId,

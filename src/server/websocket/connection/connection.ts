@@ -1,4 +1,5 @@
 import * as WebSocket from "ws";
+import { JsonParser } from "../../../json/json-parser";
 
 import { WebsocketRequest } from "../message/request";
 import { WebsocketOutbound } from "../routing/outbound";
@@ -50,7 +51,7 @@ export class WebsocketConnection {
           "..."
       );
     }
-    const data = JSON.parse(message);
+    const data = JsonParser.parse(message);
     if (!data.messageId)
       throw Error("No Message-ID has been received by the server.");
     WebsocketConnection.router.route(
@@ -70,7 +71,7 @@ export class WebsocketConnection {
   }
 
   public send(method: string, value: any, messageId?: number | null) {
-    let message = JSON.stringify({
+    let message = JsonParser.stringify({
       method: method,
       value: value,
       messageId: messageId || -1,
