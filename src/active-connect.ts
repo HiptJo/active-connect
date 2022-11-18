@@ -6,6 +6,7 @@ export * from "./decorators/websocket/route";
 export * from "./decorators/websocket/auth";
 export * from "./decorators/websocket/filtered-subscription";
 export * from "./decorators/websocket/subscription";
+export * from "./decorators/websocket/connection-closed";
 export * from "./decorators/websocket/shared";
 export * from "./decorators/content/provide-file";
 export * from "./decorators/content/provide-image";

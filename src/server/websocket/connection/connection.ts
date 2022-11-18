@@ -7,6 +7,11 @@ import { WebsocketRouter } from "../routing/router";
 import { WebsocketServer } from "../server";
 
 export class WebsocketConnection {
+  private static closeHandlers: Function[] = [];
+  public static addCloseHandler(callback: Function) {
+    WebsocketConnection.closeHandlers.push(callback);
+  }
+
   private static AUTO_INCREMENT = 0;
   public _id: number = ++WebsocketConnection.AUTO_INCREMENT;
   get id(): number {
@@ -64,6 +69,7 @@ export class WebsocketConnection {
   private onClose() {
     clearInterval(this.interval);
     WebsocketOutbound.clearConnectionSubscriptions(this);
+    WebsocketConnection.closeHandlers.forEach((c) => c(this));
   }
 
   private sendWelcomeMessages() {
