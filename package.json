@@ -1,6 +1,6 @@
 {
   "name": "active-connect",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Connection framework built for smart web-based projects using NodeJS, Angular and Websockets.",
   "author": "Jonas Hiptmair <office@hiptmairit.at>",
   "keywords": [
@@ -32,6 +32,7 @@
     "fs-extra": "9.0.1",
     "geoip-lite": "^1.4.2",
     "jest": "^26.6.3",
+    "node-cron": "^3.0.2",
     "randomstring": "^1.2.2",
     "rimraf": "^3.0.2",
     "supertest": "^6.1.3",
