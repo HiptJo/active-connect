@@ -54,4 +54,12 @@ export class TCWrapper extends WebsocketConnection {
       });
     });
   }
+
+  timeout(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    });
+  }
 }
