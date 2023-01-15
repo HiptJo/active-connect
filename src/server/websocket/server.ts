@@ -58,8 +58,9 @@ export class WebsocketServer {
         this.onClientInformationReceived.bind(this)
       )
     );
+    // deprecated - backward support (avoid undefined route ___ip)
     WebsocketRouter.registerStandaloneRoute(
-      new StandaloneWebsocketRoute("___ip", this.onClientIpReceived.bind(this))
+      new StandaloneWebsocketRoute("___ip", () => {})
     );
   }
   private onClientInformationReceived(
@@ -68,17 +69,17 @@ export class WebsocketServer {
   ) {
     conn.clientInformation.browser = info.browser;
   }
-  private onClientIpReceived(ip: string, conn: WebsocketConnection) {
-    conn.setIp(ip);
-  }
 
   public getConnections(): Array<WebsocketConnection> {
     return this.connections;
   }
 
   private connections: Array<WebsocketConnection> = [];
-  private onConnect(connection: WebSocket) {
+  private onConnect(connection: WebSocket, req: any) {
     const conn = new WebsocketConnection(connection);
+    if (req) {
+      conn.setIp(req.headers["x-forwarded-for"] || req.socket.remoteAddress);
+    }
     if (this.logging) conn.enableLogging();
     this.connections.push(conn);
     connection.on("close", this.onClose(conn).bind(this));
