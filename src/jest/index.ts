@@ -6,3 +6,4 @@ export * from "./angular-integration/decorators/handle";
 export * from "./angular-integration/decorators/outbound";
 export * from "./angular-integration/decorators/route";
 export * from "./angular-integration/loading-status";
+export * from "./angular-integration/decorators/on-success";
