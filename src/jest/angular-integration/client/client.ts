@@ -60,6 +60,7 @@ export class WebsocketClient {
     if (callback) {
       this.expectedMethods.delete(messageId);
       callback(data);
+      this.invokeSuccessHandlers(method);
     } else {
       callback = this.expectedMethods.get(method);
       if (callback) {
@@ -95,4 +96,21 @@ export class WebsocketClient {
   }
 
   isConnected = true;
+
+  private static onSuccessHandlers: { callback: Function; regexp: RegExp }[] =
+    [];
+  public static onSuccess(callback: Function, regexp: RegExp) {
+    this.onSuccessHandlers.push({ callback, regexp });
+  }
+
+  private invokeSuccessHandlers(method: string) {
+    WebsocketClient.onSuccessHandlers
+      .filter((e) => e.regexp.test(method))
+      .forEach((e) => {
+        var res = e.callback();
+        if (res && res.then) {
+          res.then();
+        }
+      });
+  }
 }
