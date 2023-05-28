@@ -1,5 +1,7 @@
 "use strict";
 
+// @todo these export statements should be splitted into different locations
+
 export { HttpServer } from "./server/http/server";
 export * from "./decorators/websocket/outbound";
 export * from "./decorators/websocket/route";
@@ -19,3 +21,10 @@ export * from "./server/websocket/connection/connection";
 export * from "./server/websocket/auth/authenticator";
 export * from "./server/websocket/message/request";
 export * from "./server/websocket/server";
+export * from "./server/http/file-provider";
+export * from "./server/http/image-provider";
+export * from "./server/http/http-method";
+export * from "./server/websocket/routing/router";
+export * from "./server/websocket/routing/route";
+export * from "./content/files/provided-file";
+export * from "./content/images/provided-image";
