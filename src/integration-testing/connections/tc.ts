@@ -1,5 +1,5 @@
 import { WebsocketClient } from "..";
-import { WebsocketConnection, WebsocketRequest } from "../../active-connect";
+import { WebsocketConnection, WebsocketRequest } from "../..";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 import * as randomstring from "randomstring";
 import { JsonParser } from "../../json/json-parser";

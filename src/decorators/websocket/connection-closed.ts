@@ -1,4 +1,4 @@
-import { WebsocketConnection } from "../../active-connect";
+import { WebsocketConnection } from "../..";
 
 export function OnWebsocketConnectionClosed(target: any, propertyKey: string) {
   // class annotation

@@ -1,4 +1,4 @@
-import { WebsocketConnection } from "../../active-connect";
+import { WebsocketConnection } from "../..";
 import { JsonParser } from "../../json/json-parser";
 import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
 
