@@ -46,6 +46,14 @@ export class TCWrapper extends WebsocketConnection {
     this.client.messageReceived({ method, data: parsedValue, messageId });
   }
 
+  /**
+   * This method is used to react to a specific message in a test case.
+   * The promises will be resolved in the order of the expected methods.
+   * All previously expected methods have to be received, before the method is expected.
+   *
+   * @param method - A message with this method is expected.
+   * @returns Promise, that is resolved once the provided method is received.
+   */
   async expectMethod(method: string): Promise<any> {
     return new Promise((func) => {
       this.stack.push({
@@ -55,6 +63,21 @@ export class TCWrapper extends WebsocketConnection {
     });
   }
 
+  /**
+   * This method is used to catch an error message.
+   *
+   * @returns Promise, that is resolved once a `m.error` message is received.
+   */
+  async expectError(): Promise<any> {
+    return await this.expectMethod("m.error");
+  }
+
+  /**
+   * Wait a given amount of ms during a test case.
+   *
+   * @param ms - Time duration in milliseconds before the promise is resolved.
+   * @returns Promise, that is resolved after the given amount of milliseconds.
+   */
   timeout(ms: number): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(() => {
