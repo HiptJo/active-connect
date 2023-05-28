@@ -1,10 +1,2 @@
-export * from "./angular-mocks/ng-router";
-export * from "./connections/testing-connection";
-export * from "./connections/tc";
-export * from "./angular-integration/client/client";
-export * from "./angular-integration/decorators/handle";
-export * from "./angular-integration/decorators/outbound";
-export * from "./angular-integration/decorators/route";
-export * from "./angular-integration/loading-status";
-export * from "./angular-integration/decorators/on-success";
+export * from "../integration-testing"; // this is used to ensure backward-compatibility
 export * from "./jest-tools/test-each";
