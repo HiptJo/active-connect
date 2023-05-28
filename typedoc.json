@@ -1,5 +1,5 @@
 {
   // Comments are supported, like tsconfig.json
-  "entryPoints": ["src/active-connect.ts", "src/jest/index.ts"],
+  "entryPoints": ["src/*/index.ts"],
   "out": "docs"
 }
