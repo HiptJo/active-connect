@@ -22,9 +22,11 @@
     "test:prod": "jest --passWithNoTests --detectOpenHandles --forceExit",
     "coverage": "jest --passWithNoTests --detectOpenHandles --forceExit --coverage",
     "tsc": "tsc",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "docs": "typedoc"
   },
   "dependencies": {
+    "@microsoft/tsdoc": "^0.14.2",
     "@types/geoip-lite": "^1.4.1",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
@@ -50,7 +52,8 @@
     "@types/jest": "^26.0.20",
     "@types/randomstring": "^1.1.8",
     "@types/supertest": "^2.0.10",
-    "@types/ws": "^7.4.0"
+    "@types/ws": "^7.4.0",
+    "typedoc": "^0.24.7"
   },
   "repository": {
     "type": "git",
