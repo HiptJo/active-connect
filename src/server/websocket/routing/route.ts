@@ -6,9 +6,7 @@ export class WebsocketRoute {
   protected method: string;
   constructor(
     method: string,
-    protected func:
-      | ((data: any | void, connection: WebsocketConnection) => void | any)
-      | null,
+    protected objConfig: { target: any; propertyKey: string },
     private modifiesAuthentication?: boolean
   ) {
     this.Method = method;
@@ -20,16 +18,34 @@ export class WebsocketRoute {
   public set Method(method: string) {
     if (method.indexOf(".") >= 0)
       throw Error(
-        `Websocket Routing: method must not contain a separator (.) ${this.method}`
+        `Websocket Routing: method must not contain a separator "." in method "${this.method}"`
       );
     this.method = method;
+  }
+
+  private getBindObject(): any {
+    if (!this.objConfig.target.___data?._obj) {
+      if (!this.objConfig.target.___data) {
+        this.objConfig.target.___data = {};
+      }
+      this.objConfig.target.___data._obj =
+        new this.objConfig.target.constructor();
+    }
+    return this.objConfig.target.___data._obj;
   }
 
   public get Func(): (
     data: any | void,
     connection: WebsocketConnection
-  ) => void {
-    return this.func;
+  ) => Function {
+    if (
+      this.objConfig?.target &&
+      this.objConfig.target[this.objConfig.propertyKey]
+    )
+      return this.objConfig.target[this.objConfig.propertyKey].bind(
+        this.getBindObject()
+      );
+    return null;
   }
 
   protected children: Array<WebsocketRoute> = [];
@@ -84,9 +100,9 @@ export class WebsocketRoute {
   }
 
   protected async call(request: WebsocketRequest): Promise<any> {
-    if (this.func) {
+    if (this.Func) {
       try {
-        const data = await this.func(request.data, request.connection);
+        const data = await this.Func(request.data, request.connection);
         if (this.modifiesAuthentication)
           WebsocketOutbound.resendDataAfterAuth(request.connection).then();
         return data;
@@ -102,13 +118,10 @@ export class WebsocketRoute {
 export class StandaloneWebsocketRoute extends WebsocketRoute {
   constructor(
     method: string,
-    func:
-      | ((data: any | void, connection: WebsocketConnection) => void | any)
-      | null,
+    objConfig: { target: any; propertyKey: string },
     modifiesAuthentication?: boolean
   ) {
-    super(method, func, modifiesAuthentication);
-    this.Method = method;
+    super(method, objConfig, modifiesAuthentication);
   }
 
   public set Method(method: string) {

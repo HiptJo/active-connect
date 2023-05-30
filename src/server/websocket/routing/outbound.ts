@@ -20,15 +20,14 @@ export class WebsocketOutbound {
     WebsocketOutbound.outbounds.push(outbound);
     if (outbound.requestingRequired) {
       WebsocketRouter.registerStandaloneRoute(
-        new StandaloneWebsocketRoute(
-          `request.${outbound.method}`,
-          async function fetchOutboundData(
-            data: any,
-            conn: WebsocketConnection
-          ) {
-            await WebsocketOutbound.requestOutbound(outbound.method, conn);
-          }
-        )
+        new StandaloneWebsocketRoute(`request.${outbound.method}`, {
+          target: class Fetch {
+            async fetch(data: any, conn: WebsocketConnection) {
+              await WebsocketOutbound.requestOutbound(outbound.method, conn);
+            }
+          },
+          propertyKey: "fetch",
+        })
       );
     }
   }
@@ -40,10 +39,8 @@ export class WebsocketOutbound {
     }
     return null;
   }
-  private static outboundSubscriptions: Map<
-    string,
-    () => Promise<void>
-  > = new Map();
+  private static outboundSubscriptions: Map<string, () => Promise<void>> =
+    new Map();
   public static addOutboundSubscription(
     outbound: string,
     sendUpdates: () => Promise<void>

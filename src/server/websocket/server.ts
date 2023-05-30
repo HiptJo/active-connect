@@ -60,7 +60,12 @@ export class WebsocketServer {
     );
     // deprecated - backward support (avoid undefined route ___ip)
     WebsocketRouter.registerStandaloneRoute(
-      new StandaloneWebsocketRoute("___ip", () => {})
+      new StandaloneWebsocketRoute("___ip", {
+        target: class target {
+          ip() {}
+        }.prototype,
+        propertyKey: "ip",
+      })
     );
   }
   private onClientInformationReceived(

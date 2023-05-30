@@ -26,9 +26,10 @@ export function Route(
             route.addChild(
               new WebsocketRoute(
                 child.method,
-                target.prototype[child.propertyKey].bind(
-                  target.prototype.___data
-                ),
+                {
+                  target,
+                  propertyKey,
+                },
                 child.modifiesAuthentication
               )
             );
@@ -46,7 +47,7 @@ export function Route(
       if (baseRoute) {
         // overrideBaseRoute
         WebsocketRouter.getRouteByMethod(baseRoute).addChild(
-          new WebsocketRoute(method, target[propertyKey].bind(target.___data))
+          new WebsocketRoute(method, { target, propertyKey })
         );
       } else {
         // add route to class

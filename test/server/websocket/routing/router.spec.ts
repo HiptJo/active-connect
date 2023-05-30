@@ -14,13 +14,15 @@ beforeEach(() => {
 
 it("should be possible to register a route", (d) => {
   const original = { value: "ok" };
-  const route = new WebsocketRoute(
-    "testing",
-    (data: any, connection: WebsocketConnection) => {
-      expect(data).toStrictEqual(original);
-      d();
-    }
-  );
+  const route = new WebsocketRoute("testing", {
+    target: {
+      f: (data: any, connection: WebsocketConnection) => {
+        expect(data).toStrictEqual(original);
+        d();
+      },
+    },
+    propertyKey: "f",
+  });
   WebsocketRouter.registerRoute(route);
   const router = new WebsocketRouter();
   const conn = WebsocketMocks.getConnectionStub();
@@ -58,9 +60,14 @@ it("should be possible to route to a child", (d) => {
   const original = { value: "ok5" };
   const route = new WebsocketRoute("testing", null);
   route.addChild(
-    new WebsocketRoute("c", (data: any, conn: WebsocketConnection) => {
-      expect(data).toBe(original);
-      d();
+    new WebsocketRoute("c", {
+      target: {
+        f: (data: any, connection: WebsocketConnection) => {
+          expect(data).toBe(original);
+          d();
+        },
+      },
+      propertyKey: "f",
     })
   );
   WebsocketRouter.registerRoute(route);
@@ -100,13 +107,15 @@ it("should throw when routing a non-existing baseroute", (d) => {
 
 it("should be possible to call a route without data", async (d) => {
   const original: null = null;
-  const route = new WebsocketRoute(
-    "testing",
-    (data: any, connection: WebsocketConnection) => {
-      expect(data).toStrictEqual(original);
-      d();
-    }
-  );
+  const route = new WebsocketRoute("testing", {
+    target: {
+      f: (data: any, connection: WebsocketConnection) => {
+        expect(data).toStrictEqual(original);
+        d();
+      },
+    },
+    propertyKey: "f",
+  });
   WebsocketRouter.registerRoute(route);
   const router = new WebsocketRouter();
   const conn = WebsocketMocks.getConnectionStub();
@@ -117,11 +126,13 @@ it("should be possible to call a route without data", async (d) => {
 
 it("should be possible to register a standalone route", () => {
   WebsocketRouter.registerStandaloneRoute(
-    new StandaloneWebsocketRoute(
-      "method.standalone",
-      (data: any, conn: WebsocketConnection) => {
-        return { value: "standalone" };
-      }
-    )
+    new StandaloneWebsocketRoute("method.standalone", {
+      target: {
+        f: (data: any, connection: WebsocketConnection) => {
+          return { value: "standalone" };
+        },
+      },
+      propertyKey: "f",
+    })
   );
 });
