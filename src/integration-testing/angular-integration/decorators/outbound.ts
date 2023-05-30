@@ -38,3 +38,43 @@ export function Outbound(method: string, requestingRequired?: boolean) {
     };
   };
 }
+
+// @todo add this model to the outbound decorator
+export class OutboundModel<T> {
+  private data: T | undefined = undefined;
+  private requested: boolean = false;
+  private requestingRequired: boolean = false;
+  private loading: boolean = false;
+
+  constructor(requestingRequired?: boolean) {
+    if (requestingRequired) {
+      this.requestingRequired = true;
+    }
+  }
+
+  public get Data() {
+    if (this.requestingRequired && !this.requested) {
+      this.requestData();
+    }
+    if (this.data == undefined) {
+      this.loading = true;
+    } else {
+      this.loading = false;
+    }
+    return this.data;
+  }
+  public set Data(data: T) {
+    this.data = data;
+  }
+
+  public get hasData() {
+    return this.data != undefined;
+  }
+  public get isLoading() {
+    return !this.hasData && this.loading;
+  }
+
+  private requestData() {
+    this.requested = true;
+  }
+}
