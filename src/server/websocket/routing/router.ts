@@ -17,59 +17,34 @@ export class WebsocketRouter {
   public static get StandaloneRoutes(): Array<StandaloneWebsocketRoute> {
     return WebsocketRouter.standaloneRoutes;
   }
+
   public static getRouteByMethod(method: string): WebsocketRoute {
-    // check for standalone method
     const standalone = WebsocketRouter.standaloneRoutes.filter(
-      (r) => r.Method == method
+      (r) => method == r.Method
     );
     if (standalone.length > 0) {
       return standalone[0];
     }
 
-    // check for other methods
-    const parts = method.split(".");
-    let route: WebsocketRoute;
-    for (const part of parts) {
-      if (!route) {
-        const routes = WebsocketRouter.routes.filter((r) => r.Method == part);
-        if (routes.length > 0) {
-          route = routes[0];
-        } else
-          throw Error(
-            `Websocket Routing: Could not find route by method ${method}`
-          );
+    var routes = WebsocketRouter.routes;
+    var selectedRoute: WebsocketRoute = null;
+    var parts = method.split(".");
+    parts.forEach((part) => {
+      var res = routes.filter((r) => r.Method == part);
+      if (res.length > 0) {
+        selectedRoute = res[0];
+        routes = selectedRoute.Children;
       } else {
-        const routes = route.Children.filter((r) => r.Method == part);
-        if (routes.length > 0) {
-          route = routes[0];
-        } else
-          throw Error(
-            `Websocket Routing: Could not find route by method ${method}`
-          );
+        throw Error(
+          `Websocket Routing: Could not find route by method "${method}"`
+        );
       }
-    }
-    return route;
+    });
+    return selectedRoute;
   }
 
   public async route(request: WebsocketRequest) {
-    // check for standalone methods
-    // check for standalone method
-    const standalone = WebsocketRouter.standaloneRoutes.filter(
-      (r) => request.path.indexOf(r.Method) == 0
-    );
-    if (standalone.length > 0) {
-      if (await standalone[0].route(request, [request.path])) {
-        return true;
-      }
-    }
-
-    for (const child of WebsocketRouter.routes) {
-      if (await child.route(request, request.path.split("."))) {
-        return true;
-      }
-    }
-    throw Error(
-      `Websocket Routing: Could not find route by method ${request.path}`
-    );
+    const route = WebsocketRouter.getRouteByMethod(request.method);
+    return await route.route(request, [route.Method]);
   }
 }
