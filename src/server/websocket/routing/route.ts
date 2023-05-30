@@ -1,14 +1,15 @@
-import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
+import { DecorableFunction } from "./function";
 import { WebsocketOutbound } from "./outbound";
 
-export class WebsocketRoute {
+export class WebsocketRoute extends DecorableFunction {
   protected method: string;
   constructor(
     method: string,
-    protected objConfig: { target: any; propertyKey: string },
+    objConfig: { target: any; propertyKey: string },
     private modifiesAuthentication?: boolean
   ) {
+    super(objConfig);
     this.Method = method;
   }
 
@@ -21,31 +22,6 @@ export class WebsocketRoute {
         `Websocket Routing: method must not contain a separator "." in method "${method}"`
       );
     this.method = method;
-  }
-
-  private getBindObject(): any {
-    if (!this.objConfig.target.___data) {
-      this.objConfig.target.___data = {};
-    }
-    if (!this.objConfig.target.___data._obj) {
-      this.objConfig.target.___data._obj =
-        new this.objConfig.target.constructor();
-    }
-    return this.objConfig.target.___data._obj;
-  }
-
-  public get Func(): (
-    data: any | void,
-    connection: WebsocketConnection
-  ) => Function {
-    if (
-      this.objConfig?.target &&
-      this.objConfig.target[this.objConfig.propertyKey]
-    )
-      return this.objConfig.target[this.objConfig.propertyKey].bind(
-        this.getBindObject()
-      );
-    return null;
   }
 
   protected children: Array<WebsocketRoute> = [];

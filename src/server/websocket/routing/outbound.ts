@@ -1,17 +1,21 @@
 import { WebsocketConnection } from "../connection/connection";
+import { DecorableFunction } from "./function";
 import { StandaloneWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
+
 export interface WebsocketAuthorizationCheckable {
   checkAuth(authToken: string): Promise<boolean>;
 }
 
-export class Outbound {
+export class Outbound extends DecorableFunction {
   constructor(
     public method: string,
-    public func: (connection: WebsocketConnection) => Promise<any>,
+    objConfig: { target: any; propertyKey: string },
     public requestingRequired?: boolean,
     public resendAfterAuthentication?: boolean
-  ) {}
+  ) {
+    super(objConfig);
+  }
 }
 
 export class WebsocketOutbound {
@@ -25,7 +29,7 @@ export class WebsocketOutbound {
             async fetch(data: any, conn: WebsocketConnection) {
               await WebsocketOutbound.requestOutbound(outbound.method, conn);
             }
-          },
+          }.prototype,
           propertyKey: "fetch",
         })
       );
@@ -39,14 +43,17 @@ export class WebsocketOutbound {
     }
     return null;
   }
+
   private static outboundSubscriptions: Map<string, () => Promise<void>> =
     new Map();
+
   public static addOutboundSubscription(
     outbound: string,
     sendUpdates: () => Promise<void>
   ) {
     WebsocketOutbound.outboundSubscriptions.set(outbound, sendUpdates);
   }
+
   public static async sendUpdates(routes: Array<string>, pattern?: any) {
     const p: Promise<any>[] = routes.map(function sendUpdatesForRoute(route) {
       let out = WebsocketOutbound.outboundSubscriptions.get(
@@ -66,6 +73,10 @@ export class WebsocketOutbound {
         resolve();
       });
     });
+
+    // the first of the registered outbounds should be sent at first
+    // the other ones are sent later on
+    // this is used to ensure good performance
     if (p.length > 0) {
       // await first update
       await p[0];
@@ -106,7 +117,7 @@ export class WebsocketOutbound {
     connection: WebsocketConnection
   ) {
     try {
-      const res = await outbound.func(connection);
+      const res = await outbound.Func(null, connection);
       if (
         res &&
         !res.toString().startsWith("auth:unauthorized") &&

@@ -1,75 +1,106 @@
-import { WebsocketConnection } from "../../../../src/server/websocket/connection/connection";
+import { WebsocketRequest, WebsocketRouter } from "../../../../src";
 import {
   Outbound,
   WebsocketOutbound,
 } from "../../../../src/server/websocket/routing/outbound";
-import * as assert from "assert";
 import { WebsocketMocks } from "../../websocket-mocks";
 beforeEach(() => {
   WebsocketOutbound.clear();
 });
-it("should be possible to create a new outbound", () => {
-  const outbound = new Outbound(
-    "testing.delivery",
-    async (conn: WebsocketConnection) => {
-      return {
-        value: "ok",
-      };
-    }
-  );
-  assert(outbound);
-});
-it("should be possible to send a outbound", async () => {
-  WebsocketOutbound.addOutbound(
-    new Outbound("testing.delivery", async () => {
-      return {
-        value: "ok",
-      };
-    })
-  );
 
-  const conn = WebsocketMocks.getConnectionStub();
+class target {
+  out() {
+    return {
+      value: "ok",
+    };
+  }
+  requestable() {
+    return { value: "ok-requested" };
+  }
 
-  WebsocketOutbound.sendToConnection(conn);
+  private data = "default";
+  sendData() {
+    return this.data;
+  }
+  setData(data: string) {
+    this.data = data;
+  }
+}
 
-  const data: any = await conn.awaitMessage("testing.delivery");
-  assert.strictEqual(data.value, "ok");
-});
-
-it("should be possible to receive a requesting outbound", async () => {
+beforeEach(() => {
   WebsocketOutbound.addOutbound(
     new Outbound(
-      "testing.requested",
-      async () => {
-        return {
-          value: "ok1",
-        };
-      },
-      true
+      "data",
+      { target: target.prototype, propertyKey: "sendData" },
+      false,
+      false
     )
   );
-  const conn = WebsocketMocks.getConnectionStub();
-  const outbound = new WebsocketOutbound();
-  outbound.requestOutbound("testing.requested", conn);
-
-  const data: any = await conn.awaitMessage("testing.requested");
-  assert.strictEqual(data.value, "ok1");
 });
 
-it("should not be any outbound defined at the beginning", () => {
-  expect(WebsocketOutbound.count).toBe(0);
-});
+describe("default outbound", () => {
+  it("should be possible to create a new outbound", () => {
+    const outbound = new Outbound("testing.delivery", {
+      target: target.prototype,
+      propertyKey: "out",
+    });
+    expect(outbound).toBeDefined();
+    WebsocketOutbound.addOutbound(outbound);
+    expect(WebsocketOutbound.getOutbound("testing.delivery")).toBe(outbound);
+  });
+  it("should be possible to send a outbound", async () => {
+    const outbound = new Outbound("testing.delivery", {
+      target: target.prototype,
+      propertyKey: "out",
+    });
 
-it("should throw when requesting a non-existing outbound", (d) => {
-  WebsocketOutbound.clear();
-  const conn = WebsocketMocks.getConnectionStub();
-  const outbound = new WebsocketOutbound();
-  outbound.requestOutbound("testing1.notfound", conn).catch(() => {
-    d();
+    WebsocketOutbound.addOutbound(outbound);
+
+    const conn = WebsocketMocks.getConnectionStub();
+    WebsocketOutbound.sendToConnection(conn);
+
+    const data: any = await conn.awaitMessage("testing.delivery");
+    expect(data.value).toBe("ok");
+  });
+
+  it("should throw when requesting a non-existing outbound", async () => {
+    WebsocketOutbound.clear();
+    const conn = WebsocketMocks.getConnectionStub();
+    const outbound = new WebsocketOutbound();
+    await expect(
+      outbound.requestOutbound("testing1.notfound", conn)
+    ).rejects.toThrow();
+  });
+  it("should return false when fetching a non-existing outbound by method", () => {
+    expect(WebsocketOutbound.getOutbound("idonotexist")).toBeFalsy();
   });
 });
-it("should return false when fetching a non-existing outbound by method", () => {
-  expect(WebsocketOutbound.getOutbound("idonotexist")).toBeFalsy();
+
+describe("lazy-loading outbound", () => {
+  it("should be possible to receive a requesting outbound", async () => {
+    WebsocketOutbound.addOutbound(
+      new Outbound(
+        "testing.requestable",
+        { target: target.prototype, propertyKey: "requestable" },
+        true
+      )
+    );
+    const conn = WebsocketMocks.getConnectionStub();
+    const router = new WebsocketRouter();
+    router.route(
+      new WebsocketRequest("request.testing.requestable", null, conn)
+    );
+    const data: any = await conn.awaitMessage("testing.requestable");
+    expect(data.value).toBe("ok-requested");
+  });
 });
 
-it.todo("should resend data after calling a route with resendAuth tag");
+describe("subscription testing", () => {
+  it.todo("should re-send high-priority data to subscribed connections");
+  it.todo("should re-send low-priority data to subscribed connections");
+});
+
+describe("after-auth resend testing", () => {
+  it.todo("should be possible to manually trigger auth resend");
+  it.todo("should resend data after calling a route with resendAuth tag");
+});
