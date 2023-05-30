@@ -71,3 +71,5 @@ it("should throw when requesting a non-existing outbound", (d) => {
 it("should return false when fetching a non-existing outbound by method", () => {
   expect(WebsocketOutbound.getOutbound("idonotexist")).toBeFalsy();
 });
+
+it.todo("should resend data after calling a route with resendAuth tag");

@@ -18,16 +18,16 @@ export class WebsocketRoute {
   public set Method(method: string) {
     if (method.indexOf(".") >= 0)
       throw Error(
-        `Websocket Routing: method must not contain a separator "." in method "${this.method}"`
+        `Websocket Routing: method must not contain a separator "." in method "${method}"`
       );
     this.method = method;
   }
 
   private getBindObject(): any {
-    if (!this.objConfig.target.___data?._obj) {
-      if (!this.objConfig.target.___data) {
-        this.objConfig.target.___data = {};
-      }
+    if (!this.objConfig.target.___data) {
+      this.objConfig.target.___data = {};
+    }
+    if (!this.objConfig.target.___data._obj) {
       this.objConfig.target.___data._obj =
         new this.objConfig.target.constructor();
     }
@@ -60,7 +60,6 @@ export class WebsocketRoute {
     request: WebsocketRequest,
     path: Array<string>
   ): Promise<boolean> {
-    // check if responsible for handling
     if (path.length === 1 && path[0] === this.method) {
       const res = await this.call(request);
       if (
@@ -108,10 +107,10 @@ export class WebsocketRoute {
         return data;
       } catch (e) {
         request.connection.send("m.error", e?.message || e);
-        if (!process.env.jest) throw e;
+        if (!process.env.jest) throw e.charAt ? Error(e) : e;
       }
     } else
-      throw Error("Websocket: Function not defined for route " + this.method);
+      throw Error(`Websocket: Function not defined for route "${this.method}"`);
   }
 }
 
@@ -136,7 +135,9 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
   ): Promise<boolean> {
     // check if responsible for handling
     if (request.path === this.method) {
-      const res = await this.call(request);
+      const res = await this.call(request).catch((error) => {
+        throw error;
+      });
       if (
         !(res && res.toString().startsWith("auth:unauthorized")) &&
         !(res && res.toString().startsWith("error:auth:unauthorized"))
@@ -151,5 +152,11 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
     }
 
     return false;
+  }
+
+  public addChild(child: WebsocketRoute) {
+    throw Error(
+      "Websocket: child routes are not supported for standalone routes"
+    );
   }
 }

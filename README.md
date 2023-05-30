@@ -34,3 +34,7 @@ for class and function
 @ProvidesFile(label) + ProvidedFile
 @ProvidesImage(label) + ProvidedImage
 ```
+
+
+# testing
+doc: when in testing run, add env flag to avoid exceptions; env: `jest=true`
