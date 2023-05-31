@@ -66,9 +66,8 @@ describe("default outbound", () => {
   it("should throw when requesting a non-existing outbound", async () => {
     WebsocketOutbound.clear();
     const conn = WebsocketMocks.getConnectionStub();
-    const outbound = new WebsocketOutbound();
     await expect(
-      outbound.requestOutbound("testing1.notfound", conn)
+      WebsocketOutbound.requestOutbound("testing1.notfound", conn)
     ).rejects.toThrow();
   });
   it("should return false when fetching a non-existing outbound by method", () => {
@@ -96,8 +95,41 @@ describe("lazy-loading outbound", () => {
 });
 
 describe("subscription testing", () => {
-  it.todo("should re-send high-priority data to subscribed connections");
-  it.todo("should re-send low-priority data to subscribed connections");
+  describe("default subscription", () => {
+    it.todo(
+      "should create a subscription on accessing the data (eager loading)"
+    );
+    it.todo(
+      "should create a subscription on accessing the data (lazy loading)"
+    );
+    it.todo("should re-send high-priority data to subscribed connections");
+    it.todo("should re-send low-priority data to subscribed connections");
+    it.todo("should resend high-priority data for subscribed connections");
+    it.todo("should resend low-priority data for subscribed connections");
+    it.todo("should cancel subscription once the client closes the connection");
+  });
+
+  describe("filtered subscription", () => {
+    it.todo(
+      "should create a subscription on accessing the data (eager loading)"
+    );
+    it.todo(
+      "should create a subscription on accessing the data (lazy loading)"
+    );
+    it.todo(
+      "should re-send high-priority data to subscribed connections (filtered)"
+    );
+    it.todo(
+      "should not re-send high-priority data to other-filter subscribed connections (filtered)"
+    );
+    it.todo("should re-send low-priority data to subscribed connections");
+    it.todo(
+      "should not re-send low-priority data to other-filter subscribed connections"
+    );
+    it.todo(
+      "should cancel filtered subscription once the client closes the connection"
+    );
+  });
 });
 
 describe("after-auth resend testing", () => {

@@ -6,7 +6,7 @@ export class DecorableFunction {
   public get Func(): (
     data: any | void,
     connection: WebsocketConnection
-  ) => Function {
+  ) => (data: any, conn: WebsocketConnection) => Promise<any> | any {
     if (
       this.objConfig?.target &&
       this.objConfig.target[this.objConfig.propertyKey]

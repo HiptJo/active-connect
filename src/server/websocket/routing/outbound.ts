@@ -1,3 +1,4 @@
+import { MessageFilter } from "../../../decorators";
 import { WebsocketConnection } from "../connection/connection";
 import { DecorableFunction } from "./function";
 import { StandaloneWebsocketRoute } from "./route";
@@ -16,12 +17,72 @@ export class Outbound extends DecorableFunction {
   ) {
     super(objConfig);
   }
+
+  private subscribesChanges: boolean = false;
+  private subscribesFilteredChanges: MessageFilter[] = [];
+
+  public subscribeChanges(filter?: MessageFilter) {
+    if (filter) {
+      this.subscribesFilteredChanges.push(filter);
+    } else {
+      this.subscribesChanges = true;
+    }
+  }
+
+  public async subscribeForConnection(
+    conn: WebsocketConnection,
+    response: any
+  ) {
+    if (this.subscribesChanges) {
+      this.addSubscriptionForKey(null, conn);
+    }
+    for await (var filter of this.subscribesFilteredChanges) {
+      this.addSubscriptionForKey(await filter.filter(response, conn), conn);
+    }
+  }
+
+  private subscribedConnections: Map<number, WebsocketConnection[]> = new Map();
+  private addSubscriptionForKey(key: number, conn: WebsocketConnection) {
+    var result = this.subscribedConnections.get(key);
+    if (!result) {
+      this.subscribedConnections.set(key, [conn]);
+    } else {
+      // check if connection not already inside map
+      if (!result.includes(conn)) {
+        this.subscribedConnections.get(key).push(conn);
+      }
+    }
+  }
+
+  public async sendTo(conn: WebsocketConnection) {
+    try {
+      const res = await this.Func(null, conn);
+      if (
+        res &&
+        !res.toString().startsWith("auth:unauthorized") &&
+        !res.toString().startsWith("error:auth:unauthorized")
+      ) {
+        conn.send(this.method, res);
+        await this.subscribeForConnection(conn, res);
+      }
+    } catch (e) {
+      conn.send("m.error", e?.message || e);
+      throw Error(e);
+    }
+  }
+
+  public async sendUpdatedData(key?: number) {
+    var connections = this.subscribedConnections.get(key || null);
+    if (connections) {
+      await Promise.all(connections.map(this.sendTo));
+    }
+  }
 }
 
 export class WebsocketOutbound {
-  private static outbounds: Array<Outbound> = [];
+  private static outbounds: Map<string, Outbound> = new Map();
   public static addOutbound(outbound: Outbound) {
-    WebsocketOutbound.outbounds.push(outbound);
+    WebsocketOutbound.outbounds.set(outbound.method, outbound);
     if (outbound.requestingRequired) {
       WebsocketRouter.registerStandaloneRoute(
         new StandaloneWebsocketRoute(`request.${outbound.method}`, {
@@ -37,55 +98,32 @@ export class WebsocketOutbound {
   }
 
   public static getOutbound(method: string): Outbound | null {
-    const vars = WebsocketOutbound.outbounds.filter((o) => o.method == method);
-    if (vars.length > 0) {
-      return vars[0];
-    }
-    return null;
+    return WebsocketOutbound.outbounds.get(method) || null;
   }
 
-  private static outboundSubscriptions: Map<string, () => Promise<void>> =
-    new Map();
+  public static async sendUpdates(routes: Array<string>, key?: any) {
+    var methods = [...routes];
 
-  public static addOutboundSubscription(
-    outbound: string,
-    sendUpdates: () => Promise<void>
+    // send updates for first route instantly
+    await WebsocketOutbound.sendUpdatesForMethod(methods.shift(), key);
+
+    // send updates for others in the background
+    Promise.all(
+      methods.map((m) => WebsocketOutbound.sendUpdatesForMethod(m, key))
+    );
+  }
+
+  private static async sendUpdatesForMethod(
+    method: string,
+    key: number | null
   ) {
-    WebsocketOutbound.outboundSubscriptions.set(outbound, sendUpdates);
-  }
-
-  public static async sendUpdates(routes: Array<string>, pattern?: any) {
-    const p: Promise<any>[] = routes.map(function sendUpdatesForRoute(route) {
-      let out = WebsocketOutbound.outboundSubscriptions.get(
-        pattern ? route + ":" + pattern : route
+    var outbound = this.outbounds.get(method);
+    if (outbound) {
+      await outbound.sendUpdatedData(key);
+    } else {
+      console.error(
+        `Websocket: Can not send updates to outbound "${method}" as it does not exist.`
       );
-      if (out) return out();
-      WebsocketOutbound.outboundSubscriptions.forEach(
-        function sendUpdatesForRoute(val: () => Promise<void>, key: string) {
-          if (key.startsWith(route + ":")) {
-            out = val;
-          }
-        }
-      );
-      if (out) return out();
-
-      return new Promise<void>((resolve) => {
-        resolve();
-      });
-    });
-
-    // the first of the registered outbounds should be sent at first
-    // the other ones are sent later on
-    // this is used to ensure good performance
-    if (p.length > 0) {
-      // await first update
-      await p[0];
-    }
-    if (p.length > 1) {
-      // send other updates without awaiting
-      for (let i = 1; i < p.length; i++) {
-        p[i].then();
-      }
     }
   }
 
@@ -105,46 +143,19 @@ export class WebsocketOutbound {
     );
   }
 
-  public static sendToConnection(connection: WebsocketConnection) {
+  public static sendToConnection(conn: WebsocketConnection) {
     WebsocketOutbound.outbounds.forEach(async function sendOutbound(o) {
-      if (!o.requestingRequired)
-        await WebsocketOutbound.sendOutbound(o, connection);
+      if (!o.requestingRequired) await o.sendTo(conn);
     });
   }
 
-  private static async sendOutbound(
-    outbound: Outbound,
-    connection: WebsocketConnection
-  ) {
-    try {
-      const res = await outbound.Func(null, connection);
-      if (
-        res &&
-        !res.toString().startsWith("auth:unauthorized") &&
-        !res.toString().startsWith("error:auth:unauthorized")
-      )
-        connection.send(outbound.method, res);
-    } catch (e) {
-      connection.send("m.error", e?.message || e);
-      throw Error(e);
-    }
-  }
-
-  public async requestOutbound(
-    method: string,
-    connection: WebsocketConnection
-  ) {
-    return WebsocketOutbound.requestOutbound(method, connection);
-  }
   public static async requestOutbound(
     method: string,
     connection: WebsocketConnection
   ) {
-    const outbounds = WebsocketOutbound.outbounds.filter(
-      (o) => o.method === method
-    );
-    if (outbounds.length > 0) {
-      await WebsocketOutbound.sendOutbound(outbounds[0], connection);
+    const outbound = WebsocketOutbound.outbounds.get(method);
+    if (outbound) {
+      await outbound.sendTo(connection);
     } else {
       throw Error(`Websocket: Outbound ${method} has not been found.`);
     }
@@ -153,14 +164,14 @@ export class WebsocketOutbound {
   public static async resendDataAfterAuth(connection: WebsocketConnection) {
     WebsocketOutbound.outbounds.forEach(async function sendOutbound(o) {
       if (!o.requestingRequired && o.resendAfterAuthentication)
-        await WebsocketOutbound.sendOutbound(o, connection);
+        o.sendTo(connection);
     });
   }
 
-  static get count(): number {
-    return WebsocketOutbound.outbounds.length;
+  static get size(): number {
+    return WebsocketOutbound.outbounds.size;
   }
   static clear() {
-    WebsocketOutbound.outbounds = [];
+    WebsocketOutbound.outbounds.clear();
   }
 }
