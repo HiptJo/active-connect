@@ -2,7 +2,7 @@ import * as WebSocket from "ws";
 import { JsonParser } from "../../../json/json-parser";
 
 import { WebsocketRequest } from "../message/request";
-import { WebsocketOutbound } from "../routing/outbound";
+import { WebsocketOutbounds } from "../routing/outbound";
 import { WebsocketRouter } from "../routing/router";
 import { WebsocketServer } from "../server";
 
@@ -68,12 +68,12 @@ export class WebsocketConnection {
   }
   protected onClose() {
     clearInterval(this.interval);
-    WebsocketOutbound.unsubscribeConnection(this);
+    WebsocketOutbounds.unsubscribeConnection(this);
     WebsocketConnection.closeHandlers.forEach((c) => c(this));
   }
 
   private async sendWelcomeMessages() {
-    await WebsocketOutbound.sendToConnection(this);
+    await WebsocketOutbounds.sendToConnection(this);
   }
 
   public send(method: string, value: any, messageId?: number | null) {

@@ -7,7 +7,7 @@ import {
   WebsocketConnection,
   WebsocketRequest,
 } from "../../../src/active-connect";
-import { WebsocketOutbound } from "../../../src/server/websocket/routing/outbound";
+import { WebsocketOutbounds } from "../../../src/server/websocket/routing/outbound";
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
@@ -41,7 +41,7 @@ it("should resend subscribed data (sub first)", async () => {
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
   const data = await conn.awaitMessage("out.subscribe1");
   expect(data).toStrictEqual({ value: "oldvalue1" });
   await router
@@ -74,7 +74,7 @@ it("should resend subscribed data (out first)", async () => {
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
   const data = await conn.awaitMessage("out1.subscribe1");
   expect(data).toStrictEqual({ value: "oldvalue1" });
   await router

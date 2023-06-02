@@ -142,7 +142,10 @@ describe("default route", () => {
   it("should return null when accessing func if no target is defined", async () => {
     const conn = WebsocketMocks.getConnectionStub();
 
-    const f1 = new WebsocketRoute("testing", { target: null, propertyKey: "" });
+    const f1 = new WebsocketRoute("testing", {
+      target: null,
+      propertyKey: "",
+    });
     const f2 = new WebsocketRoute("testing", null as any);
     expect(f1.Func).toBeNull();
     expect(f2.Func).toBeNull();
@@ -221,9 +224,11 @@ describe("default route", () => {
         it(
           "should not resolve the promise when " + label + " failed",
           async () => {
-            await expect(
-              route.route(new WebsocketRequest(label, null, conn), [label])
-            ).rejects.toThrow("...");
+            route.route(
+              new WebsocketRequest(label, null, conn),
+              label.split(".")
+            );
+            expect(await conn.awaitMessage("m.error")).toBe("...");
 
             conn.awaitMessage("m." + label).then(() => {
               fail(
@@ -412,12 +417,11 @@ describe("standalone route", () => {
         it(
           "should not resolve the promise when " + label + " failed",
           async () => {
-            await expect(
-              route.route(
-                new WebsocketRequest(label, null, conn),
-                label.split(".")
-              )
-            ).rejects.toThrow("...");
+            route.route(
+              new WebsocketRequest(label, null, conn),
+              label.split(".")
+            );
+            expect(await conn.awaitMessage("m.error")).toBe("...");
 
             conn.awaitMessage("m." + label).then(() => {
               fail(

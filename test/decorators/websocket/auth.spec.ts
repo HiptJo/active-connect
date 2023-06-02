@@ -10,7 +10,7 @@ import {
 import { WebsocketAuthenticator } from "../../../src/server/websocket/auth/authenticator";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
 import { WebsocketRequest } from "../../../src/server/websocket/message/request";
-import { WebsocketOutbound } from "../../../src/server/websocket/routing/outbound";
+import { WebsocketOutbounds } from "../../../src/server/websocket/routing/outbound";
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
@@ -103,7 +103,7 @@ it("should be possible to use authenticators for outbounds (out decorator first)
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.example1");
   expect(data).toStrictEqual({ value: "anything" });
@@ -121,7 +121,7 @@ it("should be possible to use authenticators for requestable outbounds (out deco
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
   await new WebsocketRouter().route(
     new WebsocketRequest("request.out.example1.a", null, conn)
   );
@@ -140,7 +140,7 @@ it("should be possible to use authenticators for outbounds (auth decorator first
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.example");
   expect(data).toStrictEqual({ value: "anything" });
@@ -158,7 +158,7 @@ it("should not send unauthorized data to a outbound (auth decorator first)", asy
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   conn.awaitMessage("out.restricted").then((d) => {
     fail(d);
@@ -176,7 +176,7 @@ it("should not send unauthorized data to a outbound (out decorator first)", asyn
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   conn.awaitMessage("out.restricted1").then((d) => {
     fail(d);
@@ -279,7 +279,7 @@ it("should be possible to access the `this` object within a authenticated outbou
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.this1");
   expect(data).toStrictEqual({ content: "something" });
@@ -298,7 +298,7 @@ it("should be possible to access the `this` object within a authenticated outbou
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   const data = await conn.awaitMessage("out.this2");
   expect(data).toStrictEqual({ content: "something" });
@@ -316,7 +316,7 @@ it("should not send data for unauthorized user (out decorator first)", async () 
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   conn.awaitMessage("outu.example1").then(fail);
 });
@@ -332,7 +332,7 @@ it("should not send data for unauthorized user (auth decorator first)", async ()
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   conn.awaitMessage("outu.example2").then(fail);
 });
@@ -350,7 +350,7 @@ it("should subscribe for changes after unauthorized request (sub first)", async 
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   conn.awaitMessage("outu.example3").then(fail);
 });
@@ -367,7 +367,7 @@ it("should subscribe for changes after unauthorized request (auth first)", async
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   conn.awaitMessage("outu.example4").then(fail);
 });

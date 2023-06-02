@@ -10,7 +10,7 @@ import {
 } from "../../../src/decorators/websocket/route";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
 import { WebsocketRequest } from "../../../src/server/websocket/message/request";
-import { WebsocketOutbound } from "../../../src/server/websocket/routing/outbound";
+import { WebsocketOutbounds } from "../../../src/server/websocket/routing/outbound";
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
@@ -277,7 +277,7 @@ it("should be possible to modify a shared variable", async () => {
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbound.sendToConnection(conn);
+  WebsocketOutbounds.sendToConnection(conn);
 
   const data = await conn.awaitMessage("d.modification");
   expect(data).toStrictEqual(1);

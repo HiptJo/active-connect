@@ -4,15 +4,35 @@ import { DecorableFunction } from "./function";
 import { StandaloneWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
 
+/**
+ * @deprecated
+ */
 export interface WebsocketAuthorizationCheckable {
   checkAuth(authToken: string): Promise<boolean>;
 }
 
-export class Outbound extends DecorableFunction {
+/**
+ * This object is used to configure a outbound.
+ *
+ * Outbounds are used to send data to clients.
+ * They support features like authentication-checks, subscription-management and more.
+ */
+export class WebsocketOutbound extends DecorableFunction {
+  /**
+   * Creates a new outbound config
+   *
+   * @param method - The method represents a unique identifier for the outbound. Data sent is labeled using the method.
+   * @param objConfig - This contains a reference to the method functionality
+   * @param objConfig.target - The prototype of the class containing the source-code of this outbound. (eg. MyClass.prototype)
+   * @param objConfig.propertyKey - The name of the function within the class
+   * @param lazyLoading - When this option is enabled, data is not sent initially to all clients. They can request it, if needed.
+   * @param resendAfterAuthentication - When enabled, data is updated once any route with `modifiesAuthentication=true` is called by this connection.
+   *            This can be used to automatically send the userdata to the client, once the client is signed in.
+   */
   constructor(
     public method: string,
     objConfig: { target: any; propertyKey: string },
-    public requestingRequired?: boolean,
+    public lazyLoading?: boolean,
     public resendAfterAuthentication?: boolean
   ) {
     super(objConfig);
@@ -88,16 +108,39 @@ export class Outbound extends DecorableFunction {
   }
 }
 
-export class WebsocketOutbound {
-  private static outbounds: Map<string, Outbound> = new Map();
-  public static addOutbound(outbound: Outbound) {
-    WebsocketOutbound.outbounds.set(outbound.method, outbound);
-    if (outbound.requestingRequired) {
+/**
+ * This is used to manage all used outbounds.
+ *
+ * All active outbounds have to be registered using `WebsocketOutbounds.addOutbound(...)`
+ * Registered outbounds are sent to clients automatically, once they open a connection.
+ *
+ * Eager loading and lazy loading is supported.
+ * The default loading strategy is eager loading.
+ *
+ * As only one unique outbound configuration is supported, static variables are used.
+ */
+export class WebsocketOutbounds {
+  private constructor() {}
+
+  private static outbounds: Map<string, WebsocketOutbound> = new Map();
+
+  /**
+   * Registers a outbound.
+   * Registered outbounds are sent to clients, once they open a connection.
+   *
+   * @param outbound - This outbound configuration will be registered
+   */
+  public static addOutbound(outbound: WebsocketOutbound) {
+    WebsocketOutbounds.outbounds.set(outbound.method, outbound);
+    if (outbound.lazyLoading) {
       WebsocketRouter.registerStandaloneRoute(
         new StandaloneWebsocketRoute(`request.${outbound.method}`, {
           target: class Fetch {
             async fetch(data: any, conn: WebsocketConnection) {
-              await WebsocketOutbound.requestOutbound(outbound.method, conn);
+              await WebsocketOutbounds.sendSingleOutboundByMethod(
+                outbound.method,
+                conn
+              );
             }
           }.prototype,
           propertyKey: "fetch",
@@ -106,22 +149,41 @@ export class WebsocketOutbound {
     }
   }
 
-  public static getOutbound(method: string): Outbound | null {
-    return WebsocketOutbound.outbounds.get(method) || null;
+  /**
+   * Returns the outbound matching the method, returns null if no outbound has been found
+   *
+   * @param method
+   * @returns
+   */
+  public static getOutbound(method: string): WebsocketOutbound | null {
+    return WebsocketOutbounds.outbounds.get(method) || null;
   }
 
-  public static async sendUpdates(routes: Array<string>, key?: any) {
-    var methods = [...routes];
+  /**
+   * Sends updated data to all subscribed connections for the defined methods
+   * Once the first outbound (method[0]) has been updated, the promise is resolved.
+   *
+   * @param methods - methods of the outbounds to be updated
+   * @param [key]
+   */
+  public static async sendUpdates(methods: Array<string>, key?: any) {
+    var methods = [...methods];
 
     // send updates for first route instantly
-    await WebsocketOutbound.sendUpdatesForMethod(methods.shift(), key);
+    await WebsocketOutbounds.sendUpdatesForMethod(methods.shift(), key);
 
     // send updates for others in the background
     Promise.all(
-      methods.map((m) => WebsocketOutbound.sendUpdatesForMethod(m, key))
+      methods.map((m) => WebsocketOutbounds.sendUpdatesForMethod(m, key))
     );
   }
 
+  /**
+   * Sends the current state of data to subscribed connections.
+   *
+   * @param method - method of the outbound that should be updated
+   * @param [key]
+   */
   private static async sendUpdatesForMethod(
     method: string,
     key: number | null
@@ -136,29 +198,40 @@ export class WebsocketOutbound {
     }
   }
 
-  private static connectionDisconnectHandler: Array<
-    (conn: WebsocketConnection) => void
-  > = Array();
-  public static addConnectionDisconnectHandler(
-    callback: (conn: WebsocketConnection) => void
-  ) {
-    WebsocketOutbound.connectionDisconnectHandler.push(callback);
-  }
+  /**
+   * Unsubscribes this connection from all subscriptions
+   * This can be used when the connection closes the connection
+   *
+   * @param conn - the closed connection
+   */
   public static unsubscribeConnection(conn: WebsocketConnection) {
-    WebsocketOutbound.outbounds.forEach((o) => o.unsubscribeConnection(conn));
+    WebsocketOutbounds.outbounds.forEach((o) => o.unsubscribeConnection(conn));
   }
 
+  /**
+   * Sends all outbound data to a client. This is triggered, once the client opens a new connection.
+   * The connection automatically subscribes for updates, when it is enabled in the outbound config.
+   *
+   * @param conn - data is sent to this connection
+   */
   public static async sendToConnection(conn: WebsocketConnection) {
-    for (var out of WebsocketOutbound.outbounds) {
-      if (!out[1].requestingRequired) await out[1].sendTo(conn);
+    for (var out of WebsocketOutbounds.outbounds) {
+      if (!out[1].lazyLoading) await out[1].sendTo(conn);
     }
   }
 
-  public static async requestOutbound(
+  /**
+   * Triggers the requested outbound to be sent to the given connection.
+   * The connection automatically subscribes for updates, when it is enabled in the outbound config.
+   *
+   * @param method - method of the requested outbound
+   * @param connection
+   */
+  public static async sendSingleOutboundByMethod(
     method: string,
     connection: WebsocketConnection
   ) {
-    const outbound = WebsocketOutbound.outbounds.get(method);
+    const outbound = WebsocketOutbounds.outbounds.get(method);
     if (outbound) {
       await outbound.sendTo(connection);
     } else {
@@ -166,17 +239,31 @@ export class WebsocketOutbound {
     }
   }
 
+  /**
+   * Re-sends all outbound to the connection, where the resendAfterAuthentication flag is present.
+   *
+   * @param connection
+   */
   public static async resendDataAfterAuth(connection: WebsocketConnection) {
-    WebsocketOutbound.outbounds.forEach(async function sendOutbound(o) {
-      if (!o.requestingRequired && o.resendAfterAuthentication)
-        o.sendTo(connection);
+    WebsocketOutbounds.outbounds.forEach(async function sendOutbound(o) {
+      if (!o.lazyLoading && o.resendAfterAuthentication) o.sendTo(connection);
     });
   }
 
-  static get size(): number {
-    return WebsocketOutbound.outbounds.size;
+  /**
+   * Returns the number of registered outbounds.
+   */
+  public static get size(): number {
+    return WebsocketOutbounds.outbounds.size;
   }
-  static clear() {
-    WebsocketOutbound.outbounds.clear();
+
+  /**
+   * Resets the outbound config.
+   * This removes all outbounds.
+   *
+   * All outbounds that have been registered using a decorator *are not automatically added* again.
+   */
+  public static clear() {
+    WebsocketOutbounds.outbounds.clear();
   }
 }

@@ -1,6 +1,6 @@
 import { WebsocketConnection } from "../..";
 import { JsonParser } from "../../json/json-parser";
-import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
+import { WebsocketOutbounds } from "../../server/websocket/routing/outbound";
 
 export abstract class TestingConnectionWrapper<T> extends WebsocketConnection {
   private expectedMethodCalled: boolean = false;
@@ -12,7 +12,7 @@ export abstract class TestingConnectionWrapper<T> extends WebsocketConnection {
   ) {
     super(null);
     if (token) this.token = token;
-    WebsocketOutbound.sendToConnection(this);
+    WebsocketOutbounds.sendToConnection(this);
   }
 
   abstract handleReceivedMessages(data: { method: string; value: any }): void;

@@ -4,14 +4,14 @@ import {
   WebsocketRouter,
 } from "../../../../src";
 import {
-  Outbound,
   WebsocketOutbound,
+  WebsocketOutbounds,
 } from "../../../../src/server/websocket/routing/outbound";
 import { StubWebsocketConnection, WebsocketMocks } from "../../websocket-mocks";
 import { MessageFilter } from "../../../../src/server/websocket/auth/authenticator";
 
 beforeEach(() => {
-  WebsocketOutbound.clear();
+  WebsocketOutbounds.clear();
 });
 
 class target {
@@ -34,8 +34,8 @@ class target {
 }
 
 beforeEach(() => {
-  WebsocketOutbound.addOutbound(
-    new Outbound(
+  WebsocketOutbounds.addOutbound(
+    new WebsocketOutbound(
       "data",
       { target: target.prototype, propertyKey: "sendData" },
       false,
@@ -46,45 +46,44 @@ beforeEach(() => {
 
 describe("default outbound", () => {
   it("should be possible to create a new outbound", () => {
-    const outbound = new Outbound("testing.delivery", {
+    const outbound = new WebsocketOutbound("testing.delivery", {
       target: target.prototype,
       propertyKey: "out",
     });
     expect(outbound).toBeDefined();
-    WebsocketOutbound.addOutbound(outbound);
-    expect(WebsocketOutbound.getOutbound("testing.delivery")).toBe(outbound);
+    WebsocketOutbounds.addOutbound(outbound);
+    expect(WebsocketOutbounds.getOutbound("testing.delivery")).toBe(outbound);
   });
   it("should be possible to send a outbound", async () => {
-    const outbound = new Outbound("testing.delivery", {
+    const outbound = new WebsocketOutbound("testing.delivery", {
       target: target.prototype,
       propertyKey: "out",
     });
 
-    WebsocketOutbound.addOutbound(outbound);
+    WebsocketOutbounds.addOutbound(outbound);
 
     const conn = WebsocketMocks.getConnectionStub();
-    WebsocketOutbound.sendToConnection(conn);
 
     const data: any = await conn.awaitMessage("testing.delivery");
     expect(data.value).toBe("ok");
   });
 
   it("should throw when requesting a non-existing outbound", async () => {
-    WebsocketOutbound.clear();
+    WebsocketOutbounds.clear();
     const conn = WebsocketMocks.getConnectionStub();
     await expect(
-      WebsocketOutbound.requestOutbound("testing1.notfound", conn)
+      WebsocketOutbounds.sendSingleOutboundByMethod("testing1.notfound", conn)
     ).rejects.toThrow();
   });
   it("should return false when fetching a non-existing outbound by method", () => {
-    expect(WebsocketOutbound.getOutbound("idonotexist")).toBeFalsy();
+    expect(WebsocketOutbounds.getOutbound("idonotexist")).toBeFalsy();
   });
 });
 
 describe("lazy-loading outbound", () => {
   it("should be possible to receive a requesting outbound", async () => {
-    WebsocketOutbound.addOutbound(
-      new Outbound(
+    WebsocketOutbounds.addOutbound(
+      new WebsocketOutbound(
         "testing.requestable",
         { target: target.prototype, propertyKey: "requestable" },
         true
@@ -100,7 +99,7 @@ describe("lazy-loading outbound", () => {
   });
 });
 
-describe.only("error handling", () => {
+describe("error handling", () => {
   class target {
     async outbound(conn: StubWebsocketConnection) {
       throw Error("...");
@@ -108,11 +107,11 @@ describe.only("error handling", () => {
   }
 
   beforeEach(() => {
-    const out = new Outbound("d.out", {
+    const out = new WebsocketOutbound("d.out", {
       target: target.prototype,
       propertyKey: "outbound",
     });
-    WebsocketOutbound.addOutbound(out);
+    WebsocketOutbounds.addOutbound(out);
   });
 
   it("should send m.error when a error is thrown inside the outbound method", async () => {
@@ -153,18 +152,18 @@ describe("subscription testing", () => {
   }
 
   beforeEach(() => {
-    const out1 = new Outbound("d.high", {
+    const out1 = new WebsocketOutbound("d.high", {
       target: target.prototype,
       propertyKey: "outbound",
     });
     out1.subscribeChanges();
-    WebsocketOutbound.addOutbound(out1);
-    const out2 = new Outbound("d.low", {
+    WebsocketOutbounds.addOutbound(out1);
+    const out2 = new WebsocketOutbound("d.low", {
       target: target.prototype,
       propertyKey: "outbound",
     });
     out2.subscribeChanges();
-    WebsocketOutbound.addOutbound(out2);
+    WebsocketOutbounds.addOutbound(out2);
 
     const route = new WebsocketRoute("add", {
       target: target.prototype,
@@ -176,7 +175,6 @@ describe("subscription testing", () => {
 
   describe("default subscription", () => {
     it("should re-send high-priority data to subscribed connections", async () => {
-      WebsocketOutbound.sendToConnection(conn);
       expect(await conn.awaitMessage("d.high")).toHaveLength(0);
       conn.runRequest("add", "new");
       const updatedData = await conn.awaitMessage("d.high");
@@ -185,7 +183,6 @@ describe("subscription testing", () => {
       await conn.awaitMessage("m.add");
     });
     it("should re-send low-priority data to subscribed connections", async () => {
-      WebsocketOutbound.sendToConnection(conn);
       expect(await conn.awaitMessage("d.low")).toHaveLength(0);
       conn.runRequest("add", "new");
       await conn.awaitMessage("m.add");
@@ -194,7 +191,6 @@ describe("subscription testing", () => {
       expect(updatedData).toStrictEqual(["new"]);
     });
     it("should cancel subscription once the client closes the connection", async () => {
-      WebsocketOutbound.sendToConnection(conn);
       expect(await conn.awaitMessage("d.high")).toHaveLength(0);
       conn.closeConnection();
 
@@ -202,7 +198,7 @@ describe("subscription testing", () => {
       newConn.runRequest("add", "_");
       conn
         .awaitMessage("d.high")
-        .then(() => fail("Data was sent to a closed connection"));
+        .then((data) => fail("Data was sent to a closed connection " + data));
       await newConn.awaitMessage("m.add");
     });
   });

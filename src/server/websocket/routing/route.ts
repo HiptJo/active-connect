@@ -2,7 +2,9 @@ import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
 import { DecorableFunction } from "./function";
-import { WebsocketOutbound } from "./outbound";
+import { WebsocketOutbounds } from "./outbound";
+
+const ERROR = "__active-connect_error__";
 
 export class WebsocketRoute extends DecorableFunction {
   protected method: string;
@@ -49,6 +51,7 @@ export class WebsocketRoute extends DecorableFunction {
     if (path.length === 1 && path[0] === this.method) {
       const res = await this.call(request);
       if (
+        res != ERROR &&
         !(res && res.toString().startsWith("auth:unauthorized")) &&
         !(res && res.toString().startsWith("error:auth:unauthorized"))
       ) {
@@ -90,11 +93,12 @@ export class WebsocketRoute extends DecorableFunction {
         const data = await this.Func(request.data, request.connection);
         await this.resendModifiedData(data, request.connection);
         if (this.modifiesAuthentication)
-          WebsocketOutbound.resendDataAfterAuth(request.connection).then();
+          WebsocketOutbounds.resendDataAfterAuth(request.connection).then();
         return data;
       } catch (e) {
         console.error(e);
         request.connection.send("m.error", e?.message || e);
+        return ERROR;
       }
     } else {
       throw Error(`Websocket: Function not defined for route "${this.method}"`);
@@ -109,7 +113,7 @@ export class WebsocketRoute extends DecorableFunction {
       const filter = config.filter
         ? await config.filter.filter(responseData, requestConn)
         : undefined;
-      WebsocketOutbound.sendUpdates(config.outboundRoutes, filter);
+      WebsocketOutbounds.sendUpdates(config.outboundRoutes, filter);
     }
   }
 }
@@ -137,6 +141,7 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
     if (request.method === this.method) {
       const res = await this.call(request);
       if (
+        res != ERROR &&
         !(res && res.toString().startsWith("auth:unauthorized")) &&
         !(res && res.toString().startsWith("error:auth:unauthorized"))
       ) {
