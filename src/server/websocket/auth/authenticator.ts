@@ -7,3 +7,10 @@ export abstract class WebsocketAuthenticator {
     requestData: any
   ): Promise<boolean>;
 }
+
+export interface MessageFilter {
+  filter(
+    response: any | any[],
+    connection: WebsocketConnection
+  ): number | Promise<number>;
+}

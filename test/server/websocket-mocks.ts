@@ -1,3 +1,4 @@
+import { WebsocketRequest, WebsocketRouter } from "../../src";
 import { WebsocketConnection } from "../../src/server/websocket/connection/connection";
 
 export class WebsocketMocks {
@@ -7,8 +8,16 @@ export class WebsocketMocks {
 }
 
 export class StubWebsocketConnection extends WebsocketConnection {
+  private testingIdentifier: number;
+  private static maxTestingIdentifier: number = 0;
+
   constructor() {
     super(null);
+    this.testingIdentifier = StubWebsocketConnection.maxTestingIdentifier++;
+  }
+
+  public get identifier() {
+    return this.testingIdentifier;
   }
 
   private messageHistory: Map<string, any> = new Map();
@@ -33,5 +42,17 @@ export class StubWebsocketConnection extends WebsocketConnection {
         this.expectedMessages.set(method, resolve);
       }
     });
+  }
+
+  private messageId: number = 0;
+  async runRequest(method: string, data: any) {
+    new WebsocketRouter().route(
+      new WebsocketRequest(method, data, this, this.messageId)
+    );
+    this.messageId++;
+  }
+
+  public closeConnection() {
+    this.onClose();
   }
 }

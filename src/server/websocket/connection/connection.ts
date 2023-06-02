@@ -66,9 +66,9 @@ export class WebsocketConnection {
   private onError(message: string) {
     throw Error(message);
   }
-  private onClose() {
+  protected onClose() {
     clearInterval(this.interval);
-    WebsocketOutbound.clearConnectionSubscriptions(this);
+    WebsocketOutbound.unsubscribeConnection(this);
     WebsocketConnection.closeHandlers.forEach((c) => c(this));
   }
 

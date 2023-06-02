@@ -1,3 +1,5 @@
+import { MessageFilter } from "../auth/authenticator";
+import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
 import { DecorableFunction } from "./function";
 import { WebsocketOutbound } from "./outbound";
@@ -22,6 +24,14 @@ export class WebsocketRoute extends DecorableFunction {
         `Websocket Routing: method must not contain a separator "." in method "${method}"`
       );
     this.method = method;
+  }
+
+  private modifiesOutbounds: {
+    filter: MessageFilter | null;
+    outboundRoutes: string[];
+  }[] = [];
+  public modifies(outboundRoutes: string[], filter?: MessageFilter) {
+    this.modifiesOutbounds.push({ filter: filter || null, outboundRoutes });
   }
 
   protected children: Array<WebsocketRoute> = [];
@@ -78,6 +88,7 @@ export class WebsocketRoute extends DecorableFunction {
     if (this.Func) {
       try {
         const data = await this.Func(request.data, request.connection);
+        await this.resendModifiedData(data, request.connection);
         if (this.modifiesAuthentication)
           WebsocketOutbound.resendDataAfterAuth(request.connection).then();
         return data;
@@ -87,6 +98,18 @@ export class WebsocketRoute extends DecorableFunction {
       }
     } else
       throw Error(`Websocket: Function not defined for route "${this.method}"`);
+  }
+
+  private async resendModifiedData(
+    responseData: any,
+    requestConn: WebsocketConnection
+  ) {
+    for await (var config of this.modifiesOutbounds) {
+      const filter = config.filter
+        ? await config.filter.filter(responseData, requestConn)
+        : undefined;
+      WebsocketOutbound.sendUpdates(config.outboundRoutes, filter);
+    }
   }
 }
 

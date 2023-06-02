@@ -1,4 +1,4 @@
-import { MessageFilter } from "../../../decorators";
+import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { DecorableFunction } from "./function";
 import { StandaloneWebsocketRoute } from "./route";
@@ -56,7 +56,7 @@ export class Outbound extends DecorableFunction {
 
   public async sendTo(conn: WebsocketConnection) {
     try {
-      const res = await this.Func(null, conn);
+      const res = await this.Func(conn);
       if (
         res &&
         !res.toString().startsWith("auth:unauthorized") &&
@@ -74,7 +74,16 @@ export class Outbound extends DecorableFunction {
   public async sendUpdatedData(key?: number) {
     var connections = this.subscribedConnections.get(key || null);
     if (connections) {
-      await Promise.all(connections.map(this.sendTo));
+      await Promise.all(connections.map((conn) => this.sendTo(conn)));
+    }
+  }
+
+  public unsubscribeConnection(conn: WebsocketConnection) {
+    for (var key of this.subscribedConnections.keys()) {
+      this.subscribedConnections.set(
+        key,
+        this.subscribedConnections.get(key).filter((c) => c != conn)
+      );
     }
   }
 }
@@ -135,12 +144,8 @@ export class WebsocketOutbound {
   ) {
     WebsocketOutbound.connectionDisconnectHandler.push(callback);
   }
-  public static clearConnectionSubscriptions(conn: WebsocketConnection) {
-    WebsocketOutbound.connectionDisconnectHandler.forEach(
-      function clearConnectionSubscriptionHandler(handler) {
-        handler(conn);
-      }
-    );
+  public static unsubscribeConnection(conn: WebsocketConnection) {
+    WebsocketOutbound.outbounds.forEach((o) => o.unsubscribeConnection(conn));
   }
 
   public static sendToConnection(conn: WebsocketConnection) {

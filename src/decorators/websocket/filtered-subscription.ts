@@ -105,10 +105,3 @@ function registerSubscription(target: any, propertyKey: string, pattern: any) {
     }
   );
 }
-
-export interface MessageFilter {
-  filter(
-    response: any | any[],
-    connection: WebsocketConnection
-  ): number | Promise<number>;
-}

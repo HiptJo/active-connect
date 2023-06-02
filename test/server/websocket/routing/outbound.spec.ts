@@ -1,9 +1,15 @@
-import { WebsocketRequest, WebsocketRouter } from "../../../../src";
+import {
+  WebsocketRequest,
+  WebsocketRoute,
+  WebsocketRouter,
+} from "../../../../src";
 import {
   Outbound,
   WebsocketOutbound,
 } from "../../../../src/server/websocket/routing/outbound";
-import { WebsocketMocks } from "../../websocket-mocks";
+import { StubWebsocketConnection, WebsocketMocks } from "../../websocket-mocks";
+import { MessageFilter } from "../../../../src/server/websocket/auth/authenticator";
+
 beforeEach(() => {
   WebsocketOutbound.clear();
 });
@@ -95,18 +101,89 @@ describe("lazy-loading outbound", () => {
 });
 
 describe("subscription testing", () => {
+  let conn = WebsocketMocks.getConnectionStub();
+  beforeEach(() => {
+    conn = WebsocketMocks.getConnectionStub();
+  });
+
+  class filter implements MessageFilter {
+    async filter(
+      response: any | any[],
+      connection: StubWebsocketConnection
+    ): Promise<number> {
+      return connection.identifier;
+    }
+  }
+
+  class target {
+    data = new Map<number, string[]>();
+    outbound(conn: StubWebsocketConnection) {
+      return this.data.get(conn.identifier) || [];
+    }
+    async addEntry(content: string, conn: StubWebsocketConnection) {
+      const identifier = await new filter().filter(null, conn);
+      var data = this.data.get(identifier);
+      if (data) {
+        data.push(content);
+      } else {
+        this.data.set(identifier, [content]);
+      }
+    }
+  }
+
+  beforeEach(() => {
+    const out1 = new Outbound("d.high", {
+      target: target.prototype,
+      propertyKey: "outbound",
+    });
+    out1.subscribeChanges();
+    WebsocketOutbound.addOutbound(out1);
+    const out2 = new Outbound("d.low", {
+      target: target.prototype,
+      propertyKey: "outbound",
+    });
+    out2.subscribeChanges();
+    WebsocketOutbound.addOutbound(out2);
+
+    const route = new WebsocketRoute("add", {
+      target: target.prototype,
+      propertyKey: "addEntry",
+    });
+    route.modifies(["d.high", "d.low"]);
+    WebsocketRouter.registerRoute(route);
+  });
+
   describe("default subscription", () => {
-    it.todo(
-      "should create a subscription on accessing the data (eager loading)"
-    );
-    it.todo(
-      "should create a subscription on accessing the data (lazy loading)"
-    );
-    it.todo("should re-send high-priority data to subscribed connections");
-    it.todo("should re-send low-priority data to subscribed connections");
-    it.todo("should resend high-priority data for subscribed connections");
-    it.todo("should resend low-priority data for subscribed connections");
-    it.todo("should cancel subscription once the client closes the connection");
+    it("should re-send high-priority data to subscribed connections", async () => {
+      WebsocketOutbound.sendToConnection(conn);
+      expect(await conn.awaitMessage("d.high")).toHaveLength(0);
+      conn.runRequest("add", "new");
+      const updatedData = await conn.awaitMessage("d.high");
+      expect(updatedData).toHaveLength(1);
+      expect(updatedData).toStrictEqual(["new"]);
+      await conn.awaitMessage("m.add");
+    });
+    it("should re-send low-priority data to subscribed connections", async () => {
+      WebsocketOutbound.sendToConnection(conn);
+      expect(await conn.awaitMessage("d.low")).toHaveLength(0);
+      conn.runRequest("add", "new");
+      await conn.awaitMessage("m.add");
+      const updatedData = await conn.awaitMessage("d.low");
+      expect(updatedData).toHaveLength(1);
+      expect(updatedData).toStrictEqual(["new"]);
+    });
+    it("should cancel subscription once the client closes the connection", async () => {
+      WebsocketOutbound.sendToConnection(conn);
+      expect(await conn.awaitMessage("d.high")).toHaveLength(0);
+      conn.closeConnection();
+
+      const newConn = WebsocketMocks.getConnectionStub();
+      newConn.runRequest("add", "_");
+      conn
+        .awaitMessage("d.high")
+        .then(() => fail("Data was sent to a closed connection"));
+      await newConn.awaitMessage("m.add");
+    });
   });
 
   describe("filtered subscription", () => {

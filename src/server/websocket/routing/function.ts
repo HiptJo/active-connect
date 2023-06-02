@@ -1,12 +1,7 @@
-import { WebsocketConnection } from "../connection/connection";
-
 export class DecorableFunction {
   constructor(protected objConfig: { target: any; propertyKey: string }) {}
 
-  public get Func(): (
-    data: any | void,
-    connection: WebsocketConnection
-  ) => (data: any, conn: WebsocketConnection) => Promise<any> | any {
+  public get Func(): (...data: any[]) => Promise<any> | any {
     if (
       this.objConfig?.target &&
       this.objConfig.target[this.objConfig.propertyKey]
