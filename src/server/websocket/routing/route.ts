@@ -93,11 +93,12 @@ export class WebsocketRoute extends DecorableFunction {
           WebsocketOutbound.resendDataAfterAuth(request.connection).then();
         return data;
       } catch (e) {
+        console.error(e);
         request.connection.send("m.error", e?.message || e);
-        if (!process.env.jest) throw e.charAt ? Error(e) : e;
       }
-    } else
+    } else {
       throw Error(`Websocket: Function not defined for route "${this.method}"`);
+    }
   }
 
   private async resendModifiedData(
@@ -134,9 +135,7 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
   ): Promise<boolean> {
     // check if responsible for handling
     if (request.method === this.method) {
-      const res = await this.call(request).catch((error) => {
-        throw error;
-      });
+      const res = await this.call(request);
       if (
         !(res && res.toString().startsWith("auth:unauthorized")) &&
         !(res && res.toString().startsWith("error:auth:unauthorized"))

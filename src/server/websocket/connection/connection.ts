@@ -72,8 +72,8 @@ export class WebsocketConnection {
     WebsocketConnection.closeHandlers.forEach((c) => c(this));
   }
 
-  private sendWelcomeMessages() {
-    WebsocketOutbound.sendToConnection(this);
+  private async sendWelcomeMessages() {
+    await WebsocketOutbound.sendToConnection(this);
   }
 
   public send(method: string, value: any, messageId?: number | null) {

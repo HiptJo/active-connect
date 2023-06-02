@@ -100,6 +100,27 @@ describe("lazy-loading outbound", () => {
   });
 });
 
+describe.only("error handling", () => {
+  class target {
+    async outbound(conn: StubWebsocketConnection) {
+      throw Error("...");
+    }
+  }
+
+  beforeEach(() => {
+    const out = new Outbound("d.out", {
+      target: target.prototype,
+      propertyKey: "outbound",
+    });
+    WebsocketOutbound.addOutbound(out);
+  });
+
+  it("should send m.error when a error is thrown inside the outbound method", async () => {
+    const conn = WebsocketMocks.getConnectionStub();
+    expect(await conn.awaitMessage("m.error")).toBe("...");
+  });
+});
+
 describe("subscription testing", () => {
   let conn = WebsocketMocks.getConnectionStub();
   beforeEach(() => {

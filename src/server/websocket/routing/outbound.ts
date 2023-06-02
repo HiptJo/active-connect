@@ -66,8 +66,8 @@ export class Outbound extends DecorableFunction {
         await this.subscribeForConnection(conn, res);
       }
     } catch (e) {
+      console.error(e);
       conn.send("m.error", e?.message || e);
-      throw Error(e);
     }
   }
 
@@ -148,10 +148,10 @@ export class WebsocketOutbound {
     WebsocketOutbound.outbounds.forEach((o) => o.unsubscribeConnection(conn));
   }
 
-  public static sendToConnection(conn: WebsocketConnection) {
-    WebsocketOutbound.outbounds.forEach(async function sendOutbound(o) {
-      if (!o.requestingRequired) await o.sendTo(conn);
-    });
+  public static async sendToConnection(conn: WebsocketConnection) {
+    for (var out of WebsocketOutbound.outbounds) {
+      if (!out[1].requestingRequired) await out[1].sendTo(conn);
+    }
   }
 
   public static async requestOutbound(
