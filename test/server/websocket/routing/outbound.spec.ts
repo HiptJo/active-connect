@@ -118,6 +118,14 @@ describe("error handling", () => {
     const conn = WebsocketMocks.getConnectionStub();
     expect(await conn.awaitMessage("m.error")).toBe("...");
   });
+
+  it("should throw when updates should be sent for a non-existing outbound method", async () => {
+    await expect(
+      WebsocketOutbounds.sendUpdates(["unknown.method"])
+    ).rejects.toThrow(
+      'Websocket: Can not send updates to outbound "unknown.method" as it does not exist.'
+    );
+  });
 });
 
 describe("subscription testing", () => {

@@ -192,7 +192,7 @@ export class WebsocketOutbounds {
     if (outbound) {
       await outbound.sendUpdatedData(key);
     } else {
-      console.error(
+      throw Error(
         `Websocket: Can not send updates to outbound "${method}" as it does not exist.`
       );
     }
