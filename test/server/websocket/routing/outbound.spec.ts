@@ -9,6 +9,7 @@ import {
 } from "../../../../src/server/websocket/routing/outbound";
 import { StubWebsocketConnection, WebsocketMocks } from "../../websocket-mocks";
 import { MessageFilter } from "../../../../src/server/websocket/auth/authenticator";
+import { testEach } from "../../../../src/jest";
 
 beforeEach(() => {
   WebsocketOutbounds.clear();
@@ -42,6 +43,10 @@ beforeEach(() => {
       false
     )
   );
+});
+
+it("should have registered 1 outbound", () => {
+  expect(WebsocketOutbounds.size).toBe(1);
 });
 
 describe("default outbound", () => {
@@ -101,22 +106,27 @@ describe("lazy-loading outbound", () => {
 
 describe("error handling", () => {
   class target {
-    async outbound(conn: StubWebsocketConnection) {
+    async outbound1(conn: StubWebsocketConnection) {
       throw Error("...");
+    }
+    async outbound2(conn: StubWebsocketConnection) {
+      throw "...";
     }
   }
 
-  beforeEach(() => {
-    const out = new WebsocketOutbound("d.out", {
-      target: target.prototype,
-      propertyKey: "outbound",
+  testEach<string>(["outbound1", "outbound2"], [], (propertyKey: string) => {
+    beforeEach(() => {
+      const out = new WebsocketOutbound("d.out", {
+        target: target.prototype,
+        propertyKey,
+      });
+      WebsocketOutbounds.addOutbound(out);
     });
-    WebsocketOutbounds.addOutbound(out);
-  });
 
-  it("should send m.error when a error is thrown inside the outbound method", async () => {
-    const conn = WebsocketMocks.getConnectionStub();
-    expect(await conn.awaitMessage("m.error")).toBe("...");
+    it("should send m.error when a error is thrown inside the outbound method", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      expect(await conn.awaitMessage("m.error")).toBe("...");
+    });
   });
 
   it("should throw when updates should be sent for a non-existing outbound method", async () => {
