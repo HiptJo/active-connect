@@ -27,6 +27,11 @@ export class StubWebsocketConnection extends WebsocketConnection {
       this.expectedMessages.delete(method);
       func(data);
     } else {
+      if (method == "m.error") {
+        throw new Error(
+          "Received error message from websocket server: " + data
+        );
+      }
       this.messageHistory.set(method, data);
     }
   }
