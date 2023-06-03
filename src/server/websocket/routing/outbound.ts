@@ -53,9 +53,7 @@ export class WebsocketOutbound extends DecorableFunction {
     conn: WebsocketConnection,
     response: any
   ) {
-    if (this.subscribesChanges) {
-      this.addSubscriptionForKey(null, conn);
-    }
+    this.addSubscriptionForKey(null, conn);
     for await (var filter of this.subscribesFilteredChanges) {
       this.addSubscriptionForKey(await filter.filter(response, conn), conn);
     }
@@ -91,6 +89,23 @@ export class WebsocketOutbound extends DecorableFunction {
     }
   }
 
+  public async sendToIfSubscribed(conn: WebsocketConnection) {
+    if (this.connectionSubscribesForChanges(conn)) {
+      this.sendTo(conn);
+    }
+  }
+
+  public connectionSubscribesForChanges(conn: WebsocketConnection) {
+    for (var conns of this.subscribedConnections) {
+      for (var c of conns[1]) {
+        if (c == conn) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   public async sendUpdatedData(key?: number) {
     var connections = this.subscribedConnections.get(key || null);
     if (connections) {
@@ -105,6 +120,10 @@ export class WebsocketOutbound extends DecorableFunction {
         this.subscribedConnections.get(key).filter((c) => c != conn)
       );
     }
+  }
+
+  public get subscriptionEnabled() {
+    return this.subscribesChanges || this.subscribesFilteredChanges.length > 0;
   }
 }
 
@@ -189,7 +208,7 @@ export class WebsocketOutbounds {
     key: number | null
   ) {
     var outbound = this.outbounds.get(method);
-    if (outbound) {
+    if (outbound && outbound.subscriptionEnabled) {
       await outbound.sendUpdatedData(key);
     } else {
       throw Error(
@@ -246,7 +265,15 @@ export class WebsocketOutbounds {
    */
   public static async resendDataAfterAuth(connection: WebsocketConnection) {
     WebsocketOutbounds.outbounds.forEach(async function sendOutbound(o) {
-      if (!o.lazyLoading && o.resendAfterAuthentication) o.sendTo(connection);
+      if (o.resendAfterAuthentication) {
+        if (o.lazyLoading) {
+          // check if connection is subscribed
+          // if it is, trigger resend - else do not resend
+          o.sendToIfSubscribed(connection);
+        } else {
+          o.sendTo(connection);
+        }
+      }
     });
   }
 

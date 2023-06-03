@@ -86,6 +86,20 @@ describe("default outbound", () => {
 });
 
 describe("lazy-loading outbound", () => {
+  it("should not send lazy-loaded data without requesting it", async () => {
+    WebsocketOutbounds.addOutbound(
+      new WebsocketOutbound(
+        "testing.requestable1",
+        { target: target.prototype, propertyKey: "requestable" },
+        true
+      )
+    );
+    const conn = WebsocketMocks.getConnectionStub();
+    conn.awaitMessage("testing.requestable").then(() => {
+      fail("Lazy-loaded data was sent initially.");
+    });
+  });
+
   it("should be possible to receive a requesting outbound", async () => {
     WebsocketOutbounds.addOutbound(
       new WebsocketOutbound(
@@ -330,6 +344,94 @@ describe("subscription testing", () => {
 });
 
 describe("after-auth resend testing", () => {
-  it.todo("should be possible to manually trigger auth resend");
-  it.todo("should resend data after calling a route with resendAuth tag");
+  let conn = WebsocketMocks.getConnectionStub();
+  beforeEach(() => {
+    conn = WebsocketMocks.getConnectionStub();
+  });
+
+  class target {
+    data = 1;
+    outbound() {
+      return this.data;
+    }
+    async authenticate() {
+      this.data++;
+      return true;
+    }
+  }
+
+  beforeEach(() => {
+    const out1 = new WebsocketOutbound(
+      "a.id1",
+      {
+        target: target.prototype,
+        propertyKey: "outbound",
+      },
+      false,
+      true
+    );
+    WebsocketOutbounds.addOutbound(out1);
+
+    const out2 = new WebsocketOutbound(
+      "a.id2",
+      {
+        target: target.prototype,
+        propertyKey: "outbound",
+      },
+      true,
+      true
+    );
+    WebsocketOutbounds.addOutbound(out2);
+
+    const route = new WebsocketRoute(
+      "auth",
+      {
+        target: target.prototype,
+        propertyKey: "authenticate",
+      },
+      true
+    );
+    WebsocketRouter.registerRoute(route);
+
+    // reset data before each test run
+    if ((target.prototype as any).___data?._obj?.data) {
+      (target.prototype as any).___data._obj.data = 1;
+    }
+  });
+
+  it("should be possible to manually trigger auth resend", async () => {
+    expect(await conn.awaitMessage("a.id1")).toBe(1);
+
+    WebsocketOutbounds.resendDataAfterAuth(conn).then();
+
+    expect(await conn.awaitMessage("a.id1")).toBe(1);
+  });
+  it("should resend eager-loaded data after calling a route with resendAuth tag", async () => {
+    expect(await conn.awaitMessage("a.id1")).toBe(1);
+
+    conn.runRequest("auth", null);
+    expect(await conn.awaitMessage("m.auth")).toBeTruthy();
+    expect(await conn.awaitMessage("a.id1")).toBe(2);
+  });
+  it("should resend lazy-loaded data if the client is subscribed after calling a route with resendAuth tag", async () => {
+    const conn1 = WebsocketMocks.getConnectionStub();
+    conn1.runRequest("request.a.id2", null);
+    await conn1.awaitMessage("a.id2");
+
+    conn.runRequest("request.a.id2", null);
+    expect(await conn.awaitMessage("a.id2")).toBe(1);
+
+    conn.runRequest("auth", null);
+    expect(await conn.awaitMessage("m.auth")).toBeTruthy();
+    expect(await conn.awaitMessage("a.id2")).toBe(2);
+  });
+  it("should not resend lazy-loaded data if the client is not subscribed to it after calling a route with resendAuth tag", async () => {
+    conn.runRequest("auth", null);
+    expect(await conn.awaitMessage("m.auth")).toBeTruthy();
+    conn.awaitMessage("a.id2").then(() => {
+      fail(
+        "Lazy-loaded data was sent after changing the authentication. The client has not requested it, so it should not be sent."
+      );
+    });
+  });
 });
