@@ -139,82 +139,90 @@ describe("error handling", () => {
 });
 
 describe("subscription testing", () => {
-  let conn = WebsocketMocks.getConnectionStub();
-  beforeEach(() => {
-    conn = WebsocketMocks.getConnectionStub();
-  });
+  describe("default subscription", () => {
+    let conn1 = WebsocketMocks.getConnectionStub();
+    let conn2 = WebsocketMocks.getConnectionStub();
+    beforeEach(() => {
+      conn1 = WebsocketMocks.getConnectionStub();
+      conn2 = WebsocketMocks.getConnectionStub();
+    });
 
-  class filter implements MessageFilter {
-    async filter(
-      response: any | any[],
-      connection: StubWebsocketConnection
-    ): Promise<number> {
-      return connection.identifier;
-    }
-  }
-
-  class target {
-    data = new Map<number, string[]>();
-    outbound(conn: StubWebsocketConnection) {
-      return this.data.get(conn.identifier) || [];
-    }
-    async addEntry(content: string, conn: StubWebsocketConnection) {
-      const identifier = await new filter().filter(null, conn);
-      var data = this.data.get(identifier);
-      if (data) {
-        data.push(content);
-      } else {
-        this.data.set(identifier, [content]);
+    class target {
+      data: string[] = [];
+      outbound(conn: StubWebsocketConnection) {
+        return this.data;
+      }
+      async addEntry(content: string, conn: StubWebsocketConnection) {
+        this.data.push(content);
       }
     }
-  }
 
-  beforeEach(() => {
-    const out1 = new WebsocketOutbound("d.high", {
-      target: target.prototype,
-      propertyKey: "outbound",
-    });
-    out1.subscribeChanges();
-    WebsocketOutbounds.addOutbound(out1);
-    const out2 = new WebsocketOutbound("d.low", {
-      target: target.prototype,
-      propertyKey: "outbound",
-    });
-    out2.subscribeChanges();
-    WebsocketOutbounds.addOutbound(out2);
+    beforeEach(() => {
+      const out1 = new WebsocketOutbound("d.high", {
+        target: target.prototype,
+        propertyKey: "outbound",
+      });
+      out1.subscribeChanges();
+      WebsocketOutbounds.addOutbound(out1);
+      const out2 = new WebsocketOutbound("d.low", {
+        target: target.prototype,
+        propertyKey: "outbound",
+      });
+      out2.subscribeChanges();
+      WebsocketOutbounds.addOutbound(out2);
 
-    const route = new WebsocketRoute("add", {
-      target: target.prototype,
-      propertyKey: "addEntry",
-    });
-    route.modifies(["d.high", "d.low"]);
-    WebsocketRouter.registerRoute(route);
-  });
+      const route = new WebsocketRoute("add", {
+        target: target.prototype,
+        propertyKey: "addEntry",
+      });
+      route.modifies(["d.high", "d.low"]);
+      WebsocketRouter.registerRoute(route);
 
-  describe("default subscription", () => {
+      // reset data before each test run
+      if ((target.prototype as any).___data?._obj?.data) {
+        (target.prototype as any).___data._obj.data = [];
+      }
+    });
+
     it("should re-send high-priority data to subscribed connections", async () => {
-      expect(await conn.awaitMessage("d.high")).toHaveLength(0);
-      conn.runRequest("add", "new");
-      const updatedData = await conn.awaitMessage("d.high");
-      expect(updatedData).toHaveLength(1);
-      expect(updatedData).toStrictEqual(["new"]);
-      await conn.awaitMessage("m.add");
+      expect(
+        await Promise.all([
+          conn1.awaitMessage("d.high"),
+          conn2.awaitMessage("d.high"),
+        ])
+      ).toStrictEqual([[], []]);
+      conn1.runRequest("add", "new");
+      expect(
+        await Promise.all([
+          conn1.awaitMessage("d.high"),
+          conn2.awaitMessage("d.high"),
+        ])
+      ).toStrictEqual([["new"], ["new"]]);
+      await conn1.awaitMessage("m.add");
     });
     it("should re-send low-priority data to subscribed connections", async () => {
-      expect(await conn.awaitMessage("d.low")).toHaveLength(0);
-      conn.runRequest("add", "new");
-      await conn.awaitMessage("m.add");
-      const updatedData = await conn.awaitMessage("d.low");
-      expect(updatedData).toHaveLength(1);
-      expect(updatedData).toStrictEqual(["new"]);
+      expect(
+        await Promise.all([
+          conn1.awaitMessage("d.low"),
+          conn2.awaitMessage("d.low"),
+        ])
+      ).toStrictEqual([[], []]);
+      conn1.runRequest("add", "new");
+      await conn1.awaitMessage("m.add");
+      expect(
+        await Promise.all([
+          conn1.awaitMessage("d.low"),
+          conn2.awaitMessage("d.low"),
+        ])
+      ).toStrictEqual([["new"], ["new"]]);
     });
     it("should cancel subscription once the client closes the connection", async () => {
-      expect(await conn.awaitMessage("d.high")).toHaveLength(0);
-      conn.closeConnection();
+      expect(await conn1.awaitMessage("d.high")).toHaveLength(0);
+      conn1.closeConnection();
 
       const newConn = WebsocketMocks.getConnectionStub();
       newConn.runRequest("add", "_");
-      conn
+      conn1
         .awaitMessage("d.high")
         .then((data) => fail("Data was sent to a closed connection " + data));
       await newConn.awaitMessage("m.add");
@@ -222,25 +230,102 @@ describe("subscription testing", () => {
   });
 
   describe("filtered subscription", () => {
-    it.todo(
-      "should create a subscription on accessing the data (eager loading)"
-    );
-    it.todo(
-      "should create a subscription on accessing the data (lazy loading)"
-    );
-    it.todo(
-      "should re-send high-priority data to subscribed connections (filtered)"
-    );
-    it.todo(
-      "should not re-send high-priority data to other-filter subscribed connections (filtered)"
-    );
-    it.todo("should re-send low-priority data to subscribed connections");
-    it.todo(
-      "should not re-send low-priority data to other-filter subscribed connections"
-    );
-    it.todo(
-      "should cancel filtered subscription once the client closes the connection"
-    );
+    let conn1 = WebsocketMocks.getConnectionStub();
+    let conn2 = WebsocketMocks.getConnectionStub();
+    beforeEach(() => {
+      conn1 = WebsocketMocks.getConnectionStub();
+      conn2 = WebsocketMocks.getConnectionStub();
+    });
+
+    class filter implements MessageFilter {
+      async filter(
+        response: any | any[],
+        connection: StubWebsocketConnection
+      ): Promise<number> {
+        return connection.identifier;
+      }
+    }
+
+    class target {
+      data = new Map<number, string[]>();
+      outbound(conn: StubWebsocketConnection) {
+        return this.data.get(conn.identifier) || [];
+      }
+      async addEntry(content: string, conn: StubWebsocketConnection) {
+        const identifier = await new filter().filter(null, conn);
+        var data = this.data.get(identifier);
+        if (data) {
+          data.push(content);
+        } else {
+          this.data.set(identifier, [content]);
+        }
+      }
+    }
+
+    beforeEach(() => {
+      const out1 = new WebsocketOutbound("f.high", {
+        target: target.prototype,
+        propertyKey: "outbound",
+      });
+      out1.subscribeChanges(new filter());
+      WebsocketOutbounds.addOutbound(out1);
+      const out2 = new WebsocketOutbound("f.low", {
+        target: target.prototype,
+        propertyKey: "outbound",
+      });
+      out2.subscribeChanges(new filter());
+      WebsocketOutbounds.addOutbound(out2);
+
+      const route = new WebsocketRoute("fadd", {
+        target: target.prototype,
+        propertyKey: "addEntry",
+      });
+      route.modifies(["f.high", "f.low"], new filter());
+      WebsocketRouter.registerRoute(route);
+
+      // reset data before each test run
+      if ((target.prototype as any).___data?._obj?.data) {
+        (target.prototype as any).___data._obj.data = new Map();
+      }
+    });
+
+    it("should re-send high-priority data to subscribed connections matching the filter", async () => {
+      expect(
+        await Promise.all([
+          conn1.awaitMessage("f.high"),
+          conn2.awaitMessage("f.high"),
+        ])
+      ).toStrictEqual([[], []]);
+      conn1.runRequest("fadd", "new");
+      conn2.awaitMessage("f.high").then(() => {
+        fail("The second connection should not recieve updated data");
+      });
+      expect(await conn1.awaitMessage("f.high")).toStrictEqual(["new"]);
+      await conn1.awaitMessage("m.fadd");
+    });
+    it("should re-send low-priority data to subscribed connections matching the filter", async () => {
+      expect(
+        await Promise.all([
+          conn1.awaitMessage("f.low"),
+          conn2.awaitMessage("f.low"),
+        ])
+      ).toStrictEqual([[], []]);
+      conn1.runRequest("fadd", "new");
+      conn2.awaitMessage("f.low").then(() => {
+        fail("The second connection should not recieve updated data");
+      });
+      await conn1.awaitMessage("m.fadd");
+      expect(await conn1.awaitMessage("f.low")).toStrictEqual(["new"]);
+    });
+    it("should cancel subscription once the client closes the connection", async () => {
+      expect(await conn1.awaitMessage("f.low")).toHaveLength(0);
+      conn1.closeConnection();
+
+      conn1.runRequest("fadd", "_");
+      conn1
+        .awaitMessage("f.low")
+        .then((data) => fail("Data was sent to a closed connection " + data));
+    });
   });
 });
 
