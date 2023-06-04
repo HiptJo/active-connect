@@ -507,6 +507,20 @@ describe("authentication", () => {
     auth4.or.and = new Authenticator(false);
     route4.setAuthenticator(auth4);
     WebsocketRouter.registerRoute(route4);
+
+    const standalone1 = new StandaloneWebsocketRoute("standalone.auth", {
+      target: target.prototype,
+      propertyKey: "granted",
+    });
+    standalone1.setAuthenticator(new Authenticator(true));
+    WebsocketRouter.registerStandaloneRoute(standalone1);
+
+    const standalone2 = new StandaloneWebsocketRoute("standalone.unauth", {
+      target: target.prototype,
+      propertyKey: "denied",
+    });
+    standalone2.setAuthenticator(new Authenticator(false));
+    WebsocketRouter.registerStandaloneRoute(standalone2);
   });
 
   it("should be possible to create a authenticated route", async () => {
@@ -531,7 +545,7 @@ describe("authentication", () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("unauth", 1);
       conn
-        .awaitMessage("m.auth")
+        .awaitMessage("m.unauth")
         .then(() =>
           fail(
             "Callback was called, even though the request should be unauthenticated"
@@ -549,6 +563,23 @@ describe("authentication", () => {
       conn.runRequest("daisy_unauth", 1);
       conn
         .awaitMessage("m.daisy_unauth")
+        .then(() =>
+          fail(
+            "Callback was called, even though the request should be unauthenticated"
+          )
+        );
+      expect(await conn.awaitMessage("m.error")).toBe(UNAUTH);
+    });
+    it("should be possible to call an authenticated standalone route with (access granted)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("standalone.auth", 10);
+      expect(await conn.awaitMessage("m.standalone.auth")).toBe(11);
+    });
+    it("should not be possible to call an authenticated standalone route with (access denied)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("standalone.unauth", 1);
+      conn
+        .awaitMessage("m.standalone.unauth")
         .then(() =>
           fail(
             "Callback was called, even though the request should be unauthenticated"
