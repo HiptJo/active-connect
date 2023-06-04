@@ -1,12 +1,12 @@
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
-import { DecorableFunction } from "./function";
+import { AuthableDecorableFunction } from "./function";
 import { WebsocketOutbounds } from "./outbound";
 
 const ERROR = "__active-connect_error__";
 
-export class WebsocketRoute extends DecorableFunction {
+export class WebsocketRoute extends AuthableDecorableFunction {
   protected method: string;
   constructor(
     method: string,
@@ -50,11 +50,7 @@ export class WebsocketRoute extends DecorableFunction {
   ): Promise<boolean> {
     if (path.length === 1 && path[0] === this.method) {
       const res = await this.call(request);
-      if (
-        res != ERROR &&
-        !(res && res.toString().startsWith("auth:unauthorized")) &&
-        !(res && res.toString().startsWith("error:auth:unauthorized"))
-      ) {
+      if (res != ERROR) {
         request.connection.send(
           `m.${request.method}`,
           res,
@@ -96,8 +92,10 @@ export class WebsocketRoute extends DecorableFunction {
           WebsocketOutbounds.resendDataAfterAuth(request.connection).then();
         return data;
       } catch (e) {
-        console.error(e);
-        request.connection.send("m.error", e?.message || e);
+        if (!e.isAuthenticationError) {
+          console.error(e);
+          request.connection.send("m.error", e?.message || e);
+        }
         return ERROR;
       }
     } else {
@@ -140,11 +138,7 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
     // check if responsible for handling
     if (request.method === this.method) {
       const res = await this.call(request);
-      if (
-        res != ERROR &&
-        !(res && res.toString().startsWith("auth:unauthorized")) &&
-        !(res && res.toString().startsWith("error:auth:unauthorized"))
-      ) {
+      if (res != ERROR) {
         request.connection.send(
           `m.${request.method}`,
           res,

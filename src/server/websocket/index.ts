@@ -5,3 +5,4 @@ export * from "./server";
 export * from "./routing/router";
 export * from "./routing/route";
 export * from "./routing/outbound";
+export * from "./routing/function";

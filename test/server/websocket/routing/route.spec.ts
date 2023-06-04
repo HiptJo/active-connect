@@ -1,4 +1,8 @@
-import { WebsocketConnection } from "../../../../src";
+import {
+  WebsocketAuthenticator,
+  WebsocketConnection,
+  WebsocketRouter,
+} from "../../../../src";
 import { testEach } from "../../../../src/jest";
 import { WebsocketRequest } from "../../../../src/server/websocket/message/request";
 import {
@@ -240,10 +244,6 @@ describe("default route", () => {
       }
     );
   });
-
-  it.todo(
-    "should not return a response if the request does not have sufficcient permissions"
-  );
 });
 
 describe("standalone route", () => {
@@ -433,8 +433,131 @@ describe("standalone route", () => {
       }
     );
   });
+});
 
-  it.todo(
-    "should not return a response if the request does not have sufficcient permissions"
-  );
+describe("authentication", () => {
+  const UNAUTH = "not-authenticated";
+
+  class Authenticator extends WebsocketAuthenticator {
+    public label: string;
+    constructor(public grantPermission: boolean) {
+      super();
+      if (grantPermission) {
+        this.label = "granted";
+      } else {
+        this.label = "rejected";
+      }
+    }
+
+    public unauthenticatedMessage: string = UNAUTH;
+    public async authenticate(
+      conn: string | WebsocketConnection,
+      requestData: number
+    ): Promise<boolean> {
+      expect(conn).toBeDefined();
+      expect(conn).toBeInstanceOf(WebsocketConnection);
+      expect((conn as WebsocketConnection).id).toBeGreaterThanOrEqual(0);
+      expect(requestData).toBeDefined();
+      expect(requestData).toBeGreaterThan(0);
+      return this.grantPermission;
+    }
+  }
+
+  beforeAll(() => {
+    class target {
+      granted(data: number, conn: WebsocketConnection) {
+        return data + 1;
+      }
+      denied(data: any, conn: WebsocketConnection) {
+        fail(
+          "The denied method was called, even though the request must not pass the authentication step"
+        );
+      }
+    }
+    const route1 = new WebsocketRoute("auth", {
+      target: target.prototype,
+      propertyKey: "granted",
+    });
+    route1.setAuthenticator(new Authenticator(true));
+    WebsocketRouter.registerRoute(route1);
+
+    const route2 = new WebsocketRoute("unauth", {
+      target: target.prototype,
+      propertyKey: "denied",
+    });
+    route2.setAuthenticator(new Authenticator(false));
+    WebsocketRouter.registerRoute(route2);
+
+    const route3 = new WebsocketRoute("daisy_auth", {
+      target: target.prototype,
+      propertyKey: "granted",
+    });
+    const auth3 = new Authenticator(false);
+    auth3.or = new Authenticator(true);
+    auth3.or.and = new Authenticator(true);
+    route3.setAuthenticator(auth3);
+    WebsocketRouter.registerRoute(route3);
+
+    const route4 = new WebsocketRoute("daisy_unauth", {
+      target: target.prototype,
+      propertyKey: "denied",
+    });
+    const auth4 = new Authenticator(false);
+    auth4.or = new Authenticator(true);
+    auth4.or.and = new Authenticator(false);
+    route4.setAuthenticator(auth4);
+    WebsocketRouter.registerRoute(route4);
+  });
+
+  it("should be possible to create a authenticated route", async () => {
+    const authRoutes = WebsocketRouter.Routes.filter((r) => r.Method == "auth");
+    expect(authRoutes).toHaveLength(1);
+    expect(authRoutes[0].hasAuthenticator).toBeTruthy();
+
+    const unauthRoutes = WebsocketRouter.Routes.filter(
+      (r) => r.Method == "unauth"
+    );
+    expect(unauthRoutes).toHaveLength(1);
+    expect(unauthRoutes[0].hasAuthenticator).toBeTruthy();
+  });
+
+  describe("authentication checks", () => {
+    it("should be possible to call an authenticated route with (access granted)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("auth", 1);
+      expect(await conn.awaitMessage("m.auth")).toBe(2);
+    });
+    it("should reject the call when the authentication process fails (access denied)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("unauth", 1);
+      conn
+        .awaitMessage("m.auth")
+        .then(() =>
+          fail(
+            "Callback was called, even though the request should be unauthenticated"
+          )
+        );
+      expect(await conn.awaitMessage("m.error")).toBe(UNAUTH);
+    });
+    it("should be possible to daisy-chain authenticators (acccess granted)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("daisy_auth", 5);
+      expect(await conn.awaitMessage("m.daisy_auth")).toBe(6);
+    });
+    it("should be possible to daisy-chain authenticators (access denied)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("daisy_unauth", 1);
+      conn
+        .awaitMessage("m.daisy_unauth")
+        .then(() =>
+          fail(
+            "Callback was called, even though the request should be unauthenticated"
+          )
+        );
+      expect(await conn.awaitMessage("m.error")).toBe(UNAUTH);
+    });
+    it.todo(
+      "should not trigger the sendUpdates action if the route modifies something and authentication fails"
+    );
+  });
 });
