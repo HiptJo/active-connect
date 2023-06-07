@@ -157,13 +157,6 @@ describe("error handling", () => {
 
 describe("subscription testing", () => {
   describe("default subscription", () => {
-    let conn1 = WebsocketMocks.getConnectionStub();
-    let conn2 = WebsocketMocks.getConnectionStub();
-    beforeEach(() => {
-      conn1 = WebsocketMocks.getConnectionStub();
-      conn2 = WebsocketMocks.getConnectionStub();
-    });
-
     class target {
       data: string[] = [];
       outbound(conn: StubWebsocketConnection) {
@@ -202,6 +195,8 @@ describe("subscription testing", () => {
     });
 
     it("should re-send high-priority data to subscribed connections", async () => {
+      let conn1 = WebsocketMocks.getConnectionStub();
+      let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
           conn1.awaitMessage("d.high"),
@@ -218,6 +213,8 @@ describe("subscription testing", () => {
       await conn1.awaitMessage("m.add");
     });
     it("should re-send low-priority data to subscribed connections", async () => {
+      let conn1 = WebsocketMocks.getConnectionStub();
+      let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
           conn1.awaitMessage("d.low"),
@@ -234,6 +231,7 @@ describe("subscription testing", () => {
       ).toStrictEqual([["new"], ["new"]]);
     });
     it("should cancel subscription once the client closes the connection", async () => {
+      let conn1 = WebsocketMocks.getConnectionStub();
       expect(await conn1.awaitMessage("d.high")).toHaveLength(0);
       conn1.closeConnection();
 
@@ -247,13 +245,6 @@ describe("subscription testing", () => {
   });
 
   describe("filtered subscription", () => {
-    let conn1 = WebsocketMocks.getConnectionStub();
-    let conn2 = WebsocketMocks.getConnectionStub();
-    beforeEach(() => {
-      conn1 = WebsocketMocks.getConnectionStub();
-      conn2 = WebsocketMocks.getConnectionStub();
-    });
-
     class filter implements MessageFilter {
       async filter(
         response: any | any[],
@@ -307,6 +298,8 @@ describe("subscription testing", () => {
     });
 
     it("should re-send high-priority data to subscribed connections matching the filter", async () => {
+      let conn1 = WebsocketMocks.getConnectionStub();
+      let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
           conn1.awaitMessage("f.high"),
@@ -321,6 +314,8 @@ describe("subscription testing", () => {
       await conn1.awaitMessage("m.fadd");
     });
     it("should re-send low-priority data to subscribed connections matching the filter", async () => {
+      let conn1 = WebsocketMocks.getConnectionStub();
+      let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
           conn1.awaitMessage("f.low"),
@@ -335,23 +330,24 @@ describe("subscription testing", () => {
       expect(await conn1.awaitMessage("f.low")).toStrictEqual(["new"]);
     });
     it("should cancel subscription once the client closes the connection", async () => {
+      let conn1 = WebsocketMocks.getConnectionStub();
       expect(await conn1.awaitMessage("f.low")).toHaveLength(0);
       conn1.closeConnection();
 
       conn1.runRequest("fadd", "_");
       conn1
         .awaitMessage("f.low")
-        .then((data) => fail("Data was sent to a closed connection " + data));
+        .then((data) =>
+          fail(
+            "Data was sent to a closed connection (filtered subscription) " +
+              data
+          )
+        );
     });
   });
 });
 
 describe("after-auth resend testing", () => {
-  let conn = WebsocketMocks.getConnectionStub();
-  beforeEach(() => {
-    conn = WebsocketMocks.getConnectionStub();
-  });
-
   class target {
     data = 1;
     outbound() {
@@ -403,6 +399,8 @@ describe("after-auth resend testing", () => {
   });
 
   it("should be possible to manually trigger auth resend", async () => {
+    let conn = WebsocketMocks.getConnectionStub();
+
     expect(await conn.awaitMessage("a.id1")).toBe(1);
 
     WebsocketOutbounds.resendDataAfterAuth(conn).then();
@@ -410,6 +408,8 @@ describe("after-auth resend testing", () => {
     expect(await conn.awaitMessage("a.id1")).toBe(1);
   });
   it("should resend eager-loaded data after calling a route with resendAuth tag", async () => {
+    let conn = WebsocketMocks.getConnectionStub();
+
     expect(await conn.awaitMessage("a.id1")).toBe(1);
 
     conn.runRequest("auth", null);
@@ -417,6 +417,8 @@ describe("after-auth resend testing", () => {
     expect(await conn.awaitMessage("a.id1")).toBe(2);
   });
   it("should resend lazy-loaded data if the client is subscribed after calling a route with resendAuth tag", async () => {
+    let conn = WebsocketMocks.getConnectionStub();
+
     const conn1 = WebsocketMocks.getConnectionStub();
     conn1.runRequest("request.a.id2", null);
     await conn1.awaitMessage("a.id2");
@@ -429,6 +431,8 @@ describe("after-auth resend testing", () => {
     expect(await conn.awaitMessage("a.id2")).toBe(2);
   });
   it("should not resend lazy-loaded data if the client is not subscribed to it after calling a route with resendAuth tag", async () => {
+    let conn = WebsocketMocks.getConnectionStub();
+
     conn.runRequest("auth", null);
     expect(await conn.awaitMessage("m.auth")).toBeTruthy();
     conn.awaitMessage("a.id2").then(() => {

@@ -81,8 +81,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           !res.toString().startsWith("auth:unauthorized") &&
           !res.toString().startsWith("error:auth:unauthorized"))
       ) {
-        conn.send(this.method, res);
         await this.subscribeForConnection(conn, res);
+        conn.send(this.method, res);
       }
     } catch (e) {
       if (!e.isAuthenticationError) {
@@ -110,9 +110,11 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   }
 
   public async sendUpdatedData(key?: number) {
-    var connections = this.subscribedConnections.get(key || null);
-    if (connections) {
-      await Promise.all(connections.map((conn) => this.sendTo(conn)));
+    if (key || this.subscribesChanges) {
+      var connections = this.subscribedConnections.get(key || null);
+      if (connections) {
+        await Promise.all(connections.map((conn) => this.sendTo(conn)));
+      }
     }
   }
 
