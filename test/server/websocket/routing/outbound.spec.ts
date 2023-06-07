@@ -1,4 +1,5 @@
 import {
+  WebsocketConnection,
   WebsocketRequest,
   WebsocketRoute,
   WebsocketRouter,
@@ -8,13 +9,15 @@ import {
   WebsocketOutbounds,
 } from "../../../../src/server/websocket/routing/outbound";
 import { StubWebsocketConnection, WebsocketMocks } from "../../websocket-mocks";
-import { MessageFilter } from "../../../../src/server/websocket/auth/authenticator";
+import {
+  MessageFilter,
+  WebsocketAuthenticator,
+} from "../../../../src/server/websocket/auth/authenticator";
 import { testEach } from "../../../../src/jest";
 
 beforeEach(() => {
   WebsocketOutbounds.clear();
 });
-
 class target {
   out() {
     return {
@@ -432,6 +435,193 @@ describe("after-auth resend testing", () => {
       fail(
         "Lazy-loaded data was sent after changing the authentication. The client has not requested it, so it should not be sent."
       );
+    });
+  });
+});
+
+describe("authentication", () => {
+  const UNAUTH = "not-authenticated";
+
+  class Authenticator extends WebsocketAuthenticator {
+    public label: string;
+    constructor(public grantPermission: boolean) {
+      super();
+      if (grantPermission) {
+        this.label = "granted";
+      } else {
+        this.label = "rejected";
+      }
+    }
+
+    public unauthenticatedMessage: string = UNAUTH;
+    public async authenticate(
+      conn: string | WebsocketConnection,
+      requestData: null
+    ): Promise<boolean> {
+      expect(conn).toBeDefined();
+      expect(conn).toBeInstanceOf(WebsocketConnection);
+      expect((conn as WebsocketConnection).id).toBeGreaterThanOrEqual(0);
+      expect(requestData).toBeNull();
+      return this.grantPermission;
+    }
+  }
+
+  it("should be possible to create a authenticated outbound", async () => {
+    class target {
+      out() {
+        return "";
+      }
+    }
+    const out = new WebsocketOutbound("auth.out1", {
+      target: target.prototype,
+      propertyKey: "out",
+    });
+    out.setAuthenticator(new Authenticator(true));
+    WebsocketOutbounds.addOutbound(out);
+  });
+
+  describe("authentication checks", () => {
+    class target1 {
+      static data = "data";
+      granted() {
+        return target1.data;
+      }
+      denied() {
+        fail(
+          "The denied method was called, even though the request must not pass the authentication step"
+        );
+      }
+    }
+
+    beforeEach(() => {
+      const out2 = new WebsocketOutbound("auth.out2", {
+        target: target1.prototype,
+        propertyKey: "granted",
+      });
+      out2.setAuthenticator(new Authenticator(true));
+      WebsocketOutbounds.addOutbound(out2);
+
+      const out3 = new WebsocketOutbound("auth.out3", {
+        target: target1.prototype,
+        propertyKey: "denied",
+      });
+      out3.setAuthenticator(new Authenticator(false));
+      WebsocketOutbounds.addOutbound(out3);
+
+      const out4 = new WebsocketOutbound(
+        "auth.out4",
+        {
+          target: target1.prototype,
+          propertyKey: "granted",
+        },
+        true
+      );
+      out4.setAuthenticator(new Authenticator(true));
+      WebsocketOutbounds.addOutbound(out4);
+
+      const out5 = new WebsocketOutbound(
+        "auth.out5",
+        {
+          target: target1.prototype,
+          propertyKey: "denied",
+        },
+        true
+      );
+      out5.setAuthenticator(new Authenticator(false));
+      WebsocketOutbounds.addOutbound(out5);
+
+      const out6 = new WebsocketOutbound("auth.out6", {
+        target: target1.prototype,
+        propertyKey: "granted",
+      });
+      var auth = new Authenticator(true);
+      auth.or = new Authenticator(false);
+      out6.setAuthenticator(auth);
+      WebsocketOutbounds.addOutbound(out6);
+
+      const out7 = new WebsocketOutbound("auth.out7", {
+        target: target1.prototype,
+        propertyKey: "denied",
+      });
+      auth = new Authenticator(true);
+      auth.and = new Authenticator(false);
+      auth.and.or = new Authenticator(false);
+      out7.setAuthenticator(auth);
+      WebsocketOutbounds.addOutbound(out7);
+
+      const out8 = new WebsocketOutbound(
+        "auth.out8",
+        {
+          target: target1.prototype,
+          propertyKey: "granted",
+        },
+        true
+      );
+      auth = new Authenticator(true);
+      auth.and = new Authenticator(false);
+      auth.and.or = new Authenticator(true);
+      out8.setAuthenticator(auth);
+      WebsocketOutbounds.addOutbound(out8);
+
+      const out9 = new WebsocketOutbound(
+        "auth.out9",
+        {
+          target: target1.prototype,
+          propertyKey: "denied",
+        },
+        true
+      );
+      auth = new Authenticator(false);
+      auth.and = new Authenticator(true);
+      auth.and.or = new Authenticator(true);
+      out9.setAuthenticator(auth);
+      WebsocketOutbounds.addOutbound(out9);
+    });
+
+    it("should send authenticated outbound on connect (eager-loading, access granted)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      expect(await conn.awaitMessage("auth.out2")).toBe(target1.data);
+    });
+    it("should not send authenticated outbound on connect (eager-loading, access denied)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.awaitMessage("auth.out3").then(() => {
+        fail("should not receive data as auth should fail");
+      });
+    });
+    it("should be possible to request an outbound (lazy-loading, access granted)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("request.auth.out4", null);
+      expect(await conn.awaitMessage("auth.out4")).toBe(target1.data);
+    });
+    it("should not be possible to request an outbound (lazy-loading, access denied)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("request.auth.out5", null);
+      conn.awaitMessage("auth.out5").then(() => {
+        fail("should not receive data as auth should fail");
+      });
+    });
+
+    it("should be possible to daisy-chain authenticators (eager-loading, access granted)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      expect(await conn.awaitMessage("auth.out6")).toBe(target1.data);
+    });
+    it("should be possible to daisy-chain authenticators (eager-loading, access denied)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.awaitMessage("auth.out7").then(() => {
+        fail("should not receive data as auth should fail");
+      });
+    });
+    it("should be possible to daisy-chain authenticators (lazy-loading, access granted)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("request.auth.out8", null);
+      expect(await conn.awaitMessage("auth.out8")).toBe(target1.data);
+    });
+    it("should be possible to daisy-chain authenticators (lazy-loading, access denied)", async () => {
+      const conn = WebsocketMocks.getConnectionStub();
+      conn.runRequest("request.auth.out9", null);
+      conn.awaitMessage("auth.out9").then(() => {
+        fail("should not receive data as auth should fail");
+      });
     });
   });
 });

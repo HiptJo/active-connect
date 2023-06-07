@@ -22,7 +22,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
 
   private messageHistory: Map<string, any> = new Map();
   send(method: string, data: any) {
-    if (this.expectedMessages.has(method)) {
+    if (this.expectedMessages && this.expectedMessages.has(method)) {
       const func = this.expectedMessages.get(method);
       this.expectedMessages.delete(method);
       func(data);

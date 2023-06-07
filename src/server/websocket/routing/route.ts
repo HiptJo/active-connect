@@ -114,6 +114,10 @@ export class WebsocketRoute extends AuthableDecorableFunction {
       WebsocketOutbounds.sendUpdates(config.outboundRoutes, filter);
     }
   }
+
+  protected sendError(conn: WebsocketConnection, message: string): void {
+    conn.send("m.error", message);
+  }
 }
 
 export class StandaloneWebsocketRoute extends WebsocketRoute {

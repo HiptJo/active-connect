@@ -1,6 +1,6 @@
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
-import { DecorableFunction } from "./function";
+import { AuthableDecorableFunction } from "./function";
 import { StandaloneWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
 
@@ -17,7 +17,7 @@ export interface WebsocketAuthorizationCheckable {
  * Outbounds are used to send data to clients.
  * They support features like authentication-checks, subscription-management and more.
  */
-export class WebsocketOutbound extends DecorableFunction {
+export class WebsocketOutbound extends AuthableDecorableFunction {
   /**
    * Creates a new outbound config
    *
@@ -76,16 +76,19 @@ export class WebsocketOutbound extends DecorableFunction {
     try {
       const res = await this.Func(conn);
       if (
-        res &&
-        !res.toString().startsWith("auth:unauthorized") &&
-        !res.toString().startsWith("error:auth:unauthorized")
+        !res ||
+        (res &&
+          !res.toString().startsWith("auth:unauthorized") &&
+          !res.toString().startsWith("error:auth:unauthorized"))
       ) {
         conn.send(this.method, res);
         await this.subscribeForConnection(conn, res);
       }
     } catch (e) {
-      console.error(e);
-      conn.send("m.error", e?.message || e);
+      if (!e.isAuthenticationError) {
+        console.error(e);
+        conn.send("m.error", e?.message || e);
+      }
     }
   }
 
@@ -125,6 +128,8 @@ export class WebsocketOutbound extends DecorableFunction {
   public get subscriptionEnabled() {
     return this.subscribesChanges || this.subscribesFilteredChanges.length > 0;
   }
+
+  protected sendError(conn: WebsocketConnection, message: string) {}
 }
 
 /**

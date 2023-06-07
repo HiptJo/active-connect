@@ -34,7 +34,7 @@ export class AuthenticationError extends Error {
   }
 }
 
-export class AuthableDecorableFunction extends DecorableFunction {
+export abstract class AuthableDecorableFunction extends DecorableFunction {
   private authenticator: WebsocketAuthenticator | null = null;
   public setAuthenticator(authenticator: WebsocketAuthenticator) {
     this.authenticator = authenticator;
@@ -50,7 +50,7 @@ export class AuthableDecorableFunction extends DecorableFunction {
         if (await authenticator.checkAuthentication(conn, requestData)) {
           return func(...data);
         } else {
-          conn.send("m.error", authenticator.unauthenticatedMessage);
+          this.sendError(conn, authenticator.unauthenticatedMessage);
           throw new AuthenticationError(
             "Could not Authenticate for authenticator=" + authenticator.label
           );
@@ -64,4 +64,9 @@ export class AuthableDecorableFunction extends DecorableFunction {
   public get hasAuthenticator() {
     return this.authenticator != null;
   }
+
+  protected abstract sendError(
+    conn: WebsocketConnection,
+    message: string
+  ): void;
 }

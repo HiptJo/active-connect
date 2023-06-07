@@ -1,6 +1,8 @@
 import {
   WebsocketAuthenticator,
   WebsocketConnection,
+  WebsocketOutbound,
+  WebsocketOutbounds,
   WebsocketRouter,
 } from "../../../../src";
 import { testEach } from "../../../../src/jest";
@@ -435,34 +437,34 @@ describe("standalone route", () => {
   });
 });
 
-describe("authentication", () => {
-  const UNAUTH = "not-authenticated";
+const UNAUTH = "not-authenticated";
 
-  class Authenticator extends WebsocketAuthenticator {
-    public label: string;
-    constructor(public grantPermission: boolean) {
-      super();
-      if (grantPermission) {
-        this.label = "granted";
-      } else {
-        this.label = "rejected";
-      }
-    }
-
-    public unauthenticatedMessage: string = UNAUTH;
-    public async authenticate(
-      conn: string | WebsocketConnection,
-      requestData: number
-    ): Promise<boolean> {
-      expect(conn).toBeDefined();
-      expect(conn).toBeInstanceOf(WebsocketConnection);
-      expect((conn as WebsocketConnection).id).toBeGreaterThanOrEqual(0);
-      expect(requestData).toBeDefined();
-      expect(requestData).toBeGreaterThan(0);
-      return this.grantPermission;
+class Authenticator extends WebsocketAuthenticator {
+  public label: string;
+  constructor(public grantPermission: boolean) {
+    super();
+    if (grantPermission) {
+      this.label = "granted";
+    } else {
+      this.label = "rejected";
     }
   }
 
+  public unauthenticatedMessage: string = UNAUTH;
+  public async authenticate(
+    conn: string | WebsocketConnection,
+    requestData: number
+  ): Promise<boolean> {
+    expect(conn).toBeDefined();
+    expect(conn).toBeInstanceOf(WebsocketConnection);
+    expect((conn as WebsocketConnection).id).toBeGreaterThanOrEqual(0);
+    expect(requestData).toBeDefined();
+    expect(requestData).toBeGreaterThan(0);
+    return this.grantPermission;
+  }
+}
+
+describe("authentication", () => {
   beforeAll(() => {
     class target {
       granted(data: number, conn: WebsocketConnection) {
@@ -587,8 +589,42 @@ describe("authentication", () => {
         );
       expect(await conn.awaitMessage("m.error")).toBe(UNAUTH);
     });
-    it.todo(
-      "should not trigger the sendUpdates action if the route modifies something and authentication fails"
-    );
+  });
+});
+
+it("should not trigger the sendUpdates action if the route modifies something and authentication fails", async () => {
+  class target2 {
+    data = "";
+    out() {
+      return this.data;
+    }
+    add(i: number) {
+      this.data += i.toString();
+    }
+  }
+
+  const out = new WebsocketOutbound("target2.out", {
+    target: target2.prototype,
+    propertyKey: "out",
+  });
+  out.subscribeChanges();
+  WebsocketOutbounds.addOutbound(out);
+
+  const route = new StandaloneWebsocketRoute(
+    "target2.add",
+    { target: target2.prototype, propertyKey: "add" },
+    false
+  );
+  route.modifies(["target2.out"]);
+  route.setAuthenticator(new Authenticator(false));
+
+  WebsocketRouter.registerStandaloneRoute(route);
+
+  const conn = WebsocketMocks.getConnectionStub();
+  expect(await conn.awaitMessage("target2.out")).toBe("");
+  conn.runRequest("target2.add", 6);
+  expect(await conn.awaitMessage("m.error")).toBe("not-authenticated");
+  conn.awaitMessage("target2.out").then(() => {
+    fail("Data should not be re-sent as method did fail");
   });
 });
