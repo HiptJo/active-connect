@@ -1,16 +1,15 @@
 import {
   HttpServer,
-  StandaloneRoute,
+  StandaloneWebsocketRoute,
   WebsocketConnection,
-  WebsocketRequest,
+  WebsocketRouter,
 } from "../../src/active-connect";
-import { WebsocketRouter } from "../../src/server/websocket/routing/router";
-import { WebsocketMocks } from "./websocket-mocks";
+import { WebsocketClient } from "./websocket-client";
 
 let server: HttpServer;
 
 beforeEach(async () => {
-  server = new HttpServer(9010, true);
+  server = new HttpServer(9008, true);
   await server.awaitStart();
 });
 afterEach(() => {
@@ -19,21 +18,26 @@ afterEach(() => {
 
 it("should be possible to fetch the client information of a connection", async () => {
   class Testing {
-    @StandaloneRoute("fetch.data")
     async route(data: any, conn: WebsocketConnection) {
       return conn.clientInformation;
     }
   }
+  WebsocketRouter.registerStandaloneRoute(
+    new StandaloneWebsocketRoute("fetch.data", {
+      target: Testing.prototype,
+      propertyKey: "route",
+    })
+  );
   expect(Testing).toBeDefined();
 
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
+  const client = new WebsocketClient(9008);
+  await client.awaitConnection();
+  expect(client).toBeTruthy();
+  client.send("___browser", { browser: "SampleLabel" });
+  await client.awaitMessage("m.___browser");
 
-  await router.route(
-    new WebsocketRequest("___browser", { browser: "SampleLabel" }, conn)
-  );
-  await router.route(new WebsocketRequest("fetch.data", null, conn));
-  const data = (await conn.awaitMessage("m.fetch.data")) as {
+  client.send("fetch.data", null);
+  const data = (await client.awaitMessage("m.fetch.data")) as {
     ip: string;
     browser: string | undefined;
   };

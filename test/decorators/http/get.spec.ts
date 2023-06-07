@@ -13,7 +13,7 @@ it("should be possible to register a get method", async () => {
       res.send("{ some data is delivered }");
     }
   }
-  server = new HttpServer(9003, false);
+  server = new HttpServer(9010, false);
   await server.awaitStart();
   expect(Testing).toBeDefined();
   await test(server.App)

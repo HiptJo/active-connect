@@ -1,18 +1,24 @@
 import {
   HttpServer,
-  Outbound,
-  Route,
-  StandaloneRoute,
-  SubscribeChanges,
+  StandaloneWebsocketRoute,
+  WebsocketOutbound,
+  WebsocketOutbounds,
+  WebsocketRouter,
 } from "../../../src/active-connect";
 import * as assert from "assert";
 import { WebsocketClient } from "../websocket-client";
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
+}
 
 describe("server creation", () => {
   let server: HttpServer;
 
   beforeEach(() => {
-    server = new HttpServer(9000, true);
+    server = new HttpServer(9002, true);
   });
   afterEach(() => {
     server.stop();
@@ -22,21 +28,26 @@ describe("server creation", () => {
   });
   it("should be possible to connect to websocket", async () => {
     assert.strictEqual(await server.awaitStart(), true);
-    assert.strictEqual(await new WebsocketClient(9000).awaitConnection(), true);
+    assert.strictEqual(await new WebsocketClient(9002).awaitConnection(), true);
   });
 
   it("should be possible to receive messages", async () => {
     assert.strictEqual(await server.awaitStart(), true);
 
     class Testing {
-      @Outbound("await.message")
       message() {
         return "hellomsg";
       }
     }
+    WebsocketOutbounds.addOutbound(
+      new WebsocketOutbound("await.message", {
+        target: Testing.prototype,
+        propertyKey: "message",
+      })
+    );
     expect(Testing).toBeDefined();
 
-    const client = new WebsocketClient(null);
+    const client = new WebsocketClient(9002);
     assert.strictEqual(await client.awaitConnection(), true);
 
     const msg = await client.awaitMessage("await.message");
@@ -46,16 +57,20 @@ describe("server creation", () => {
   it("should be possible to get false", async () => {
     assert.strictEqual(await server.awaitStart(), true);
 
-    @Route("falseval")
     class Testing {
-      @Route("awaitfalse")
       message() {
         return false;
       }
     }
+    WebsocketRouter.registerStandaloneRoute(
+      new StandaloneWebsocketRoute("falseval.awaitfalse", {
+        target: Testing.prototype,
+        propertyKey: "message",
+      })
+    );
     expect(Testing).toBeDefined();
 
-    const client = new WebsocketClient(null);
+    const client = new WebsocketClient(9002);
     assert.strictEqual(await client.awaitConnection(), true);
 
     client.send("falseval.awaitfalse", null);
@@ -63,59 +78,54 @@ describe("server creation", () => {
     expect(msg).toBe(false);
   });
 
-  it("should be possible to get false through a standalone route", async () => {
-    assert.strictEqual(await server.awaitStart(), true);
-
-    class Testing {
-      @StandaloneRoute("standalone1.awaitfalse")
-      message() {
-        return false;
-      }
-    }
-    expect(Testing).toBeDefined();
-
-    const client = new WebsocketClient(null);
-    assert.strictEqual(await client.awaitConnection(), true);
-
-    client.send("standalone1.awaitfalse", null);
-    const msg = await client.awaitMessage("m.standalone1.awaitfalse");
-    expect(msg).toBe(false);
-  });
-
   it("should be possible to close a websocket client", async () => {
     assert.strictEqual(await server.awaitStart(), true);
     class Testing {
-      @Outbound("await.message1")
-      @SubscribeChanges
       message() {
         return "hellomsg";
       }
     }
+    const out = new WebsocketOutbound("await.message1", {
+      target: Testing.prototype,
+      propertyKey: "message",
+    });
+    out.subscribeChanges();
+    WebsocketOutbounds.addOutbound(out);
     expect(Testing).toBeDefined();
 
-    const client = new WebsocketClient(null);
+    const client = new WebsocketClient(9002);
     assert.strictEqual(await client.awaitConnection(), true);
 
     const msg = await client.awaitMessage("await.message1");
     expect(msg).toBe("hellomsg");
     client.close();
+
+    await delay(100);
+    await WebsocketOutbounds.sendUpdates(["await.message1"]);
+    client.awaitMessage("await.message1").then(() => {
+      fail("The update should not be sent as the connection has been closed");
+    });
   });
   it("should be possible to receive a large data-amount", async () => {
     assert.strictEqual(await server.awaitStart(), true);
     class Testing {
-      @Outbound("await.message1")
-      @SubscribeChanges
       message() {
-        return "hellomsg".repeat(1000);
+        return "hellomsg".repeat(10000);
       }
     }
+    const out = new WebsocketOutbound("await.message1", {
+      target: Testing.prototype,
+      propertyKey: "message",
+    });
+    out.subscribeChanges();
+    WebsocketOutbounds.addOutbound(out);
     expect(Testing).toBeDefined();
 
-    const client = new WebsocketClient(null);
+    const client = new WebsocketClient(9002);
     assert.strictEqual(await client.awaitConnection(), true);
 
     const msg = await client.awaitMessage("await.message1");
-    expect(msg).toBe("hellomsg".repeat(1000));
+    expect(msg).toBe("hellomsg".repeat(10000));
     client.close();
   });
 });

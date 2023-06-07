@@ -3,7 +3,7 @@ import { Server, ServerOptions } from "ws";
 import * as WebSocket from "ws";
 
 import { WebsocketConnection } from "./connection/connection";
-import { StandaloneWebsocketRoute } from "./routing/route";
+import { SimpleWebsocketRoute } from "./routing/route";
 import { WebsocketRouter } from "./routing/router";
 
 export class WebsocketServer {
@@ -52,28 +52,24 @@ export class WebsocketServer {
   }
 
   private initializeClientInformationExchange() {
-    WebsocketRouter.registerStandaloneRoute(
-      new StandaloneWebsocketRoute(
+    WebsocketRouter.registerRoute(
+      new SimpleWebsocketRoute(
         "___browser",
         this.onClientInformationReceived.bind(this)
       )
     );
     // deprecated - backward support (avoid undefined route ___ip)
-    WebsocketRouter.registerStandaloneRoute(
-      new StandaloneWebsocketRoute("___ip", {
-        target: class target {
-          ip() {}
-        }.prototype,
-        propertyKey: "ip",
-      })
+    WebsocketRouter.registerRoute(
+      new SimpleWebsocketRoute("___ip", this.onIpReceived.bind(this))
     );
   }
-  private onClientInformationReceived(
+  public onClientInformationReceived(
     info: { browser: string },
     conn: WebsocketConnection
   ) {
     conn.clientInformation.browser = info.browser;
   }
+  public onIpReceived(ip: any, conn: WebsocketConnection) {}
 
   public getConnections(): Array<WebsocketConnection> {
     return this.connections;

@@ -161,3 +161,21 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
     );
   }
 }
+
+/**
+ * This route config can be used to create a route for an function
+ * without target/propertyKey config
+ */
+export class SimpleWebsocketRoute extends WebsocketRoute {
+  constructor(
+    method: string,
+    private func: (...data: any[]) => Promise<any>,
+    modifiesAuthentication?: boolean
+  ) {
+    super(method, null, modifiesAuthentication);
+  }
+
+  get Func(): (...data: any[]) => Promise<any> | any {
+    return this.func;
+  }
+}

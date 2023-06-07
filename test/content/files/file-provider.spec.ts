@@ -18,7 +18,7 @@ it("should be possible to register a file provider", async () => {
       );
     }
   }
-  server = new HttpServer(9003, false);
+  server = new HttpServer(9012, false);
   await server.awaitStart();
   expect(Testing).toBeDefined();
   await test(server.App)

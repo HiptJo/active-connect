@@ -118,10 +118,11 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
 
   public unsubscribeConnection(conn: WebsocketConnection) {
     for (var key of this.subscribedConnections.keys()) {
-      this.subscribedConnections.set(
-        key,
-        this.subscribedConnections.get(key).filter((c) => c != conn)
-      );
+      const connections = this.subscribedConnections.get(key);
+      const index = connections.indexOf(conn);
+      if (index >= 0) {
+        connections.splice(index);
+      }
     }
   }
 
