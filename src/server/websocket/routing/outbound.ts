@@ -6,28 +6,31 @@ import { WebsocketRouter } from "./router";
 
 /**
  * @deprecated
+ * Interface for checking WebSocket authorization.
  */
 export interface WebsocketAuthorizationCheckable {
+  /**
+   * Checks WebSocket authorization based on the provided authentication token.
+   * @param authToken - The authentication token to check.
+   * @returns A promise that resolves to true if the authentication is valid, otherwise false.
+   */
   checkAuth(authToken: string): Promise<boolean>;
 }
 
 /**
- * This object is used to configure a outbound.
- *
- * Outbounds are used to send data to clients.
- * They support features like authentication-checks, subscription-management and more.
+ * This object is used to configure an outbound.
+ * Outbounds are used to send data to clients and support features like authentication checks and subscription management.
  */
 export class WebsocketOutbound extends AuthableDecorableFunction {
   /**
-   * Creates a new outbound config
-   *
+   * Creates a new outbound configuration.
    * @param method - The method represents a unique identifier for the outbound. Data sent is labeled using the method.
-   * @param objConfig - This contains a reference to the method functionality
-   * @param objConfig.target - The prototype of the class containing the source-code of this outbound. (eg. MyClass.prototype)
-   * @param objConfig.propertyKey - The name of the function within the class
-   * @param lazyLoading - When this option is enabled, data is not sent initially to all clients. They can request it, if needed.
+   * @param objConfig - The configuration object containing the method functionality.
+   * @param objConfig.target - The prototype of the class containing the source code of this outbound. (e.g., `MyClass.prototype`)
+   * @param objConfig.propertyKey - The name of the function within the class.
+   * @param lazyLoading - When enabled, data is not sent initially to all clients. They can request it if needed.
    * @param resendAfterAuthentication - When enabled, data is updated once any route with `modifiesAuthentication=true` is called by this connection.
-   *            This can be used to automatically send the userdata to the client, once the client is signed in.
+   *                                   This can be used to automatically send the user data to the client once the client is signed in.
    */
   constructor(
     public method: string,
@@ -41,6 +44,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   private subscribesChanges: boolean = false;
   private subscribesFilteredChanges: MessageFilter[] = [];
 
+  /**
+   * Enables subscribing to changes for this outbound.
+   * @param filter - Optional filter for subscribing to filtered changes.
+   */
   public subscribeChanges(filter?: MessageFilter) {
     if (filter) {
       this.subscribesFilteredChanges.push(filter);
@@ -49,29 +56,39 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     }
   }
 
+  /**
+   * Subscribes the provided connection to this outbound's changes.
+   * @param conn - The WebSocket connection to subscribe.
+   * @param response - The response object associated with the subscription.
+   */
   public async subscribeForConnection(
     conn: WebsocketConnection,
     response: any
   ) {
     this.addSubscriptionForKey(null, conn);
-    for await (var filter of this.subscribesFilteredChanges) {
+    for await (const filter of this.subscribesFilteredChanges) {
       this.addSubscriptionForKey(await filter.filter(response, conn), conn);
     }
   }
 
   private subscribedConnections: Map<number, WebsocketConnection[]> = new Map();
-  private addSubscriptionForKey(key: number, conn: WebsocketConnection) {
-    var result = this.subscribedConnections.get(key);
+
+  private addSubscriptionForKey(key: number | null, conn: WebsocketConnection) {
+    const result = this.subscribedConnections.get(key);
     if (!result) {
       this.subscribedConnections.set(key, [conn]);
     } else {
-      // check if connection not already inside map
+      // Check if connection is not already inside the map
       if (!result.includes(conn)) {
         this.subscribedConnections.get(key).push(conn);
       }
     }
   }
 
+  /**
+   * Sends the outbound data to the provided connection.
+   * @param conn - The WebSocket connection to send the data to.
+   */
   public async sendTo(conn: WebsocketConnection) {
     try {
       const res = await this.Func(conn);
@@ -92,16 +109,25 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     }
   }
 
+  /**
+   * Sends the outbound data to the provided connection if it is subscribed to changes.
+   * @param conn - The WebSocket connection to send the data to.
+   */
   public async sendToIfSubscribed(conn: WebsocketConnection) {
     if (this.connectionSubscribesForChanges(conn)) {
       this.sendTo(conn);
     }
   }
 
+  /**
+   * Checks if the provided connection is subscribed to changes for this outbound.
+   * @param conn - The WebSocket connection to check.
+   * @returns True if the connection is subscribed, otherwise false.
+   */
   public connectionSubscribesForChanges(conn: WebsocketConnection) {
-    for (var conns of this.subscribedConnections) {
-      for (var c of conns[1]) {
-        if (c == conn) {
+    for (const conns of this.subscribedConnections) {
+      for (const c of conns[1]) {
+        if (c === conn) {
           return true;
         }
       }
@@ -109,17 +135,25 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     return false;
   }
 
+  /**
+   * Sends updated data to all subscribed connections for the specified key or for all changes.
+   * @param key - Optional key for filtering the connections to update.
+   */
   public async sendUpdatedData(key?: number) {
     if (key || this.subscribesChanges) {
-      var connections = this.subscribedConnections.get(key || null);
+      const connections = this.subscribedConnections.get(key || null);
       if (connections) {
         await Promise.all(connections.map((conn) => this.sendTo(conn)));
       }
     }
   }
 
+  /**
+   * Unsubscribes the provided connection from all subscriptions.
+   * @param conn - The WebSocket connection to unsubscribe.
+   */
   public unsubscribeConnection(conn: WebsocketConnection) {
-    for (var key of this.subscribedConnections.keys()) {
+    for (const key of this.subscribedConnections.keys()) {
       const connections = this.subscribedConnections.get(key);
       const index = connections.indexOf(conn);
       if (index >= 0) {
@@ -128,23 +162,29 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     }
   }
 
+  /**
+   * Determines if subscriptions are enabled for this outbound.
+   */
   public get subscriptionEnabled() {
     return this.subscribesChanges || this.subscribesFilteredChanges.length > 0;
   }
 
-  protected sendError(conn: WebsocketConnection, message: string) {}
+  /**
+   * Sends an error message to the provided connection.
+   * @param conn - The WebSocket connection to send the error message to.
+   * @param message - The error message to send.
+   */
+  protected sendError(conn: WebsocketConnection, message: string) {
+    conn.send("m.error", message);
+  }
 }
 
 /**
- * This is used to manage all used outbounds.
- *
- * All active outbounds have to be registered using `WebsocketOutbounds.addOutbound(...)`
- * Registered outbounds are sent to clients automatically, once they open a connection.
- *
- * Eager loading and lazy loading is supported.
- * The default loading strategy is eager loading.
- *
- * As only one unique outbound configuration is supported, static variables are used.
+ * Manages all used outbounds.
+ * All active outbounds must be registered using `WebsocketOutbounds.addOutbound(...)`.
+ * Registered outbounds are sent to clients automatically when they open a connection.
+ * Eager loading and lazy loading are supported, with eager loading being the default strategy.
+ * Note: Outbounds registered using decorators are not automatically added again.
  */
 export class WebsocketOutbounds {
   private constructor() {}
@@ -152,10 +192,9 @@ export class WebsocketOutbounds {
   private static outbounds: Map<string, WebsocketOutbound> = new Map();
 
   /**
-   * Registers a outbound.
-   * Registered outbounds are sent to clients, once they open a connection.
-   *
-   * @param outbound - This outbound configuration will be registered
+   * Registers an outbound configuration.
+   * Registered outbounds are sent to clients when they open a connection.
+   * @param outbound - The outbound configuration to register.
    */
   public static addOutbound(outbound: WebsocketOutbound) {
     WebsocketOutbounds.outbounds.set(outbound.method, outbound);
@@ -177,21 +216,19 @@ export class WebsocketOutbounds {
   }
 
   /**
-   * Returns the outbound matching the method, returns null if no outbound has been found
-   *
-   * @param method
-   * @returns
+   * Retrieves the registered outbound configuration for the specified method.
+   * @param method - The method of the outbound configuration.
+   * @returns The registered outbound configuration, or undefined if not found.
    */
   public static getOutbound(method: string): WebsocketOutbound | null {
     return WebsocketOutbounds.outbounds.get(method) || null;
   }
 
   /**
-   * Sends updated data to all subscribed connections for the defined methods
+   * Sends updated data to all subscribed connections for the defined methods.
    * Once the first outbound (method[0]) has been updated, the promise is resolved.
-   *
-   * @param methods - methods of the outbounds to be updated
-   * @param [key]
+   * @param methods - Methods of the outbounds to be updated.
+   * @param [key] - Optional key for filtering the connections to update.
    */
   public static async sendUpdates(methods: Array<string>, key?: any) {
     var methods = [...methods];
@@ -206,10 +243,12 @@ export class WebsocketOutbounds {
   }
 
   /**
-   * Sends the current state of data to subscribed connections.
+   * Sends the current state of data to subscribed connections for the specified method.
+   * This method is responsible for sending updated data to connections that have subscribed to the specified method.
    *
-   * @param method - method of the outbound that should be updated
-   * @param [key]
+   * @param method - The method of the outbound that should be updated.
+   * @param [key] - Optional key for filtering the connections to update.
+   * @throws {Error} If the outbound for the specified method does not exist or subscription is not enabled.
    */
   private static async sendUpdatesForMethod(
     method: string,
@@ -226,20 +265,18 @@ export class WebsocketOutbounds {
   }
 
   /**
-   * Unsubscribes this connection from all subscriptions
-   * This can be used when the connection closes the connection
-   *
-   * @param conn - the closed connection
+   * Unsubscribes the provided connection from all subscriptions.
+   * This can be used when the connection closes the connection.
+   * @param conn - The closed connection.
    */
   public static unsubscribeConnection(conn: WebsocketConnection) {
     WebsocketOutbounds.outbounds.forEach((o) => o.unsubscribeConnection(conn));
   }
 
   /**
-   * Sends all outbound data to a client. This is triggered, once the client opens a new connection.
-   * The connection automatically subscribes for updates, when it is enabled in the outbound config.
-   *
-   * @param conn - data is sent to this connection
+   * Sends all outbound data to a client. This is triggered once the client opens a new connection.
+   * The connection automatically subscribes for updates when it is enabled in the outbound config.
+   * @param conn - Data is sent to this connection.
    */
   public static async sendToConnection(conn: WebsocketConnection) {
     for (var out of WebsocketOutbounds.outbounds) {
@@ -249,10 +286,9 @@ export class WebsocketOutbounds {
 
   /**
    * Triggers the requested outbound to be sent to the given connection.
-   * The connection automatically subscribes for updates, when it is enabled in the outbound config.
-   *
-   * @param method - method of the requested outbound
-   * @param connection
+   * The connection automatically subscribes for updates when it is enabled in the outbound config.
+   * @param method - Method of the requested outbound.
+   * @param connection - The WebSocket connection to send the outbound data to.
    */
   public static async sendSingleOutboundByMethod(
     method: string,
@@ -267,9 +303,8 @@ export class WebsocketOutbounds {
   }
 
   /**
-   * Re-sends all outbound to the connection, where the resendAfterAuthentication flag is present.
-   *
-   * @param connection
+   * Re-sends all outbounds to the connection where the resendAfterAuthentication flag is present.
+   * @param connection - The WebSocket connection to resend the outbounds to.
    */
   public static async resendDataAfterAuth(connection: WebsocketConnection) {
     WebsocketOutbounds.outbounds.forEach(async function sendOutbound(o) {
@@ -293,12 +328,10 @@ export class WebsocketOutbounds {
   }
 
   /**
-   * Resets the outbound config.
-   * This removes all outbounds.
-   *
-   * All outbounds that have been registered using a decorator *are not automatically added* again.
+   * Retrieves all registered outbound configurations.
+   * @returns An array of registered outbound configurations.
    */
-  public static clear() {
-    WebsocketOutbounds.outbounds.clear();
+  public static getAllOutbounds() {
+    return Array.from(this.outbounds.values());
   }
 }
