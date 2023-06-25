@@ -7,27 +7,29 @@ import { SimpleWebsocketRoute } from "./routing/route";
 import { WebsocketRouter } from "./routing/router";
 
 /**
- * This object is used to start and configure the websocket service.
+ * WebSocket Server
  *
- * WebSocket stands for "Web Socket." It is a communication protocol that provides full-duplex
- * communication channels over a single TCP (Transmission Control Protocol) connection.
- * The WebSocket protocol allows for real-time, two-way communication between a client
- * (such as a web browser) and a server, enabling interactive web applications.
+ * The WebSocketServer class is used to start and configure the WebSocket service.
+ * It provides full-duplex communication channels over a single TCP connection using the WebSocket protocol.
+ * This enables real-time, two-way communication between a client (e.g., a web browser) and a server, allowing for interactive web applications.
  */
 export class WebsocketServer {
   private server: Server;
+  private connections: Array<WebsocketConnection> = [];
+  private logging = false;
+  private static _fetchIpLocation = false;
 
   /**
-   * Creates a new Websocket Server and starts the server upon the http server.
-   * The server runs using the same port as the http server.
-   * @param httpServer - http server object used to start the server.
+   * Creates a new WebsocketServer instance and starts the server using the provided HTTP server.
+   *
+   * @param httpServer - The HTTP server object used to start the WebSocket server.
    */
   constructor(private httpServer: HttpServer) {
     this.initializeWebsocketServer();
   }
 
   /**
-   * Starts the websocket server and initialises all required functionalities.
+   * Initializes and starts the WebSocket server.
    */
   private initializeWebsocketServer() {
     this.server = new Server(this.getConfiguration());
@@ -35,7 +37,6 @@ export class WebsocketServer {
     this.initializeClientInformationExchange();
   }
 
-  private logging = false;
   /**
    * Enables logging of all received messages.
    */
@@ -43,25 +44,27 @@ export class WebsocketServer {
     this.logging = true;
   }
 
-  private static _fetchIpLocation = false;
   /**
-   * @returns whether the connection ip location functionality is enabled
-   */
-  public static get fetchIpLocation(): boolean {
-    return WebsocketServer._fetchIpLocation;
-  }
-
-  /**
-   * Enables the connection ip location functionality.
-   * When enabled, location information is fetched for all connections once they established the connection.
+   * Enables the connection IP location functionality.
+   * When enabled, location information is fetched for all connections once they establish the connection.
    */
   public static enableIpLocationFetching() {
     WebsocketServer._fetchIpLocation = true;
   }
 
   /**
-   * Can be use to access the recommended websocket server options
-   * @returns server options
+   * Determines whether the connection IP location functionality is enabled.
+   *
+   * @returns A boolean indicating if the connection IP location functionality is enabled.
+   */
+  public static get fetchIpLocation(): boolean {
+    return WebsocketServer._fetchIpLocation;
+  }
+
+  /**
+   * Retrieves the recommended WebSocket server options.
+   *
+   * @returns The server options object.
    */
   private getConfiguration(): ServerOptions {
     return {
@@ -76,18 +79,16 @@ export class WebsocketServer {
         zlibInflateOptions: {
           chunkSize: 10 * 1024,
         },
-
         serverMaxWindowBits: 10, // Defaults to negotiated value.
-
         // Below options specified as default values.
-        concurrencyLimit: 10, // Limits zlib concurrency for perf.
+        concurrencyLimit: 10, // Limits zlib concurrency for performance.
         threshold: 1024, // Size (in bytes) below which messages should not be compressed.
       },
     };
   }
 
   /**
-   * Initializes routes used for framework-internal communication
+   * Initializes routes used for framework-internal communication.
    */
   private initializeClientInformationExchange() {
     WebsocketRouter.registerRoute(
@@ -104,9 +105,10 @@ export class WebsocketServer {
   }
 
   /**
-   * Updates the clientInformation of the connection
-   * @param info - Contains descriptions concerning the client device
-   * @param conn - Refers the associated connection object
+   * Updates the client information of the connection.
+   *
+   * @param info - An object containing descriptions concerning the client device.
+   * @param conn - The associated WebsocketConnection object.
    */
   public onClientInformationReceived(
     info: { browser: string },
@@ -116,17 +118,20 @@ export class WebsocketServer {
   }
 
   /**
-   * @returns All currently established websocket connections
+   * Retrieves all currently established WebSocket connections.
+   *
+   * @returns An array of WebsocketConnection objects representing the established connections.
    */
   public getConnections(): Array<WebsocketConnection> {
     return this.connections;
   }
 
   /**
-   * Stores all established connections.
-   * Can be accessed using getConnections()
+   * Handles the WebSocket connection event.
+   *
+   * @param connection - The WebSocket connection object.
+   * @param req - The request object associated with the connection.
    */
-  private connections: Array<WebsocketConnection> = [];
   private onConnect(connection: WebSocket, req: any) {
     const conn = new WebsocketConnection(connection);
     if (req) {
@@ -136,14 +141,21 @@ export class WebsocketServer {
     this.connections.push(conn);
     connection.on("close", this.onClose(conn).bind(this));
   }
+
+  /**
+   * Handles the WebSocket connection close event.
+   *
+   * @param connection - The closed WebsocketConnection object.
+   * @returns A callback function that removes the closed connection from the list of established connections.
+   */
   private onClose(connection: WebsocketConnection) {
     return () => {
-      this.connections = this.connections.filter((c) => c.id != connection.id);
+      this.connections = this.connections.filter((c) => c.id !== connection.id);
     };
   }
 
   /**
-   * Closes the websocket server
+   * Closes the WebSocket server.
    */
   public close() {
     this.server.close();
