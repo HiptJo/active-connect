@@ -170,12 +170,12 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   }
 
   /**
-   * Sends an error message to the provided connection.
+   * Handles an error when it occurs during outbound function execution.
    * @param conn - The WebSocket connection to send the error message to.
    * @param message - The error message to send.
    */
   protected sendError(conn: WebsocketConnection, message: string) {
-    conn.send("m.error", message);
+    // do not send error
   }
 }
 
@@ -333,5 +333,12 @@ export class WebsocketOutbounds {
    */
   public static getAllOutbounds() {
     return Array.from(this.outbounds.values());
+  }
+
+  /**
+   * Removes all registered Outbounds
+   */
+  public static clear() {
+    this.outbounds.clear();
   }
 }
