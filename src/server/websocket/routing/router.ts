@@ -1,23 +1,51 @@
 import { WebsocketRequest } from "../message/request";
 import { StandaloneWebsocketRoute, WebsocketRoute } from "./route";
 
+/**
+ * WebsocketRouter class handles routing for websocket requests.
+ */
 export class WebsocketRouter {
   private static routes: Array<WebsocketRoute> = [];
   private static standaloneRoutes: Array<StandaloneWebsocketRoute> = [];
 
+  /**
+   * Register a standalone route.
+   * @param route - The standalone websocket route to register.
+   */
   public static registerStandaloneRoute(route: WebsocketRoute) {
     WebsocketRouter.standaloneRoutes.push(route);
   }
+
+  /**
+   * Register a route.
+   * @param route - The websocket route to register.
+   */
   public static registerRoute(route: StandaloneWebsocketRoute) {
     WebsocketRouter.routes.push(route);
   }
+
+  /**
+   * Get all registered routes.
+   * @returns - An array of websocket routes.
+   */
   public static get Routes(): Array<WebsocketRoute> {
     return WebsocketRouter.routes;
   }
+
+  /**
+   * Get all registered standalone routes.
+   * @returns - An array of standalone websocket routes.
+   */
   public static get StandaloneRoutes(): Array<StandaloneWebsocketRoute> {
     return WebsocketRouter.standaloneRoutes;
   }
 
+  /**
+   * Get a route by its method.
+   * @param method - The method to search for.
+   * @returns - The matching websocket route.
+   * @throws {Error} - If no route is found with the given method.
+   */
   public static getRouteByMethod(method: string): WebsocketRoute {
     const standalone = WebsocketRouter.standaloneRoutes.filter(
       (r) => method == r.Method
@@ -43,7 +71,12 @@ export class WebsocketRouter {
     return selectedRoute;
   }
 
-  public async route(request: WebsocketRequest) {
+  /**
+   * Route a websocket request.
+   * @param request - The websocket request to route.
+   * @returns - A promise that resolves with the routed response.
+   */
+  public async route(request: WebsocketRequest): Promise<any> {
     const route = WebsocketRouter.getRouteByMethod(request.method);
     return await route.route(request, [route.Method]);
   }
