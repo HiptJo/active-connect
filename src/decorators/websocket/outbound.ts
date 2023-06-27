@@ -1,44 +1,28 @@
 import {
-  WebsocketOutbound,
-  Outbound as WSOutbound,
+  WebsocketOutbounds,
+  WebsocketOutbound as WSOutbound,
 } from "../../server/websocket/routing/outbound";
-import { registerSubscription } from "./subscription";
+import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-decorator-config";
 
 export function Outbound(
   method: string,
-  requestingRequired?: boolean,
-  resendAfterAuthentication?: boolean
+  lazyLoading?: boolean,
+  resendAfterAuthenticationChange?: boolean
 ) {
   return function _Outbound(target: any, propertyKey: string): any {
     // method annotation
-    if (!target.___wsoutbound) target.___wsoutbound = {};
-    target.___wsoutbound[propertyKey] = method;
-    WebsocketOutbound.addOutbound(
+    const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+    config.lazyLoading = lazyLoading || false;
+    config.resendAfterAuthenticationChange =
+      resendAfterAuthenticationChange || false;
+
+    WebsocketOutbounds.addOutbound(
       new WSOutbound(
         method,
-        target[propertyKey].bind(target.___data),
-        requestingRequired,
-        resendAfterAuthentication
-      )
+        target[propertyKey].bind(target.___data)
+      ).bindDecoratorConfig(config)
     );
 
-    if (
-      target.___registerSubscription &&
-      target.___registerSubscription[propertyKey]
-    ) {
-      registerSubscription(target, propertyKey);
-    }
     return target;
   };
 }
-/*
-// @todo add dataPool base decorator
-export function Pool(cls: any, attrs: any) {
-  return class extends cls {
-    constructor() {
-      throw "hehe i intercepted";
-      super();
-    }
-  };
-}
-*/

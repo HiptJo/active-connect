@@ -1,7 +1,6 @@
 export * from "./websocket/outbound";
 export * from "./websocket/route";
 export * from "./websocket/auth";
-export * from "./websocket/filtered-subscription";
 export * from "./websocket/subscription";
 export * from "./websocket/connection-closed";
 export * from "./websocket/shared";

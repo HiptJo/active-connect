@@ -80,4 +80,14 @@ export class WebsocketRouter {
     const route = WebsocketRouter.getRouteByMethod(request.method);
     return await route.route(request, [route.Method]);
   }
+
+  /**
+   * Loads the decorator configuration for all WebSocket routes.
+   * Iterates through each route and invokes the `loadDecoratorConfig` method to load the configuration.
+   */
+  public static loadDecoratorConfig() {
+    for (var route of this.routes) {
+      route.loadDecoratorConfig();
+    }
+  }
 }

@@ -1,81 +1,46 @@
-import { WebsocketConnection } from "../../server/websocket/connection/connection";
-import { WebsocketOutbound } from "../../server/websocket/routing/outbound";
+import { MessageFilter } from "../../server";
+import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-decorator-config";
+import { WebsocketRouteDecoratorConfig } from "./config/websocket-route-decorator-config";
 
-export function SubscribeChanges(target: any, propertyKey: string): any {
-  // initialize routeDefinition
-  if (!target.___registerSubscription) target.___registerSubscription = {};
-  target.___registerSubscription[propertyKey] = true;
-
-  const original = target[propertyKey].bind(target.___data);
-  if (!target.___outboundSubscriptions) target.___outboundSubscriptions = {};
-  target.___outboundSubscriptions[propertyKey] = [];
-
-  WebsocketOutbound.addConnectionDisconnectHandler(
-    function onConnectionDisconnect(conn: WebsocketConnection) {
-      target.___outboundSubscriptions[
-        propertyKey
-      ] = target.___outboundSubscriptions[propertyKey].filter(
-        (c: WebsocketConnection) => c.id && c.id != conn.id
-      );
-    }
-  );
-
-  target[propertyKey] = async function _subscribeChanges(...data: Array<any>) {
-    let conn: WebsocketConnection;
-    conn = data[0];
-    const res = await original(...data);
-    if (
-      res &&
-      !res.toString().startsWith("auth:unauthorized") &&
-      !res.toString().startsWith("error:auth:unauthorized")
-    ) {
-      // subscribe for changes
-      if (target.___outboundSubscriptions[propertyKey].indexOf(conn) < 0) {
-        target.___outboundSubscriptions[propertyKey].push(conn);
-      }
-    }
-    return res;
-  };
-  if (target.___wsoutbound && target.___wsoutbound[propertyKey]) {
-    // outbound has been registered already, add subscription
-    registerSubscription(target, propertyKey);
-  }
+export function Subscribe(target: any, propertyKey: string) {
+  const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+  config.enableSubscription();
 }
-export function Modifies(...routes: Array<string>) {
+/**
+ * @deprecated
+ */
+export function SubscribeChanges(target: any, propertyKey: string) {
+  return Subscribe(target, propertyKey);
+}
+
+export function SubscribeFor(filter: MessageFilter) {
+  return function _SubscribeFor(target: any, propertyKey: string) {
+    const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+    config.addSubscriptionFor(filter);
+  };
+}
+/**
+ * @deprecated
+ */
+export function SubscribeMatchingChanges(filter: MessageFilter) {
+  return SubscribeFor(filter);
+}
+
+export function Modifies(...routes: string[]) {
   return function _Modifies(target: any, propertyKey: string) {
-    const original = target[propertyKey].bind(target.___data);
-    target[propertyKey] = async function _subscribeModification(
-      ...params: Array<any>
-    ) {
-      const data = await original(...params);
-      await WebsocketOutbound.sendUpdates(routes);
-      return data;
-    };
-    return target;
+    const config = WebsocketRouteDecoratorConfig.get(target, propertyKey);
+    config.addModifies(...routes);
   };
 }
-export function registerSubscription(target: any, propertyKey: string) {
-  const out = WebsocketOutbound.getOutbound(target.___wsoutbound[propertyKey]);
-  if (out) out.func = target[propertyKey].bind(target.___data);
-
-  WebsocketOutbound.addOutboundSubscription(
-    target.___wsoutbound[propertyKey],
-    async function onAddOutboundSubscription() {
-      if (
-        target.___outboundSubscriptions &&
-        target.___outboundSubscriptions[propertyKey]
-      ) {
-        const connections: Array<WebsocketConnection> =
-          target.___outboundSubscriptions[propertyKey];
-        const res = await Promise.all(
-          connections.map(function map(conn: WebsocketConnection) {
-            return target[propertyKey](conn);
-          })
-        );
-        connections.forEach(function sendUpdate(conn, i) {
-          conn.send(target.___wsoutbound[propertyKey], res[i]);
-        });
-      }
-    }
-  );
+export function ModifiesFor(filter: MessageFilter, ...routes: string[]) {
+  return function _ModifiesFor(target: any, propertyKey: string) {
+    const config = WebsocketRouteDecoratorConfig.get(target, propertyKey);
+    config.addModifiesFor(filter, ...routes);
+  };
+}
+/**
+ * @deprecated
+ */
+export function ModifiesMatching(filter: MessageFilter, ...routes: string[]) {
+  return ModifiesFor(filter, ...routes);
 }

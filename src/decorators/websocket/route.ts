@@ -3,6 +3,7 @@ import {
   WebsocketRoute,
 } from "../../server/websocket/routing/route";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
+import { WebsocketRouteDecoratorConfig } from "./config/websocket-route-decorator-config";
 
 export function Route(
   method: string,
@@ -10,33 +11,23 @@ export function Route(
   modifiesAuthentication?: boolean
 ) {
   return function _Route(target: any, propertyKey?: string): any {
+    const config = WebsocketRouteDecoratorConfig.get(target, propertyKey);
+
     // initialize routeDfinition
     if (!propertyKey) {
       // class annotation
-      const route = new WebsocketRoute(method, null);
-
-      if (target.prototype.___routeDefinition) {
-        // initialize children
-        target.prototype.___routeDefinition.forEach(
-          function _registerChild(child: {
-            method: string;
-            propertyKey: string;
-            modifiesAuthentication: boolean;
-          }) {
-            route.addChild(
-              new WebsocketRoute(
-                child.method,
-                {
-                  target,
-                  propertyKey,
-                },
-                child.modifiesAuthentication
-              )
-            );
-          }
+      if (modifiesAuthentication) {
+        throw Error(
+          "Modifies-Authentication mode is not support for class annotation"
         );
       }
 
+      const route = new WebsocketRoute(method, null);
+      for (const child of target.prototype.___route.children) {
+        route.addChild(child);
+      }
+
+      // register
       if (baseRoute) {
         WebsocketRouter.getRouteByMethod(baseRoute).addChild(route);
       } else {
@@ -45,23 +36,19 @@ export function Route(
     } else {
       // method annotation
       if (baseRoute) {
-        // overrideBaseRoute
-        WebsocketRouter.getRouteByMethod(baseRoute).addChild(
-          new WebsocketRoute(method, { target, propertyKey })
-        );
-      } else {
-        // add route to class
-        if (!target.___routeDefinition) {
-          target.___routeDefinition = [];
-        }
-        target.___routeDefinition.push({
-          method: method,
-          propertyKey: propertyKey,
-          modifiesAuthentication: modifiesAuthentication,
-        });
+        throw Error("Base-Route is not supported for method annotations");
       }
+
+      config.modifiesAuthentication = modifiesAuthentication || false;
+
+      const route = new WebsocketRoute(method, {
+        target,
+        propertyKey,
+      }).bindDecoratorConfig(
+        WebsocketRouteDecoratorConfig.get(target, propertyKey)
+      );
+      target.prototype.___route.children.push(route);
     }
-    return target;
   };
 }
 
@@ -71,14 +58,15 @@ export function StandaloneRoute(
 ) {
   return function _StandaloneRoute(target: any, propertyKey: string): any {
     // method annotation
+    WebsocketRouteDecoratorConfig.init(target, propertyKey);
+
     // register standalone route
     WebsocketRouter.registerStandaloneRoute(
       new StandaloneWebsocketRoute(
         method,
         target[propertyKey].bind(target.___data),
         modifiesAuthentication
-      )
+      ).bindDecoratorConfig(target.prototype.___route.config[propertyKey])
     );
-    return target;
   };
 }

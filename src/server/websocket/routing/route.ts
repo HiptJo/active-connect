@@ -1,3 +1,4 @@
+import { WebsocketRouteDecoratorConfig } from "../../../decorators/websocket/config/websocket-route-decorator-config";
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
@@ -190,6 +191,46 @@ export class WebsocketRoute extends AuthableDecorableFunction {
   protected sendError(conn: WebsocketConnection, message: string): void {
     conn.send("m.error", message);
   }
+
+  private decoratorConfigReference: WebsocketRouteDecoratorConfig;
+
+  /**
+   * Binds the decorator configuration reference to the WebSocket route.
+   * @param reference - The decorator configuration reference.
+   * @returns - The WebSocket route instance.
+   */
+  public bindDecoratorConfig(reference: WebsocketRouteDecoratorConfig) {
+    this.decoratorConfigReference = reference;
+    return this;
+  }
+
+  /**
+   * Loads the decorator configuration from the bound reference.
+   * Recursively initializes loading for all child routes.
+   */
+  public loadDecoratorConfig() {
+    if (this.decoratorConfigReference) {
+      if (this.decoratorConfigReference.authenticator) {
+        this.setAuthenticator(this.decoratorConfigReference.authenticator);
+      }
+      if (this.decoratorConfigReference.modifies) {
+        this.modifies(this.decoratorConfigReference.modifies);
+      }
+      if (this.decoratorConfigReference.modifiesFor) {
+        for (var mod of this.decoratorConfigReference.modifiesFor) {
+          this.modifies(mod.outbounds, mod.filter);
+        }
+      }
+      if (this.decoratorConfigReference.modifiesAuthentication) {
+        this.modifiesAuthentication = true;
+      }
+    }
+    if (this.children) {
+      for (var child of this.children) {
+        child.loadDecoratorConfig();
+      }
+    }
+  }
 }
 
 /**
@@ -291,4 +332,6 @@ export class SimpleWebsocketRoute extends WebsocketRoute {
   get Func(): (...data: any[]) => Promise<any> | any {
     return this.func;
   }
+
+  public static loadDecoratorConfig() {}
 }

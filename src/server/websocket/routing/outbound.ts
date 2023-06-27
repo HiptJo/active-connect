@@ -1,3 +1,4 @@
+import { WebsocketOutboundDecoratorConfig } from "../../../decorators/websocket/config/websocket-outbound-decorator-config";
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { AuthableDecorableFunction } from "./function";
@@ -29,14 +30,14 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * @param objConfig.target - The prototype of the class containing the source code of this outbound. (e.g., `MyClass.prototype`)
    * @param objConfig.propertyKey - The name of the function within the class.
    * @param lazyLoading - When enabled, data is not sent initially to all clients. They can request it if needed.
-   * @param resendAfterAuthentication - When enabled, data is updated once any route with `modifiesAuthentication=true` is called by this connection.
+   * @param resendAfterAuthenticationChange - When enabled, data is updated once any route with `modifiesAuthentication=true` is called by this connection.
    *                                   This can be used to automatically send the user data to the client once the client is signed in.
    */
   constructor(
     public method: string,
     objConfig: { target: any; propertyKey: string },
     public lazyLoading?: boolean,
-    public resendAfterAuthentication?: boolean
+    public resendAfterAuthenticationChange?: boolean
   ) {
     super(objConfig);
   }
@@ -177,6 +178,43 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   protected sendError(conn: WebsocketConnection, message: string) {
     // do not send error
   }
+
+  private decoratorConfigReference: WebsocketOutboundDecoratorConfig;
+
+  /**
+   * Binds the decorator configuration reference to the WebSocket outbound.
+   * @param reference - The decorator configuration reference.
+   * @returns - The WebSocket outbound instance.
+   */
+  public bindDecoratorConfig(reference: WebsocketOutboundDecoratorConfig) {
+    this.decoratorConfigReference = reference;
+    return this;
+  }
+
+  /**
+   * Loads the decorator configuration from the bound reference.
+   */
+  public loadDecoratorConfig() {
+    if (this.decoratorConfigReference) {
+      if (this.decoratorConfigReference.authenticator) {
+        this.setAuthenticator(this.decoratorConfigReference.authenticator);
+      }
+      if (this.decoratorConfigReference.lazyLoading) {
+        this.lazyLoading = true;
+      }
+      if (this.decoratorConfigReference.resendAfterAuthenticationChange) {
+        this.resendAfterAuthenticationChange = true;
+      }
+      if (this.decoratorConfigReference.subscriptionEnabled) {
+        this.subscribeChanges();
+      }
+      if (this.decoratorConfigReference.subscriptionsFor) {
+        for (var filter of this.decoratorConfigReference.subscriptionsFor) {
+          this.subscribeChanges(filter);
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -308,7 +346,7 @@ export class WebsocketOutbounds {
    */
   public static async resendDataAfterAuth(connection: WebsocketConnection) {
     WebsocketOutbounds.outbounds.forEach(async function sendOutbound(o) {
-      if (o.resendAfterAuthentication) {
+      if (o.resendAfterAuthenticationChange) {
         if (o.lazyLoading) {
           // check if connection is subscribed
           // if it is, trigger resend - else do not resend
@@ -340,5 +378,15 @@ export class WebsocketOutbounds {
    */
   public static clear() {
     this.outbounds.clear();
+  }
+
+  /**
+   * Loads the decorator configuration for all WebSocket outbounds.
+   * Iterates through each route and invokes the `loadDecoratorConfig` method to load the configuration.
+   */
+  public static loadDecoratorConfig() {
+    for (var outbound of this.outbounds) {
+      outbound[1].loadDecoratorConfig();
+    }
   }
 }

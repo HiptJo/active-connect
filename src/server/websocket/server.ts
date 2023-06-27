@@ -5,6 +5,7 @@ import * as WebSocket from "ws";
 import { WebsocketConnection } from "./connection/connection";
 import { SimpleWebsocketRoute } from "./routing/route";
 import { WebsocketRouter } from "./routing/router";
+import { WebsocketOutbounds } from "./routing/outbound";
 
 /**
  * WebSocket Server
@@ -32,9 +33,15 @@ export class WebsocketServer {
    * Initializes and starts the WebSocket server.
    */
   private initializeWebsocketServer() {
+    this.loadDecoratorConfiguration();
     this.server = new Server(this.getConfiguration());
     this.server.on("connection", this.onConnect.bind(this));
     this.initializeClientInformationExchange();
+  }
+
+  private loadDecoratorConfiguration() {
+    WebsocketRouter.loadDecoratorConfig();
+    WebsocketOutbounds.loadDecoratorConfig();
   }
 
   /**
