@@ -5,6 +5,40 @@ import {
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 import { WebsocketRouteDecoratorConfig } from "./config/websocket-route-decorator-config";
 
+/**
+ * @decorator
+ * Route decorator for WebSocket routes.
+ * Can be used to register WebSocket routes.
+ * This annotation can be used for methods and classes.
+ *
+ * Supported Decorators:
+ * - `@Auth`
+ * - `@Modifies` and `@ModifiesFor`
+ * - `@ModifiesAuthentication`
+ *
+ * @param method - The HTTP method for the route.
+ * @param [baseRoute] - The base route path for the route.
+ * @param [modifiesAuthentication] - Indicates if the route modifies authentication.
+ *                                   If true all Websocket Outbounds with tag will be re-sent automatically.
+ * @returns - The decorator function.
+ *
+ * @example Preparations for a simple login route:
+ * This method can be called by sending a message using method `auth.login`.
+ * The response (return value of the method) is sent to the client using `m.auth.login`.
+ * ```
+ * @Route("auth")
+ * class Auth {
+ *     @Route("login")
+ *     async login(credentials: any, connection: WebsocketConnection): Promise<any> {
+ *       // check authentication for provided credentials.
+ *       if (authenticated)
+ *          return true;
+ *       else
+ *          return false;
+ *     }
+ * }
+ * ```
+ */
 export function Route(
   method: string,
   baseRoute?: string,
@@ -52,6 +86,35 @@ export function Route(
   };
 }
 
+/**
+ * @decorator
+ * StandaloneRoute decorator for WebSocket routes.
+ * Can be used to register Standalone WebSocket routes.
+ * This annotation can be used for methods only.
+ *
+ * Supported Decorators:
+ * - `@Auth`
+ * - `@Modifies` and `@ModifiesFor`
+ * - `@ModifiesAuthentication`
+ *
+ * @param method - The HTTP method for the route.
+ * @param [modifiesAuthentication] - Indicates if the route modifies authentication.
+ *                                   If true all Websocket Outbounds with tag will be re-sent automatically.
+ * @returns - The decorator function.
+ *
+ * @example Preparations for a simple standalone message route:
+ * This method can be called by sending a message using method `example.insert`.
+ * The response (return value of the method, ex: insertId) is sent to the client using `m.example.insert`.
+ * ```
+ * class Example {
+ *     @StandaloneRoute("example.insert")
+ *     async insert(data: any, connection: WebsocketConnection): Promise<any> {
+ *       // process data
+ *       return insertId;
+ *     }
+ * }
+ * ```
+ */
 export function StandaloneRoute(
   method: string,
   modifiesAuthentication?: boolean

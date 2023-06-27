@@ -21,3 +21,16 @@ export function Auth(authenticator: WebsocketAuthenticator) {
     }
   };
 }
+
+export function ModifiesAuthentication(target: any, propertyKey: string): any {
+  const config = WebsocketRouteDecoratorConfig.get(target, propertyKey);
+  config.modifiesAuthentication = true;
+}
+
+export function ResendAfterAuthenticationChange(
+  target: any,
+  propertyKey: string
+): any {
+  const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+  config.resendAfterAuthenticationChange = true;
+}

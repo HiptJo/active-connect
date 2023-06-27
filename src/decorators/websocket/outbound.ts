@@ -4,6 +4,32 @@ import {
 } from "../../server/websocket/routing/outbound";
 import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-decorator-config";
 
+/**
+ * @decorator
+ * Outbound decorator for WebSocket outbound messages.
+ * This annotation can be used for methods only.
+ *
+ * Supported Decorators:
+ * - `@Auth`
+ * - `@Subscribe` and `@SubscribeFor`
+ * - `@ResendAfterAuthenticationChange`
+ *
+ * @param method - The method name for the outbound message.
+ *                 Outbound method names do not append to route methods.
+ * @param [lazyLoading] - Indicates if the outbound message should be lazily loaded by clients.
+ * @param [resendAfterAuthenticationChange] - Indicates if the outbound message should be resent after authentication changes.
+ * @returns - The decorator function.
+ *
+ * @example Method annotation:
+ * ```
+ * class Example {
+ *     @Outbound("d.example")
+ *     async getData(connection: WebsocketConnection): Promise<any> {
+ *       return [...];
+ *     }
+ * }
+ * ```
+ */
 export function Outbound(
   method: string,
   lazyLoading?: boolean,
