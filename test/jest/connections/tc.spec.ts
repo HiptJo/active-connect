@@ -1,4 +1,4 @@
-import { TCWrapper } from "../../../src/jest/";
+import { TCWrapper } from "../../../src/integration-testing/";
 
 describe("onError handling", () => {
   it("should trigger onError", (d) => {
