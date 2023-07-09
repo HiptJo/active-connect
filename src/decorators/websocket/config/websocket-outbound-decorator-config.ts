@@ -3,18 +3,19 @@ import { WebsocketDecoratorConfig } from "./websocket-decorator-config";
 
 export class WebsocketOutboundDecoratorConfig extends WebsocketDecoratorConfig {
   static init(target: any, propertyKey?: string) {
-    if (!target.prototype.___out) {
-      target.prototype.___out = {};
+    var prototype = target.prototype || target;
+    if (!prototype.___out) {
+      prototype.___out = {};
     }
-    if (!target.prototype.___out.outbounds) {
-      target.prototype.___out.outbounds = [];
+    if (!prototype.___out.outbounds) {
+      prototype.___out.outbounds = [];
     }
 
-    if (!target.prototype.___out.config) {
-      target.prototype.___out.config = {};
+    if (!prototype.___out.config) {
+      prototype.___out.config = {};
     }
-    if (!target.prototype.___out.config[propertyKey]) {
-      target.prototype.___out.config[propertyKey] =
+    if (!prototype.___out.config[propertyKey]) {
+      prototype.___out.config[propertyKey] =
         new WebsocketOutboundDecoratorConfig();
     }
   }
@@ -23,8 +24,9 @@ export class WebsocketOutboundDecoratorConfig extends WebsocketDecoratorConfig {
     target: any,
     propertyKey?: string
   ): WebsocketOutboundDecoratorConfig {
+    var prototype = target.prototype || target;
     WebsocketOutboundDecoratorConfig.init(target, propertyKey);
-    return target.prototype.___out.config[propertyKey];
+    return prototype.___out.config[propertyKey];
   }
 
   public subscriptionEnabled: boolean = false;

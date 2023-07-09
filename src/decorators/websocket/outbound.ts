@@ -1,6 +1,6 @@
 import {
+  WebsocketOutbound,
   WebsocketOutbounds,
-  WebsocketOutbound as WSOutbound,
 } from "../../server/websocket/routing/outbound";
 import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-decorator-config";
 
@@ -43,10 +43,10 @@ export function Outbound(
       resendAfterAuthenticationChange || false;
 
     WebsocketOutbounds.addOutbound(
-      new WSOutbound(
-        method,
-        target[propertyKey].bind(target.___data)
-      ).bindDecoratorConfig(config)
+      new WebsocketOutbound(method, {
+        target,
+        propertyKey,
+      }).bindDecoratorConfig(config)
     );
 
     return target;

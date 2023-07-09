@@ -21,27 +21,28 @@ export abstract class DecorableFunction {
     if (
       this.objConfig?.target &&
       this.objConfig.target[this.objConfig.propertyKey]
-    )
+    ) {
       return this.objConfig.target[this.objConfig.propertyKey].bind(
         this.getBindObject()
       );
+    }
     return null;
   }
 
   /**
    * Returns the bind object.
    * @private
-   * @returns {any} - The bind object.
+   * @returns - The bind object.
    */
   private getBindObject(): any {
-    if (!this.objConfig.target.___data) {
-      this.objConfig.target.___data = {};
+    const prototype = this.objConfig.target.prototype || this.objConfig.target;
+    if (!prototype.___data) {
+      prototype.___data = {};
     }
-    if (!this.objConfig.target.___data._obj) {
-      this.objConfig.target.___data._obj =
-        new this.objConfig.target.constructor();
+    if (!prototype.___data._obj) {
+      prototype.___data._obj = new this.objConfig.target.constructor();
     }
-    return this.objConfig.target.___data._obj;
+    return prototype.___data._obj;
   }
 }
 

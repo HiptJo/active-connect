@@ -57,6 +57,7 @@ export function Route(
       }
 
       const route = new WebsocketRoute(method, null);
+      target.prototype.___route.base = route;
       for (const child of target.prototype.___route.children) {
         route.addChild(child);
       }
@@ -81,7 +82,10 @@ export function Route(
       }).bindDecoratorConfig(
         WebsocketRouteDecoratorConfig.get(target, propertyKey)
       );
-      target.prototype.___route.children.push(route);
+      target.___route.children.push(route);
+      if (target.___route.base) {
+        target.___route.base.addChild(route);
+      }
     }
   };
 }
@@ -127,9 +131,11 @@ export function StandaloneRoute(
     WebsocketRouter.registerStandaloneRoute(
       new StandaloneWebsocketRoute(
         method,
-        target[propertyKey].bind(target.___data),
+        { target, propertyKey },
         modifiesAuthentication
-      ).bindDecoratorConfig(target.prototype.___route.config[propertyKey])
+      ).bindDecoratorConfig(
+        WebsocketRouteDecoratorConfig.get(target, propertyKey)
+      )
     );
   };
 }

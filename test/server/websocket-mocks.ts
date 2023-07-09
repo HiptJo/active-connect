@@ -1,4 +1,8 @@
-import { WebsocketRequest, WebsocketRouter } from "../../src";
+import {
+  WebsocketOutbounds,
+  WebsocketRequest,
+  WebsocketRouter,
+} from "../../src";
 import { WebsocketConnection } from "../../src/server/websocket/connection/connection";
 
 export class WebsocketMocks {
@@ -14,6 +18,13 @@ export class StubWebsocketConnection extends WebsocketConnection {
   constructor() {
     super(null);
     this.testingIdentifier = StubWebsocketConnection.maxTestingIdentifier++;
+    this.loadDecoratorConfig();
+  }
+
+  private loadDecoratorConfig() {
+    // the loading of the decorator config usually occurs on starting the ws server (in production)
+    WebsocketRouter.loadDecoratorConfig();
+    WebsocketOutbounds.loadDecoratorConfig();
   }
 
   public get identifier() {

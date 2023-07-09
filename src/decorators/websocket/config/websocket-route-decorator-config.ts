@@ -3,25 +3,27 @@ import { WebsocketDecoratorConfig } from "./websocket-decorator-config";
 
 export class WebsocketRouteDecoratorConfig extends WebsocketDecoratorConfig {
   static init(target: any, propertyKey?: string) {
-    if (!target.prototype.___route) {
-      target.prototype.___route = {};
+    var prototype = target.prototype || target;
+    if (!prototype.___route) {
+      prototype.___route = {};
     }
-    if (!target.prototype.___route.children) {
-      target.prototype.___route.children = [];
+    if (!prototype.___route.children) {
+      prototype.___route.children = [];
     }
 
-    if (!target.prototype.___route.config) {
-      target.prototype.___route.config = {};
+    if (!prototype.___route.config) {
+      prototype.___route.config = {};
     }
-    if (!target.prototype.___route.config[propertyKey]) {
-      target.prototype.___route.config[propertyKey] =
+    if (!prototype.___route.config[propertyKey]) {
+      prototype.___route.config[propertyKey] =
         new WebsocketRouteDecoratorConfig();
     }
   }
 
   static get(target: any, propertyKey?: string): WebsocketRouteDecoratorConfig {
     WebsocketRouteDecoratorConfig.init(target, propertyKey);
-    return target.prototype.___route.config[propertyKey];
+    var prototype = target.prototype || target;
+    return prototype.___route.config[propertyKey];
   }
 
   public modifies: string[] = [];
