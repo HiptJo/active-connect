@@ -1,56 +1,48 @@
-import {
-  Modifies,
-  Shared,
-  SubscribeChanges,
-  Outbound,
-} from "../../../src/active-connect";
+import { Modifies, Outbound, Subscribe, WebsocketRequest } from "../../../src";
 import {
   Route,
   StandaloneRoute,
 } from "../../../src/decorators/websocket/route";
-import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
-import { WebsocketRequest } from "../../../src/server/websocket/message/request";
-import { WebsocketOutbounds } from "../../../src/server/websocket/routing/outbound";
 import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
 it("should be possible to annotate a class", () => {
-  @Route("annotationtesting1")
+  @Route("annotation1")
   class Testing {}
 
   expect(Testing).toBeDefined();
   expect(
-    WebsocketRouter.Routes.filter((r) => r.Method == "annotationtesting1")
+    WebsocketRouter.Routes.filter((r) => r.Method == "annotation1")
   ).toHaveLength(1);
 });
 
 it("should be possible to annotate a method", () => {
-  @Route("annotesting2")
+  @Route("annotation2")
   class Testing {
     @Route("child")
-    func(data: any, conn: WebsocketConnection) {}
+    func() {}
   }
 
   expect(Testing).toBeDefined();
-  const base = WebsocketRouter.Routes.filter((r) => r.Method == "annotesting2");
+  const base = WebsocketRouter.Routes.filter((r) => r.Method == "annotation2");
   expect(base).toHaveLength(1);
   expect(base[0].Children).toHaveLength(1);
   expect(base[0].Children[0].Method).toBe("child");
 });
 
 it("should be possible to add a class to another base route", () => {
-  @Route("testingbase1")
+  @Route("parent1")
   class Base {}
-  @Route("sub", "testingbase1")
+  @Route("sub", "parent1")
   class Sub {
     @Route("child")
-    func(data: any, conn: WebsocketConnection) {}
+    func() {}
   }
 
   expect(Base).toBeDefined();
   expect(Sub).toBeDefined();
 
-  const base = WebsocketRouter.Routes.filter((r) => r.Method == "testingbase1");
+  const base = WebsocketRouter.Routes.filter((r) => r.Method == "parent1");
   expect(base).toHaveLength(1);
   expect(base[0].Children).toHaveLength(1);
   expect(base[0].Children[0].Method).toBe("sub");
@@ -58,57 +50,38 @@ it("should be possible to add a class to another base route", () => {
   expect(base[0].Children[0].Children[0].Method).toBe("child");
 });
 
-it("should be possible to add a method to another base route", () => {
-  @Route("testingbase2")
-  class Base {}
-  @Route("another")
-  class Sub {
-    @Route("child", "testingbase2")
-    func(data: any, conn: WebsocketConnection) {}
-  }
-
-  expect(Base).toBeDefined();
-  expect(Sub).toBeDefined();
-
-  const base = WebsocketRouter.Routes.filter((r) => r.Method == "testingbase2");
-  expect(base).toHaveLength(1);
-  expect(base[0].Children).toHaveLength(1);
-  expect(base[0].Children[0].Method).toBe("child");
-  expect(base[0].Children[0].Children).toHaveLength(0);
+it("should not be possible to set a base-route for methods", () => {
+  expect(() => {
+    @Route("parent2")
+    class Base {}
+    @Route("parent3")
+    class Sub {
+      @Route("child", "parent2")
+      func() {}
+    }
+    expect(Base).toBeDefined();
+    expect(Sub).toBeDefined();
+  }).toThrow("Base-Route is not supported for method annotations");
 });
-it("should throw when creating a class to another base route when that route does not exist yet", (d) => {
-  try {
-    @Route("another", "testingbase3")
+it("should throw when creating a class to another base route when that route does not exist yet", () => {
+  expect(() => {
+    @Route("sub", "parent4")
     class Sub {
       @Route("child")
-      func(data: any, conn: WebsocketConnection) {}
+      func() {}
     }
     expect(Sub).not.toBeUndefined();
-  } catch (e) {
-    d();
-  }
-});
-it("should throw when creating a method to another base route when that route does not exist yet", (d) => {
-  try {
-    @Route("another")
-    class Sub {
-      @Route("child", "testingbase4")
-      func(data: any, conn: WebsocketConnection) {}
-    }
-    expect(Sub).not.toBeDefined();
-  } catch (e) {
-    d();
-  }
+  }).toThrow('Websocket Routing: Could not find route by method "parent4"');
 });
 
 it("should be possible to decorate multiple methods within a route", () => {
   @Route("testingmultiple")
   class Testing {
     @Route("m1")
-    method1(data: any, conn: WebsocketConnection) {}
+    method1() {}
 
     @Route("m2")
-    method2(data: any, conn: WebsocketConnection) {}
+    method2() {}
   }
   expect(Testing).toBeDefined();
 
@@ -120,102 +93,94 @@ it("should be possible to decorate multiple methods within a route", () => {
 });
 
 it("should be possible to call any method", async () => {
-  @Route("testingmultiple1")
+  @Route("parent5")
   class Testing {
     @Route("m1")
-    method1(data: any, conn: WebsocketConnection) {
+    method1() {
       return 1;
     }
 
     @Route("m2")
-    method2(data: any, conn: WebsocketConnection) {
+    method2() {
       return 2;
     }
   }
   expect(Testing).toBeDefined();
 
-  const base = WebsocketRouter.Routes.filter(
-    (r) => r.Method == "testingmultiple1"
-  );
+  const base = WebsocketRouter.Routes.filter((r) => r.Method == "parent5");
   expect(base).toHaveLength(1);
   expect(base[0].Children).toHaveLength(2);
 
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
 
-  await router.route(new WebsocketRequest("testingmultiple1.m2", null, conn));
-  await router.route(new WebsocketRequest("testingmultiple1.m1", null, conn));
-  const data1 = await conn.awaitMessage("m.testingmultiple1.m1");
-  const data2 = await conn.awaitMessage("m.testingmultiple1.m2");
+  await router.route(new WebsocketRequest("parent5.m2", null, conn));
+  await router.route(new WebsocketRequest("parent5.m1", null, conn));
+  const data1 = await conn.awaitMessage("m.parent5.m1");
+  const data2 = await conn.awaitMessage("m.parent5.m2");
 
   expect(data1).toBe(1);
   expect(data2).toBe(2);
 });
 
 it("should be possible to return false", async () => {
-  @Route("testfalse")
+  @Route("parent6")
   class Testing {
     @Route("m1")
-    method1(data: any, conn: WebsocketConnection) {
+    method1() {
       return false;
     }
   }
   expect(Testing).toBeDefined();
 
-  const base = WebsocketRouter.Routes.filter((r) => r.Method == "testfalse");
+  const base = WebsocketRouter.Routes.filter((r) => r.Method == "parent6");
   expect(base).toHaveLength(1);
   expect(base[0].Children).toHaveLength(1);
 
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
 
-  await router.route(new WebsocketRequest("testfalse.m1", null, conn));
-  const data1 = await conn.awaitMessage("m.testfalse.m1");
+  await router.route(new WebsocketRequest("parent6.m1", null, conn));
+  const data1 = await conn.awaitMessage("m.parent6.m1");
   expect(data1).toBe(false);
 });
 
 it("should be possible to create a standalone routed method", () => {
   class Testing {
-    @StandaloneRoute("standalone.route")
-    async route(data: any, conn: WebsocketConnection) {
+    @StandaloneRoute("standalone.r1")
+    async route() {
       return { value: "ok-standalone" };
     }
   }
   expect(Testing).toBeDefined();
   expect(
-    WebsocketRouter.StandaloneRoutes.filter(
-      (r) => r.Method == "standalone.route"
-    )
+    WebsocketRouter.StandaloneRoutes.filter((r) => r.Method == "standalone.r1")
   ).toHaveLength(1);
 });
 
 it("should be possible to call a standalone routed method", async () => {
   class Testing {
-    @StandaloneRoute("standalone.call")
-    async route(data: any, conn: WebsocketConnection) {
+    @StandaloneRoute("standalone.r2")
+    async route() {
       return { value: "ok-standalone" };
     }
   }
   expect(Testing).toBeDefined();
   expect(
-    WebsocketRouter.StandaloneRoutes.filter(
-      (r) => r.Method == "standalone.call"
-    )
+    WebsocketRouter.StandaloneRoutes.filter((r) => r.Method == "standalone.r2")
   ).toHaveLength(1);
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
 
-  router.route(new WebsocketRequest("standalone.call", null, conn));
-  const data = await conn.awaitMessage("m.standalone.call");
+  router.route(new WebsocketRequest("standalone.r2", null, conn));
+  const data = await conn.awaitMessage("m.standalone.r2");
   expect(data).toStrictEqual({ value: "ok-standalone" });
 });
 
 it("should be possible to access the `this` object within a route", async () => {
-  const original = { value: "accessible data" };
-  @Route("checkthis1")
+  @Route("parent7")
   class Testing {
-    @Shared(original)
-    public data: any;
+    public data: any = { value: "accessible data" };
 
     @Route("child")
     child() {
@@ -226,17 +191,15 @@ it("should be possible to access the `this` object within a route", async () => 
   const router = new WebsocketRouter();
   const conn = WebsocketMocks.getConnectionStub();
 
-  await router.route(new WebsocketRequest("checkthis1.child", null, conn));
-  const data = await conn.awaitMessage("m.checkthis1.child");
-  expect(data).toStrictEqual(original);
+  await router.route(new WebsocketRequest("parent7.child", null, conn));
+  const data = await conn.awaitMessage("m.parent7.child");
+  expect(data).toStrictEqual({ value: "accessible data" });
 });
 it("should be possible to access the `this` object within a standalone route", async () => {
-  const original = { value: "accessible data" };
   class Testing {
-    @Shared(original)
-    public data: any;
+    public data: any = { value: "accessible data" };
 
-    @StandaloneRoute("check1.standalone")
+    @StandaloneRoute("standalone.r3")
     child() {
       return this.data;
     }
@@ -245,29 +208,27 @@ it("should be possible to access the `this` object within a standalone route", a
   const router = new WebsocketRouter();
   const conn = WebsocketMocks.getConnectionStub();
 
-  await router.route(new WebsocketRequest("check1.standalone", null, conn));
-  const data = await conn.awaitMessage("m.check1.standalone");
-  expect(data).toStrictEqual(original);
+  await router.route(new WebsocketRequest("standalone.r3", null, conn));
+  const data = await conn.awaitMessage("m.standalone.r3");
+  expect(data).toStrictEqual({ value: "accessible data" });
 });
 
 it("should be possible to modify a shared variable", async () => {
-  @Route("modification")
+  @Route("parent8")
   class SharedModificationTesting {
-    @Shared(1)
-    private value: number;
+    private value: number = 1;
 
-    @Shared(2)
-    private valueCopy: number;
+    private valueCopy: number = 2;
 
-    @Modifies("d.modification")
     @Route("modify")
+    @Modifies("d.parent8")
     modify(value: number) {
       this.value = value;
       this.valueCopy = value + 1;
     }
 
-    @Outbound("d.modification")
-    @SubscribeChanges
+    @Outbound("d.parent8")
+    @Subscribe
     send() {
       expect(this.valueCopy).toBe(this.value + 1);
       return this.value;
@@ -277,22 +238,20 @@ it("should be possible to modify a shared variable", async () => {
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbounds.sendToConnection(conn);
-
-  const data = await conn.awaitMessage("d.modification");
+  const data = await conn.awaitMessage("d.parent8");
   expect(data).toStrictEqual(1);
   const router = new WebsocketRouter();
-  router.route(new WebsocketRequest("modification.modify", 5, conn));
-  const res = await conn.awaitMessage("m.modification.modify");
-  expect(res).toBeUndefined();
-  const updated = await conn.awaitMessage("d.modification");
+  router.route(new WebsocketRequest("parent8.modify", 5, conn));
+  const updated = await conn.awaitMessage("d.parent8");
   expect(updated).toBe(5);
+  const res = await conn.awaitMessage("m.parent8.modify");
+  expect(res).toBeUndefined();
 });
 
 it("should be possible to get a standalone route by method", () => {
   class Testing {
     @StandaloneRoute("standalone.route.by.method")
-    async route(data: any, conn: WebsocketConnection) {
+    async route() {
       return { value: "ok-standalone" };
     }
   }
@@ -304,9 +263,9 @@ it("should be possible to get a standalone route by method", () => {
 
 describe("error management", () => {
   it("should send a m.error when a route throws an string", async () => {
-    @Route("error")
+    @Route("parent9")
     class Testing {
-      @Route("throws")
+      @Route("m1")
       func() {
         throw new String("I am an error");
       }
@@ -315,14 +274,14 @@ describe("error management", () => {
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
     try {
-      await router.route(new WebsocketRequest("error.throws", null, conn));
+      await router.route(new WebsocketRequest("parent9.m1", null, conn));
       expect(await conn.awaitMessage("m.error")).toBe("I am an error");
     } catch (e) {}
   });
   it("should send a m.error when a route throws an error", async () => {
-    @Route("error")
+    @Route("parent10")
     class Testing {
-      @Route("throws1")
+      @Route("m1")
       func() {
         throw Error("I am an error");
       }
@@ -331,14 +290,14 @@ describe("error management", () => {
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
     try {
-      await router.route(new WebsocketRequest("error.throws1", null, conn));
+      await router.route(new WebsocketRequest("parent10.m1", null, conn));
       expect(await conn.awaitMessage("m.error")).toBe("I am an error");
     } catch (e) {}
   });
 
   it("should send a m.error when a standalone route throws an string", async () => {
     class Testing {
-      @StandaloneRoute("serror.throws1")
+      @StandaloneRoute("standalone.r4")
       func() {
         throw new Error("I am an error");
       }
@@ -347,14 +306,14 @@ describe("error management", () => {
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
     try {
-      await router.route(new WebsocketRequest("serror.throws1", null, conn));
+      await router.route(new WebsocketRequest("standalone.r4", null, conn));
 
       expect(await conn.awaitMessage("m.error")).toBe("I am an error");
     } catch (e) {}
   });
   it("should send a m.error when a standalone route throws an error", async () => {
     class Testing {
-      @StandaloneRoute("serror.throws1")
+      @StandaloneRoute("standalone.r5")
       func() {
         throw Error("I am an error");
       }
@@ -363,7 +322,7 @@ describe("error management", () => {
     const router = new WebsocketRouter();
     const conn = WebsocketMocks.getConnectionStub();
     try {
-      await router.route(new WebsocketRequest("serror.throws1", null, conn));
+      await router.route(new WebsocketRequest("standalone.r5", null, conn));
       expect(await conn.awaitMessage("m.error")).toBe("I am an error");
     } catch (e) {}
   });
@@ -371,12 +330,11 @@ describe("error management", () => {
 
 it("should be possible to access the `this.method()` object within a standalone route", async () => {
   class Testing {
-    @Shared()
     private method() {
       return "data";
     }
 
-    @StandaloneRoute("check_a.standalone")
+    @StandaloneRoute("standalone.r6")
     child() {
       return this.method();
     }
@@ -385,7 +343,7 @@ it("should be possible to access the `this.method()` object within a standalone 
   const router = new WebsocketRouter();
   const conn = WebsocketMocks.getConnectionStub();
 
-  await router.route(new WebsocketRequest("check_a.standalone", null, conn));
-  const data = await conn.awaitMessage("m.check_a.standalone");
+  await router.route(new WebsocketRequest("standalone.r6", null, conn));
+  const data = await conn.awaitMessage("m.standalone.r6");
   expect(data).toStrictEqual(data);
 });
