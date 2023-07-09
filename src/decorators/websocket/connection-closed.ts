@@ -13,6 +13,7 @@ import { WebsocketConnection } from "../..";
 export function OnWebsocketConnectionClosed(target: any, propertyKey: string) {
   // class annotation
   WebsocketConnection.addCloseHandler((conn: WebsocketConnection) =>
+    // @todo bind data class object here!
     target[propertyKey](conn)
   );
 }
