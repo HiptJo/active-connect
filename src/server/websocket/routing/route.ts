@@ -153,7 +153,7 @@ export class WebsocketRoute extends AuthableDecorableFunction {
           WebsocketOutbounds.resendDataAfterAuth(request.connection).then();
         return data;
       } catch (e) {
-        if (!e.isAuthenticationError) {
+        if (!e?.isAuthenticationError) {
           console.error(e);
           request.connection.send("m.error", e?.message || e);
         }
@@ -178,7 +178,8 @@ export class WebsocketRoute extends AuthableDecorableFunction {
       const filter = config.filter
         ? await config.filter.filter(responseData, requestConn)
         : undefined;
-      WebsocketOutbounds.sendUpdates(config.outboundRoutes, filter);
+      if (config.outboundRoutes && config.outboundRoutes.length > 0)
+        WebsocketOutbounds.sendUpdates(config.outboundRoutes, filter);
     }
   }
 

@@ -103,7 +103,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         conn.send(this.method, res);
       }
     } catch (e) {
-      if (!e.isAuthenticationError) {
+      if (!e?.isAuthenticationError) {
         console.error(e);
         conn.send("m.error", e?.message || e);
       }
