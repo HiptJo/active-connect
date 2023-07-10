@@ -2,266 +2,106 @@ import {
   Modifies,
   Outbound,
   Route,
-  Shared,
   StandaloneRoute,
-  SubscribeChanges,
+  Subscribe,
 } from "../../../src/active-connect";
+import { testEach } from "../../../src/jest";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
-import { WebsocketRequest } from "../../../src/server/websocket/message/request";
-import { WebsocketOutbounds } from "../../../src/server/websocket/routing/outbound";
-import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
-it("should resend subscribed data (sub first)", async () => {
-  class Testing {
-    public static value: any = { value: "oldvalue1" };
-
-    @SubscribeChanges
-    @Outbound("out.subscribe1")
-    public async sendData(conn: WebsocketConnection) {
-      return Testing.value;
-    }
-
-    @StandaloneRoute("modify.subscribe1")
-    @Modifies("out.subscribe1", "out.xyz")
-    public async modify(value: any, conn: WebsocketConnection) {
-      Testing.value = value;
-    }
-
-    @Modifies("out.subscribe2", "out.xyz")
-    @StandaloneRoute("modify.subscribe2")
-    public async modify1(value: any, conn: WebsocketConnection) {
-      Testing.value = value;
-    }
-  }
-
-  expect(Testing).toBeDefined();
-  const conn = WebsocketMocks.getConnectionStub();
-  const router = new WebsocketRouter();
-
-  WebsocketOutbounds.sendToConnection(conn);
-  const data = await conn.awaitMessage("out.subscribe1");
-  expect(data).toStrictEqual({ value: "oldvalue1" });
-  await router.route(
-    new WebsocketRequest("modify.subscribe1", { value: "hereiam" }, conn)
-  );
-  expect(Testing.value).toStrictEqual({ value: "hereiam" });
-  const resentData = await conn.awaitMessage("out.subscribe1");
-  expect(resentData).toStrictEqual({ value: "hereiam" });
+beforeEach(() => {
+  Testing.value.value = "oldvalue1";
 });
 
-it("should resend subscribed data (out first)", async () => {
-  class Testing {
-    private static value: any = { value: "oldvalue" };
-    @Outbound("out1.subscribe1")
-    @SubscribeChanges
-    public async sendData(conn: WebsocketConnection) {
-      return Testing.value;
-    }
+@Route("modify")
+class Testing {
+  public static value: any = { value: "oldvalue1" };
 
-    @StandaloneRoute("modify1.subscribe1")
-    @Modifies("out1.subscribe1", "out.xyz")
-    public async modify(value: any, conn: WebsocketConnection) {
-      Testing.value = value;
-    }
-
-    @Modifies("out1.subscribe2", "out.xyz")
-    @StandaloneRoute("modify1.subscribe2")
-    public async modify1(value: any, conn: WebsocketConnection) {
-      Testing.value = value;
-    }
+  @Outbound("out1.subscribe1")
+  @Subscribe
+  public async sendData1(conn: WebsocketConnection) {
+    return Testing.value;
   }
 
-  expect(Testing).toBeDefined();
-  const conn = WebsocketMocks.getConnectionStub();
-  const router = new WebsocketRouter();
-
-  WebsocketOutbounds.sendToConnection(conn);
-  const data = await conn.awaitMessage("out1.subscribe1");
-  expect(data).toStrictEqual({ value: "oldvalue" });
-  await router.route(
-    new WebsocketRequest("modify1.subscribe1", { value: "hereiam" }, conn)
-  );
-  const resentData = await conn.awaitMessage("out1.subscribe1");
-  expect(resentData).toStrictEqual({ value: "hereiam" });
-});
-
-it("should be possible to access the `this` object within a subscribing outbound (sub first)", async () => {
-  class Testing {
-    @Shared({ value: "accessible" })
-    content: any;
-
-    @SubscribeChanges
-    @Outbound("d.subscribe1")
-    send() {
-      return this.content;
-    }
+  @Subscribe
+  @Outbound("out2.subscribe1")
+  public async sendData2(conn: WebsocketConnection) {
+    return Testing.value;
   }
 
-  expect(Testing).toBeDefined();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  WebsocketOutbounds.sendToConnection(conn);
-
-  const data = await conn.awaitMessage("d.subscribe1");
-  expect(data).toStrictEqual({ value: "accessible" });
-});
-it("should be possible to access the `this` object within a subscribing outbound (out first)", async () => {
-  class Testing {
-    @Shared({ value: "accessible" })
-    content: any;
-
-    @Outbound("d.subscribe2")
-    @SubscribeChanges
-    send() {
-      return this.content;
-    }
+  @StandaloneRoute("standalone.subscribe1")
+  @Modifies("out1.subscribe1", "out2.subscribe1")
+  public async standalone1(value: any, conn: WebsocketConnection) {
+    Testing.value = value;
   }
 
-  expect(Testing).toBeDefined();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  WebsocketOutbounds.sendToConnection(conn);
-
-  const data = await conn.awaitMessage("d.subscribe2");
-  expect(data).toStrictEqual({ value: "accessible" });
-});
-it("should be possible to access the `this` object within a modifying route (mod first)", async () => {
-  const original = { value: "accessible data 1" };
-  @Route("checkthis_b")
-  class Testing {
-    @Shared(original)
-    public data: any;
-
-    @Modifies("d.anything")
-    @Route("child")
-    child() {
-      return this.data;
-    }
-  }
-  expect(Testing).toBeDefined();
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  await router.route(new WebsocketRequest("checkthis_b.child", null, conn));
-  const data = await conn.awaitMessage("m.checkthis_b.child");
-  expect(data).toStrictEqual(original);
-});
-it("should be possible to access the `this` object within a modifying route (route first)", async () => {
-  const original = { value: "accessible data" };
-  @Route("checkthis_a")
-  class Testing {
-    @Shared(original)
-    public data: any;
-
-    @Route("child")
-    @Modifies("d.anything")
-    child() {
-      return this.data;
-    }
-  }
-  expect(Testing).toBeDefined();
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  await router.route(new WebsocketRequest("checkthis_a.child", null, conn));
-  const data = await conn.awaitMessage("m.checkthis_a.child");
-  expect(data).toStrictEqual(original);
-});
-it("should be possible to access the `this` object within a modifying standalone route (route first)", async () => {
-  const original = { value: "accessible data" };
-  class Testing {
-    @Shared(original)
-    public data: any;
-
-    @StandaloneRoute("check_s_a")
-    @Modifies("d.anything")
-    child() {
-      return this.data;
-    }
-  }
-  expect(Testing).toBeDefined();
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  await router.route(new WebsocketRequest("check_s_a", null, conn));
-  const data = await conn.awaitMessage("m.check_s_a");
-  expect(data).toStrictEqual(original);
-});
-it("should be possible to access the `this` object within a modifying standalone route (mod first)", async () => {
-  const original = { value: "accessible data" };
-  class Testing {
-    @Shared(original)
-    public data: any;
-
-    @Modifies("d.anything")
-    @StandaloneRoute("check_s_a")
-    child() {
-      return this.data;
-    }
-  }
-  expect(Testing).toBeDefined();
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  await router.route(new WebsocketRequest("check_s_a", null, conn));
-  const data = await conn.awaitMessage("m.check_s_a");
-  expect(data).toStrictEqual(original);
-});
-
-it("should be possible to access the `this` object within a requestable subscribing outbound (sub first)", async () => {
-  class Testing {
-    @Shared({ value: "accessible" })
-    content: any;
-
-    @SubscribeChanges
-    @Outbound("r.subscribe1", true)
-    send() {
-      return this.content;
-    }
+  @Modifies("out2.subscribe1", "out1.subscribe1")
+  @StandaloneRoute("standalone.subscribe2")
+  public async standalone2(value: any, conn: WebsocketConnection) {
+    Testing.value = value;
   }
 
-  expect(Testing).toBeDefined();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  WebsocketOutbounds.sendSingleOutboundByMethod("r.subscribe1", conn);
-
-  const data = await conn.awaitMessage("r.subscribe1");
-  expect(data).toStrictEqual({ value: "accessible" });
-});
-it("should be possible to access the `this` object within a requestable subscribing outbound (out first)", async () => {
-  class Testing {
-    @Shared({ value: "accessible" })
-    content: any;
-
-    @Outbound("r.subscribe2", true)
-    @SubscribeChanges
-    send() {
-      return this.content;
-    }
+  @Route("subscribe1")
+  @Modifies("out1.subscribe1", "out2.subscribe1")
+  public async subscribe1(value: any, conn: WebsocketConnection) {
+    Testing.value = value;
   }
 
-  expect(Testing).toBeDefined();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  WebsocketOutbounds.sendSingleOutboundByMethod("r.subscribe2", conn);
-
-  const data = await conn.awaitMessage("r.subscribe2");
-  expect(data).toStrictEqual({ value: "accessible" });
-});
-
-it("should be possible to create multiple @SubscribeChanges per class", async () => {
-  class Testing {
-    @SubscribeChanges
-    @Outbound("subm.1")
-    m1() {
-      return 1;
-    }
-    @SubscribeChanges
-    @Outbound("subm.2")
-    m2() {
-      return 2;
-    }
+  @Modifies("out2.subscribe1", "out1.subscribe1")
+  @Route("subscribe2")
+  public async subscribe2(value: any, conn: WebsocketConnection) {
+    Testing.value = value;
   }
-  expect(Testing).toBeDefined();
-});
+}
+
+const regularRoutes: string[] = [
+  "out1.subscribe1",
+  "out2.subscribe1",
+  "modify.subscribe1",
+  "modify.subscribe2",
+];
+const standaloneRoutes: string[] = [
+  "out1.subscribe1",
+  "out2.subscribe1",
+  "standalone.subscribe1",
+  "standalone.subscribe2",
+];
+
+testEach(
+  [regularRoutes, standaloneRoutes],
+  ["routes", "standalone-routes"],
+  (routes: string[], label: string) => {
+    it(label + ": should resend subscribed data", async () => {
+      expect(Testing).toBeDefined();
+      const conn = WebsocketMocks.getConnectionStub();
+      const data = await conn.awaitMessage(routes[0]);
+      expect(data).toStrictEqual({ value: "oldvalue1" });
+      conn.runRequest(routes[3], { value: "updated" });
+      expect(Testing.value).toStrictEqual({ value: "updated" });
+      const resentData = await conn.awaitMessage(routes[0]);
+      expect(resentData).toStrictEqual({ value: "updated" });
+    });
+
+    it(
+      label + ": should resend subscribed data (multiple updated)",
+      async () => {
+        expect(Testing).toBeDefined();
+        const conn = WebsocketMocks.getConnectionStub();
+        const data = await Promise.all([
+          conn.awaitMessage(routes[0]),
+          conn.awaitMessage(routes[1]),
+        ]);
+        expect(data[0]).toStrictEqual({ value: "oldvalue1" });
+        expect(data[1]).toStrictEqual({ value: "oldvalue1" });
+
+        conn.runRequest(routes[3], { value: "updated" });
+        expect(await conn.awaitMessage(routes[1])).toStrictEqual({
+          value: "updated",
+        });
+        expect(await conn.awaitMessage(routes[0])).toStrictEqual({
+          value: "updated",
+        });
+      }
+    );
+  }
+);

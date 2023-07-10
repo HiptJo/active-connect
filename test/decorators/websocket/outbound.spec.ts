@@ -1,45 +1,85 @@
-import { Outbound, Shared } from "../../../src/active-connect";
-import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
-import { WebsocketRequest } from "../../../src/server/websocket/message/request";
-import { WebsocketOutbounds } from "../../../src/server/websocket/routing/outbound";
-import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
+import { LazyLoading, Outbound } from "../../../src/active-connect";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
 it("should be possible to create a outbound", async () => {
   class Out {
     @Outbound("out.example")
-    async send(conn: WebsocketConnection) {
-      return { value: "anything" };
+    async send() {
+      return { value: "anything1" };
     }
   }
   expect(Out).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
-
-  WebsocketOutbounds.sendToConnection(conn);
-
   const data = await conn.awaitMessage("out.example");
-  expect(data).toStrictEqual({ value: "anything" });
+  expect(data).toStrictEqual({ value: "anything1" });
 });
 
-it("should be possible to create a requestable outbound", async () => {
-  class Out {
-    @Outbound("out.requesting", true)
-    async send(conn: WebsocketConnection) {
-      return { value: "anything" };
+describe("lazy loading (default constructor annotation)", () => {
+  it("should be possible to request a lazy-loaded outbound", async () => {
+    class Out {
+      @Outbound("out.requesting0", true)
+      async send() {
+        return { value: "anything" };
+      }
     }
-  }
-  expect(Out).toBeDefined();
-  const conn = WebsocketMocks.getConnectionStub();
+    expect(Out).toBeDefined();
+    const conn = WebsocketMocks.getConnectionStub();
+    conn.runRequest("request.out.requesting0", null);
+    const data = await conn.awaitMessage("out.requesting0");
+    expect(data).toStrictEqual({ value: "anything" });
+  });
+  it("should not auto-send lazy-loaded data", async () => {
+    class Out {
+      @Outbound("out.requesting1", true)
+      async send() {
+        return { value: "anything" };
+      }
+    }
+    expect(Out).toBeDefined();
+    const conn = WebsocketMocks.getConnectionStub();
+    conn.awaitMessage("out.requesting1").then(() => {
+      fail("lazy-loaded data has been sent without requesting");
+    });
+  });
+});
+describe("lazy loading (separate lazy decorator before)", () => {
+  it("should be possible to create a lazy-loaded outbound", async () => {
+    class Out {
+      @LazyLoading
+      @Outbound("out.requesting2")
+      async send() {
+        return { value: "anything" };
+      }
+    }
+    expect(Out).toBeDefined();
+    const conn = WebsocketMocks.getConnectionStub();
+    conn.runRequest("request.out.requesting2", null);
 
-  WebsocketOutbounds.sendSingleOutboundByMethod("out.requesting", conn);
+    const data = await conn.awaitMessage("out.requesting2");
+    expect(data).toStrictEqual({ value: "anything" });
+  });
+});
+describe("lazy loading (separate lazy decorator after)", () => {
+  it("should be possible to create a lazy-loaded outbound", async () => {
+    class Out {
+      @Outbound("out.requesting3")
+      @LazyLoading
+      async send() {
+        return { value: "anything" };
+      }
+    }
+    expect(Out).toBeDefined();
+    const conn = WebsocketMocks.getConnectionStub();
+    conn.runRequest("request.out.requesting3", null);
 
-  const data = await conn.awaitMessage("out.example");
-  expect(data).toStrictEqual({ value: "anything" });
+    const data = await conn.awaitMessage("out.requesting3");
+    expect(data).toStrictEqual({ value: "anything" });
+  });
 });
 
 it("should be possible to access the `this` object within a outbound", async () => {
   class Out {
-    @Shared({ content: "something" }) private content: any;
+    private content: any = { content: "something" };
 
     @Outbound("out.this")
     async send() {
@@ -49,19 +89,17 @@ it("should be possible to access the `this` object within a outbound", async () 
   expect(Out).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbounds.sendToConnection(conn);
-
   const data = await conn.awaitMessage("out.this");
   expect(data).toStrictEqual({ content: "something" });
 });
 
 it("should be possible to create multiple outbounds", async () => {
   class Out {
-    @Outbound("outm.1")
+    @Outbound("multiple.1")
     async sendA() {
       return 1;
     }
-    @Outbound("outm.2")
+    @Outbound("multiple.2")
     async sendB() {
       return 2;
     }
@@ -69,16 +107,14 @@ it("should be possible to create multiple outbounds", async () => {
   expect(Out).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
 
-  WebsocketOutbounds.sendToConnection(conn);
-
-  const data = await conn.awaitMessage("outm.1");
+  const data = await conn.awaitMessage("multiple.1");
   expect(data).toStrictEqual(1);
-  const data1 = await conn.awaitMessage("outm.2");
+  const data1 = await conn.awaitMessage("multiple.2");
   expect(data1).toStrictEqual(2);
 });
 
-describe("error management", () => {
-  it("should send a m.error when a route throws an string", async () => {
+describe("error handling", () => {
+  it("should send a m.error when a route throws an string (requestable route)", async () => {
     class Testing {
       @Outbound("throws.error.1", true)
       func() {
@@ -87,31 +123,20 @@ describe("error management", () => {
     }
     expect(Testing).toBeDefined();
     const conn = WebsocketMocks.getConnectionStub();
-    try {
-      await WebsocketOutbounds.sendSingleOutboundByMethod(
-        "throws.error.1",
-        conn
-      );
-      expect(await conn.awaitMessage("m.error")).toBe("I am an error1");
-    } catch (e) {}
+    conn.runRequest("request.throws.error.1", null);
+    expect(await conn.awaitMessage("m.error")).toBe(
+      "Received error message from websocket server: I am an error1"
+    );
   });
-});
-
-it("should be possible to request a outbound using the requesting method", async () => {
-  // @injectAttributes
-  class Testing {
-    @Outbound("test.requesting.out", true)
-    async send() {
-      return "data";
+  it("should send a m.error when a route throws an string (requestable route)", async () => {
+    class Testing {
+      @Outbound("throws.error.2")
+      func() {
+        throw Error("I am an error2");
+      }
     }
-  }
-  new Testing();
-  expect(Testing).toBeDefined();
-
-  const conn = WebsocketMocks.getConnectionStub();
-  new WebsocketRouter().route(
-    new WebsocketRequest("request.test.requesting.out", null, conn)
-  );
-  const res = await conn.awaitMessage("test.requesting.out");
-  expect(res).toBe("data");
+    expect(Testing).toBeDefined();
+    const conn = WebsocketMocks.getConnectionStub();
+    expect(await conn.awaitMessage("m.error")).toBe("I am an error2");
+  });
 });
