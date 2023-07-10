@@ -311,7 +311,7 @@ export class StandaloneWebsocketRoute extends WebsocketRoute {
  * Represents a simple WebSocket route that does not require a target/propertyKey configuration.
  * This can be used to register a route for anonymous functions.
  */
-export class SimpleWebsocketRoute extends WebsocketRoute {
+export class SimpleWebsocketRoute extends StandaloneWebsocketRoute {
   /**
    * Creates an instance of SimpleWebsocketRoute.
    * @param method - The method name for the route.

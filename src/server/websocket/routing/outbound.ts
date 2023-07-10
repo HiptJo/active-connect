@@ -2,7 +2,7 @@ import { WebsocketOutboundDecoratorConfig } from "../../../decorators/websocket/
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { AuthableDecorableFunction } from "./function";
-import { StandaloneWebsocketRoute } from "./route";
+import { SimpleWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
 
 /**
@@ -36,10 +36,30 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   constructor(
     public method: string,
     objConfig: { target: any; propertyKey: string },
-    public lazyLoading?: boolean,
+    lazyLoading?: boolean,
     public resendAfterAuthenticationChange?: boolean
   ) {
     super(objConfig);
+    this.lazyLoading = lazyLoading;
+  }
+
+  private _lazyLoading: boolean = false;
+  public set lazyLoading(lazyLoading: boolean) {
+    if (lazyLoading && lazyLoading != this._lazyLoading) {
+      const method = this.method;
+      WebsocketRouter.registerStandaloneRoute(
+        new SimpleWebsocketRoute(`request.${method}`, async function request(
+          data: any,
+          conn: WebsocketConnection
+        ) {
+          await WebsocketOutbounds.sendSingleOutboundByMethod(method, conn);
+        })
+      );
+    }
+    this._lazyLoading = lazyLoading;
+  }
+  public get lazyLoading() {
+    return this._lazyLoading;
   }
 
   private subscribesChanges: boolean = false;
@@ -105,6 +125,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     } catch (e) {
       if (!e?.isAuthenticationError) {
         console.error(e);
+        conn.send("m.error", e?.message || e);
+      } else if (this.lazyLoading) {
         conn.send("m.error", e?.message || e);
       }
     }
@@ -236,21 +258,6 @@ export class WebsocketOutbounds {
    */
   public static addOutbound(outbound: WebsocketOutbound) {
     WebsocketOutbounds.outbounds.set(outbound.method, outbound);
-    if (outbound.lazyLoading) {
-      WebsocketRouter.registerStandaloneRoute(
-        new StandaloneWebsocketRoute(`request.${outbound.method}`, {
-          target: class Fetch {
-            async fetch(data: any, conn: WebsocketConnection) {
-              await WebsocketOutbounds.sendSingleOutboundByMethod(
-                outbound.method,
-                conn
-              );
-            }
-          }.prototype,
-          propertyKey: "fetch",
-        })
-      );
-    }
   }
 
   /**
