@@ -247,8 +247,6 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
  * Note: Outbounds registered using decorators are not automatically added again.
  */
 export class WebsocketOutbounds {
-  private constructor() {}
-
   private static outbounds: Map<string, WebsocketOutbound> = new Map();
 
   /**
