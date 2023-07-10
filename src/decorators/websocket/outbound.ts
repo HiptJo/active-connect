@@ -13,6 +13,7 @@ import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-de
  * - `@Auth`
  * - `@Subscribe` and `@SubscribeFor`
  * - `@ResendAfterAuthenticationChange`
+ * - `@LazyLoading`
  *
  * @param method - The method name for the outbound message.
  *                 Outbound method names do not append to route methods.
@@ -38,17 +39,42 @@ export function Outbound(
   return function _Outbound(target: any, propertyKey: string): any {
     // method annotation
     const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
-    config.lazyLoading = lazyLoading || false;
-    config.resendAfterAuthenticationChange =
-      resendAfterAuthenticationChange || false;
+    if (lazyLoading) config.lazyLoading = lazyLoading;
+    if (resendAfterAuthenticationChange)
+      config.resendAfterAuthenticationChange = resendAfterAuthenticationChange;
 
     WebsocketOutbounds.addOutbound(
-      new WebsocketOutbound(method, {
-        target,
-        propertyKey,
-      }).bindDecoratorConfig(config)
+      new WebsocketOutbound(
+        method,
+        {
+          target,
+          propertyKey,
+        },
+        lazyLoading || false,
+        resendAfterAuthenticationChange || false
+      ).bindDecoratorConfig(config)
     );
 
     return target;
   };
+}
+
+/**
+ * @decorator
+ * Annotates that the outbound should be lazy-loaded by clients.
+ *
+ * @example Method annotation for outbound:
+ * ```
+ * class Example {
+ *     @Outbound("d.example")
+ *     @LazyLoading
+ *     async getData(connection: WebsocketConnection): Promise<any> {
+ *       return [...];
+ *     }
+ * }
+ * ```
+ */
+export function LazyLoading(target: any, propertyKey: string) {
+  const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+  config.lazyLoading = true;
 }
