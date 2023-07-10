@@ -89,9 +89,7 @@ export abstract class AuthableDecorableFunction extends DecorableFunction {
           return func(...data);
         } else {
           this.sendError(conn, authenticator.unauthenticatedMessage);
-          throw new AuthenticationError(
-            "Could not Authenticate for authenticator=" + authenticator.label
-          );
+          throw new AuthenticationError(authenticator.unauthenticatedMessage);
         }
       };
     } else {
