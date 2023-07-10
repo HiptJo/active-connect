@@ -89,5 +89,8 @@ export class WebsocketRouter {
     for (var route of this.routes) {
       route.loadDecoratorConfig();
     }
+    for (var route of this.standaloneRoutes) {
+      route.loadDecoratorConfig();
+    }
   }
 }
