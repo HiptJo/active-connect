@@ -115,3 +115,8 @@ testEach(
     );
   }
 );
+
+it.todo(
+  "should be possible to use the deprecated decorator @SubscribeMatchingChanges"
+);
+it.todo("should be possible to use the deprecated decorator @ModifiesMatching");

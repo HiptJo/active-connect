@@ -322,6 +322,13 @@ it("should be possible to access the `this` object within a authenticated outbou
   expect(data).toStrictEqual({ content: "something" });
 });
 
+it.todo(
+  "should raise an error when two authenticators are present for one route"
+);
+it.todo(
+  "should be possible to daisy-chain (and/or) authenticators using annotations"
+);
+
 /* @todo */
 it.todo("should subscribe for changes after outbound has been sent");
 it.todo("should not subscribe for changes when no outbound is sent");

@@ -114,7 +114,7 @@ it("should be possible to create multiple outbounds", async () => {
 });
 
 describe("error handling", () => {
-  it("should send a m.error when a route throws an string (requestable route)", async () => {
+  it("should send a m.error when a route throws an error object (requestable route)", async () => {
     class Testing {
       @Outbound("throws.error.1", true)
       func() {
@@ -132,7 +132,7 @@ describe("error handling", () => {
     class Testing {
       @Outbound("throws.error.2")
       func() {
-        throw Error("I am an error2");
+        throw "I am an error2";
       }
     }
     expect(Testing).toBeDefined();
@@ -140,3 +140,13 @@ describe("error handling", () => {
     expect(await conn.awaitMessage("m.error")).toBe("I am an error2");
   });
 });
+
+it.todo(
+  "should be possible to configure a method with modifiesAuthentication / an outbound with resendAfterAuthenticationChange without annotations"
+);
+it.todo(
+  "should be possible to annotate a method with @ModifiesAuthentication / an outbound with @ResendAfterAuthenticationChange"
+);
+it.todo(
+  "should raise an error when the @ModifiesAuthentication decorator is used on class-level"
+);

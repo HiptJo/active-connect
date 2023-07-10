@@ -105,3 +105,5 @@ testEach(
     );
   }
 );
+
+it.todo("should be possible to use the deprecated decorator @SubscribeChanges");

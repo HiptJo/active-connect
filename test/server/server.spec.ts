@@ -45,3 +45,13 @@ it("should be possible to fetch the client information of a connection", async (
   expect(data.browser).toBeDefined();
   expect(data.browser).toBe("SampleLabel");
 });
+
+describe("websocket logging testing", () => {
+  it.todo("should be possible to enable logging");
+});
+
+describe("websocket client ip access", () => {
+  it.todo("should be possible to enable ip functionality");
+});
+
+it.todo("should be possible to access all connected clients");

@@ -39,3 +39,10 @@ describe("connection testing (stub)", () => {
     expect(data).toStrictEqual(value);
   });
 });
+
+it.todo(
+  "should invoke methods decorated with @OnWebsocketConnectionClosed after closing the websocket connection (multiple decorators should be supported)"
+);
+
+it.todo("should send a ping message to the client every 45 seconds");
+it.todo("should raise an error when a message without message-id is received");
