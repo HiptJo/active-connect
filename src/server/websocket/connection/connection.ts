@@ -5,18 +5,19 @@ import { WebsocketRequest } from "../message/request";
 import { WebsocketOutbounds } from "../routing/outbound";
 import { WebsocketRouter } from "../routing/router";
 import { WebsocketServer } from "../server";
+import { DecorableFunction } from "../routing/function";
 
 /**
  * Represents a WebSocket connection.
  */
 export class WebsocketConnection {
-  private static closeHandlers: Function[] = [];
+  private static closeHandlers: DecorableFunction[] = [];
 
   /**
    * Adds a close handler to be called when the connection is closed.
    * @param callback - The callback function to be called on connection close.
    */
-  public static addCloseHandler(callback: Function) {
+  public static addCloseHandler(callback: DecorableFunction) {
     WebsocketConnection.closeHandlers.push(callback);
   }
 
@@ -97,7 +98,7 @@ export class WebsocketConnection {
   protected onClose() {
     clearInterval(this.interval);
     WebsocketOutbounds.unsubscribeConnection(this);
-    WebsocketConnection.closeHandlers.forEach((c) => c(this));
+    WebsocketConnection.closeHandlers.forEach((c) => c.Func(this));
   }
 
   private async sendWelcomeMessages() {

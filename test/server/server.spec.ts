@@ -1,5 +1,6 @@
 import {
   HttpServer,
+  OnWebsocketConnectionClosed,
   StandaloneRoute,
   StandaloneWebsocketRoute,
   WebsocketConnection,
@@ -118,4 +119,25 @@ it("should be possible to access all connected clients", async () => {
   const connections = server.getWebsocketInstance().getConnections();
   expect(connections).toBeDefined();
   expect(connections.length).toBeGreaterThanOrEqual(1);
+});
+
+it("should invoke methods decorated with @OnWebsocketConnectionClosed after closing the websocket connection (multiple decorators should be supported)", (done) => {
+  class Testing {
+    private count = 2;
+
+    @OnWebsocketConnectionClosed
+    onClosed1() {
+      if (--this.count == 0) done();
+    }
+
+    @OnWebsocketConnectionClosed
+    onClosed2() {
+      if (--this.count == 0) done();
+    }
+  }
+  expect(Testing).toBeDefined();
+  const client = new WebsocketClient(9008);
+  client.awaitConnection().then(() => {
+    client.close();
+  });
 });

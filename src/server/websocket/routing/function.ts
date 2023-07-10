@@ -4,7 +4,7 @@ import { WebsocketConnection } from "../connection/connection";
 /**
  * Represents the reference to an object method used for websocket routes and outbounds.
  */
-export abstract class DecorableFunction {
+export class DecorableFunction {
   /**
    * Creates an instance of DecorableFunction.
    * @param objConfig - The configuration object for the object method.
