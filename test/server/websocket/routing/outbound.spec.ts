@@ -1,19 +1,17 @@
 import {
+  MessageFilter,
+  WebsocketAuthenticator,
   WebsocketConnection,
   WebsocketRequest,
   WebsocketRoute,
   WebsocketRouter,
 } from "../../../../src";
+import { testEach } from "../../../../src/jest";
 import {
   WebsocketOutbound,
   WebsocketOutbounds,
 } from "../../../../src/server/websocket/routing/outbound";
 import { StubWebsocketConnection, WebsocketMocks } from "../../websocket-mocks";
-import {
-  MessageFilter,
-  WebsocketAuthenticator,
-} from "../../../../src/server/websocket/auth/authenticator";
-import { testEach } from "../../../../src/jest";
 
 beforeEach(() => {
   WebsocketOutbounds.clear();
@@ -600,6 +598,7 @@ describe("authentication", () => {
     it("should not be possible to request an outbound (lazy-loading, access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("request.auth.out5", null);
+      expect(await conn.awaitMessage("m.error")).toBe("not-authenticated");
       conn.awaitMessage("auth.out5").then(() => {
         fail("should not receive data as auth should fail");
       });
@@ -623,6 +622,7 @@ describe("authentication", () => {
     it("should be possible to daisy-chain authenticators (lazy-loading, access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("request.auth.out9", null);
+      expect(await conn.awaitMessage("m.error")).toBe("not-authenticated");
       conn.awaitMessage("auth.out9").then(() => {
         fail("should not receive data as auth should fail");
       });
