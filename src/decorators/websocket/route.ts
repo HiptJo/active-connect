@@ -74,7 +74,7 @@ export function Route(
         throw Error("Base-Route is not supported for method annotations");
       }
 
-      config.modifiesAuthentication = modifiesAuthentication || false;
+      config.modifiesAuthentication ||= modifiesAuthentication;
 
       const route = new WebsocketRoute(method, {
         target,

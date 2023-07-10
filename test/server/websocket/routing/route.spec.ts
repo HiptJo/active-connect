@@ -495,8 +495,7 @@ describe("authentication", () => {
       propertyKey: "granted",
     });
     const auth3 = new Authenticator(false);
-    auth3.or = new Authenticator(true);
-    auth3.or.and = new Authenticator(true);
+    auth3.or(new Authenticator(true).and(new Authenticator(true)));
     route3.setAuthenticator(auth3);
     WebsocketRouter.registerRoute(route3);
 
@@ -505,8 +504,7 @@ describe("authentication", () => {
       propertyKey: "denied",
     });
     const auth4 = new Authenticator(false);
-    auth4.or = new Authenticator(true);
-    auth4.or.and = new Authenticator(false);
+    auth4.or(new Authenticator(true).and(new Authenticator(false)));
     route4.setAuthenticator(auth4);
     WebsocketRouter.registerRoute(route4);
 

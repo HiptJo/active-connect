@@ -394,4 +394,12 @@ export class WebsocketOutbounds {
       outbound[1].loadDecoratorConfig();
     }
   }
+
+  /**
+   * Remove an registered outbound
+   * @param method - Method of the outbound to be deleted
+   */
+  public static removeOutboundByMethod(method: string) {
+    this.outbounds.delete(method);
+  }
 }

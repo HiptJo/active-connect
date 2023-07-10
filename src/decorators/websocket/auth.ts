@@ -32,9 +32,9 @@ export function Auth(authenticator: WebsocketAuthenticator) {
     for (var config of configs) {
       if (config.authenticator) {
         throw new Error(
-          "Error for config " +
+          "Error for config (function label: " +
             propertyKey +
-            ": Can not define authentication as another authenticator is already present."
+            "): Can not define authentication as another authenticator is already present."
         );
       }
       config.authenticator = authenticator;

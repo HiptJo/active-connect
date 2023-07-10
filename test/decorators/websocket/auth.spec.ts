@@ -1,9 +1,11 @@
 import {
   Auth,
   LazyLoading,
+  Modifies,
   Outbound,
   Route,
   StandaloneRoute,
+  Subscribe,
 } from "../../../src/active-connect";
 import { WebsocketAuthenticator } from "../../../src/server/websocket/auth/authenticator";
 import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
@@ -322,15 +324,135 @@ it("should be possible to access the `this` object within a authenticated outbou
   expect(data).toStrictEqual({ content: "something" });
 });
 
-it.todo(
-  "should raise an error when two authenticators are present for one route"
-);
-it.todo(
-  "should be possible to daisy-chain (and/or) authenticators using annotations"
-);
+it("should raise an error when two authenticators are present for one route", async () => {
+  expect(() => {
+    class Out {
+      private content: any = { content: "something" };
 
-/* @todo */
-it.todo("should subscribe for changes after outbound has been sent");
-it.todo("should not subscribe for changes when no outbound is sent");
-it.todo("should trigger outbound updating when route request is auth");
-it.todo("should not trigger outbound updating when route request is unauth");
+      @Outbound("out.example11")
+      @Auth(new Authenticator())
+      @Auth(new Authenticator())
+      async send() {
+        return this.content;
+      }
+    }
+    expect(Out).toBeDefined();
+  }).toThrow(
+    "Error for config (function label: send): Can not define authentication as another authenticator is already present."
+  );
+});
+it("should be possible to daisy-chain (and/or) authenticators using annotations", async () => {
+  class Out {
+    @Outbound("out.example12")
+    @Auth(new Authenticator().and(new FalseAuthenticator()))
+    async unauthorized() {
+      return "";
+    }
+    @Outbound("out.example13")
+    @Auth(new Authenticator().or(new FalseAuthenticator()))
+    async authorized() {
+      return "";
+    }
+  }
+  expect(Out).toBeDefined();
+  const conn = WebsocketMocks.getConnectionStub();
+  conn.awaitMessage("out.example12").then(() => {
+    fail("should not receive this as the authenticator is false");
+  });
+  await conn.awaitMessage("out.example13");
+});
+
+it("should subscribe for changes after outbound has been sent", async () => {
+  class Out {
+    @Outbound("out.example14")
+    @Subscribe
+    @Auth(new Authenticator())
+    async authorized() {
+      return true;
+    }
+
+    @StandaloneRoute("update.example14")
+    @Modifies("out.example14")
+    async update() {}
+  }
+  expect(Out).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+  await conn.awaitMessage("out.example14");
+  conn.runRequest("update.example14", null);
+  await conn.awaitMessage("out.example14");
+  await conn.awaitMessage("m.update.example14");
+});
+it("should not subscribe for changes when no outbound is sent", async () => {
+  class Out {
+    @Outbound("out.example15")
+    @Subscribe
+    @Auth(new FalseAuthenticator())
+    async authorized() {
+      return true;
+    }
+
+    @StandaloneRoute("update.example15")
+    @Modifies("out.example15")
+    async update() {}
+  }
+  expect(Out).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+  conn.runRequest("update.example15", null);
+  conn.awaitMessage("out.example15").then(() => {
+    fail(
+      "should not receive updated data as authentication failed in the first place"
+    );
+  });
+  await conn.awaitMessage("m.update.example15");
+});
+it("should trigger outbound updating when route request is auth", async () => {
+  class Out {
+    @Outbound("out.example16")
+    @Subscribe
+    async authorized() {
+      return true;
+    }
+
+    @StandaloneRoute("update.example16")
+    @Modifies("out.example16")
+    @Auth(new Authenticator())
+    async update() {}
+  }
+  expect(Out).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+  await conn.awaitMessage("out.example16");
+  conn.runRequest("update.example16", null);
+  await conn.awaitMessage("out.example16");
+  await conn.awaitMessage("m.update.example16");
+});
+it("should not trigger outbound updating when route request is unauth", async () => {
+  class Out {
+    @Outbound("out.example17")
+    @Subscribe
+    async authorized() {
+      return true;
+    }
+
+    @StandaloneRoute("update.example17")
+    @Modifies("out.example17")
+    @Auth(new FalseAuthenticator())
+    async update() {}
+  }
+  expect(Out).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+  await conn.awaitMessage("out.example17");
+  conn.runRequest("update.example17", null);
+  conn.awaitMessage("out.example17").then(() => {
+    fail(
+      "outbound update should not be sent as request auth failed in the first place"
+    );
+  });
+  conn.awaitMessage("m.update.example17").then(() => {
+    fail("callback shall not be called");
+  });
+  await conn.awaitMessage("m.error");
+});

@@ -26,8 +26,21 @@ export abstract class WebsocketAuthenticator {
     requestData: any
   ): Promise<boolean>;
 
-  public or: WebsocketAuthenticator | null = null;
-  public and: WebsocketAuthenticator | null = null;
+  public orAuthenticator: WebsocketAuthenticator | null = null;
+  public or(authenticator: WebsocketAuthenticator): WebsocketAuthenticator {
+    if (!this.orAuthenticator) {
+      this.orAuthenticator = authenticator;
+    } else throw new Error("Or authenticator is already defined");
+    return this;
+  }
+
+  public andAuthenticator: WebsocketAuthenticator | null = null;
+  public and(authenticator: WebsocketAuthenticator): WebsocketAuthenticator {
+    if (!this.andAuthenticator) {
+      this.andAuthenticator = authenticator;
+    } else throw new Error("And authenticator is already defined");
+    return this;
+  }
 
   /**
    * Checks the authentication for the WebSocket connection.
@@ -40,13 +53,16 @@ export abstract class WebsocketAuthenticator {
     requestData: any
   ): Promise<boolean> {
     if (await this.authenticate(conn, requestData)) {
-      if (this.and) {
-        return await this.and.checkAuthentication(conn, requestData);
+      if (this.andAuthenticator) {
+        return await this.andAuthenticator.checkAuthentication(
+          conn,
+          requestData
+        );
       }
       return true;
     }
-    if (this.or) {
-      return await this.or.checkAuthentication(conn, requestData);
+    if (this.orAuthenticator) {
+      return await this.orAuthenticator.checkAuthentication(conn, requestData);
     }
     return false;
   }

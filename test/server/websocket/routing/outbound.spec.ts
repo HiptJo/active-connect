@@ -50,6 +50,13 @@ it("should have registered 1 outbound", () => {
   expect(WebsocketOutbounds.size).toBe(1);
 });
 
+it("should be possible to get all outbounds", async () => {
+  expect(WebsocketOutbounds.getAllOutbounds()).toBeDefined();
+  expect(
+    WebsocketOutbounds.getAllOutbounds().filter((o) => o.method == "data")
+  ).toHaveLength(1);
+});
+
 describe("default outbound", () => {
   it("should be possible to create a new outbound", () => {
     const outbound = new WebsocketOutbound("testing.delivery", {
@@ -235,9 +242,9 @@ describe("subscription testing", () => {
 
       const newConn = WebsocketMocks.getConnectionStub();
       newConn.runRequest("add", "_");
-      conn1
-        .awaitMessage("d.high")
-        .then((data) => fail("Data was sent to a closed connection " + data));
+      conn1.awaitMessage("d.high").then((data) => {
+        fail("Data was sent to a closed connection " + data);
+      });
       await newConn.awaitMessage("m.add");
     });
   });
@@ -537,7 +544,7 @@ describe("authentication", () => {
         propertyKey: "granted",
       });
       var auth = new Authenticator(true);
-      auth.or = new Authenticator(false);
+      auth.or(new Authenticator(false));
       out6.setAuthenticator(auth);
       WebsocketOutbounds.addOutbound(out6);
 
@@ -546,8 +553,7 @@ describe("authentication", () => {
         propertyKey: "denied",
       });
       auth = new Authenticator(true);
-      auth.and = new Authenticator(false);
-      auth.and.or = new Authenticator(false);
+      auth.and(new Authenticator(false).or(new Authenticator(false)));
       out7.setAuthenticator(auth);
       WebsocketOutbounds.addOutbound(out7);
 
@@ -560,8 +566,7 @@ describe("authentication", () => {
         true
       );
       auth = new Authenticator(true);
-      auth.and = new Authenticator(false);
-      auth.and.or = new Authenticator(true);
+      auth.and(new Authenticator(false).or(new Authenticator(true)));
       out8.setAuthenticator(auth);
       WebsocketOutbounds.addOutbound(out8);
 
@@ -574,8 +579,7 @@ describe("authentication", () => {
         true
       );
       auth = new Authenticator(false);
-      auth.and = new Authenticator(true);
-      auth.and.or = new Authenticator(true);
+      auth.and(new Authenticator(true).or(new Authenticator(true)));
       out9.setAuthenticator(auth);
       WebsocketOutbounds.addOutbound(out9);
     });
@@ -629,5 +633,3 @@ describe("authentication", () => {
     });
   });
 });
-
-it.todo("should be possible to get all outbounds");

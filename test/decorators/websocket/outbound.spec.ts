@@ -1,4 +1,14 @@
-import { LazyLoading, Outbound } from "../../../src/active-connect";
+import {
+  LazyLoading,
+  ModifiesAuthentication,
+  Outbound,
+  ResendAfterAuthenticationChange,
+  Route,
+  StandaloneRoute,
+  Subscribe,
+  WebsocketOutbounds,
+} from "../../../src/active-connect";
+import { testEach } from "../../../src/jest";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
 it("should be possible to create a outbound", async () => {
@@ -139,14 +149,90 @@ describe("error handling", () => {
     const conn = WebsocketMocks.getConnectionStub();
     expect(await conn.awaitMessage("m.error")).toBe("I am an error2");
   });
+  afterAll(() => {
+    // clear after execution to remove outbound `throw.error.2`
+    WebsocketOutbounds.removeOutboundByMethod("throws.error.2");
+  });
 });
 
-it.todo(
-  "should be possible to configure a method with modifiesAuthentication / an outbound with resendAfterAuthenticationChange without annotations"
-);
-it.todo(
-  "should be possible to annotate a method with @ModifiesAuthentication / an outbound with @ResendAfterAuthenticationChange"
-);
-it.todo(
-  "should raise an error when the @ModifiesAuthentication decorator is used on class-level"
-);
+describe("Outbound resend after auth change", () => {
+  beforeEach(() => {
+    Testing.value.value = "oldvalue1";
+  });
+
+  @Route("auth1")
+  class Testing {
+    public static value: any = { value: "oldvalue1" };
+
+    @Outbound("out3.auth")
+    @Subscribe
+    @ResendAfterAuthenticationChange
+    public async sendData1() {
+      return Testing.value;
+    }
+
+    @ModifiesAuthentication
+    @StandaloneRoute("standalone.auth")
+    public async standalone1(value: any) {
+      Testing.value = value;
+    }
+
+    @Route("auth1")
+    @ModifiesAuthentication
+    public async subscribe1(value: any) {
+      Testing.value = value;
+    }
+
+    @Outbound("out4.auth", false, true)
+    public async sendData2() {
+      return Testing.value;
+    }
+
+    @StandaloneRoute("standalone.auth1", true)
+    public async standalone2(value: any) {
+      Testing.value = value;
+    }
+
+    @Route("auth2", undefined, true)
+    public async subscribe2(value: any) {
+      Testing.value = value;
+    }
+  }
+
+  const regularRoutes: string[] = ["out3.auth", "auth1.auth1"];
+  const standaloneRoutes: string[] = ["out3.auth", "standalone.auth"];
+  const inRegularRoutes: string[] = ["out4.auth", "auth1.auth2"];
+  const inStandaloneRoutes: string[] = ["out4.auth", "standalone.auth1"];
+
+  testEach(
+    [regularRoutes, standaloneRoutes, inRegularRoutes, inStandaloneRoutes],
+    [
+      "routes&decorator",
+      "standalone-routes&decorator",
+      "routes&in",
+      "standalone-routes&in",
+    ],
+    (routes: string[], label: string) => {
+      it(label + ": should re-send data after auth change", async () => {
+        expect(Testing).toBeDefined();
+        const conn = WebsocketMocks.getConnectionStub();
+        const data = await conn.awaitMessage(routes[0]);
+        expect(data).toStrictEqual({ value: "oldvalue1" });
+        conn.runRequest(routes[1], { value: "updated" });
+        expect(Testing.value).toStrictEqual({ value: "updated" });
+        const resentData = await conn.awaitMessage(routes[0]);
+        expect(resentData).toStrictEqual({ value: "updated" });
+      });
+    }
+  );
+
+  it("should raise an error when the modifiesAuthentication tag is used on class-level", async () => {
+    expect(() => {
+      @Route("test", undefined, true)
+      class Testing {}
+      expect(Testing).toBeDefined();
+    }).toThrow(
+      "Modifies-Authentication mode is not support for class annotation"
+    );
+  });
+});
