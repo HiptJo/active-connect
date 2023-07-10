@@ -1,18 +1,20 @@
 import {
   HttpServer,
+  StandaloneRoute,
   StandaloneWebsocketRoute,
   WebsocketConnection,
   WebsocketRouter,
+  WebsocketServer,
 } from "../../src/active-connect";
 import { WebsocketClient } from "./websocket-client";
 
 let server: HttpServer;
 
-beforeEach(async () => {
+beforeAll(async () => {
   server = new HttpServer(9008, true);
   await server.awaitStart();
 });
-afterEach(() => {
+afterAll(() => {
   server.stop();
 });
 
@@ -47,11 +49,67 @@ it("should be possible to fetch the client information of a connection", async (
 });
 
 describe("websocket logging testing", () => {
-  it.todo("should be possible to enable logging");
+  class Testing {
+    async route() {
+      return true;
+    }
+  }
+  WebsocketRouter.registerStandaloneRoute(
+    new StandaloneWebsocketRoute("fetch.example", {
+      target: Testing.prototype,
+      propertyKey: "route",
+    })
+  );
+
+  it("should be possible to enable logging", (done) => {
+    console.log = (message: string) => {
+      if (message.startsWith("Received message: ")) done();
+    };
+    server.enableLogging();
+    const client = new WebsocketClient(9008);
+    client.awaitConnection().then(() => {
+      client.send("fetch.example", null);
+      client.close();
+    });
+  });
 });
 
 describe("websocket client ip access", () => {
-  it.todo("should be possible to enable ip functionality");
+  beforeAll(() => {
+    return new Promise<void>((resolve) => {
+      var http = require("http");
+
+      http.get(
+        { host: "api.ipify.org", port: 80, path: "/" },
+        function (resp: any) {
+          resp.on("data", function (ip: string) {
+            process.env.ip_override = ip.toString();
+            resolve();
+          });
+        }
+      );
+    });
+  });
+  jest.setTimeout(60000);
+  it("should be possible to enable ip functionality", async () => {
+    WebsocketServer.enableIpLocationFetching();
+    class Testing {
+      @StandaloneRoute("location.test")
+      route(data: void, conn: WebsocketConnection) {
+        expect(conn.clientInformation.ip).toBeDefined();
+        expect(conn.clientInformation.location).toBeDefined();
+        expect(conn.clientInformation.location.length).toBeGreaterThan(3);
+        return conn.clientInformation.location;
+      }
+    }
+    expect(Testing).toBeDefined();
+
+    const client = new WebsocketClient(9008);
+    await client.awaitConnection();
+    client.send("location.test", "null");
+    const location = await client.awaitMessage("m.location.test");
+    expect(location).toBeDefined();
+  });
 });
 
 it.todo("should be possible to access all connected clients");

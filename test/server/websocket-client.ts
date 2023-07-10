@@ -4,7 +4,12 @@ import { JsonParser } from "../../src/json/json-parser";
 export class WebsocketClient {
   private connection: ws;
   constructor(port: number) {
-    this.connection = new ws(`ws://127.0.0.1:${port || 9000}`);
+    const opts: any = process.env.ip_override
+      ? {
+          headers: { "x-forwarded-for": process.env.ip_override },
+        }
+      : undefined;
+    this.connection = new ws(`ws://127.0.0.1:${port || 9000}`, opts);
   }
   private messageHistory: Map<string, any> = new Map();
   public async awaitConnection(): Promise<boolean> {
