@@ -112,4 +112,10 @@ describe("websocket client ip access", () => {
   });
 });
 
-it.todo("should be possible to access all connected clients");
+it("should be possible to access all connected clients", async () => {
+  const client = new WebsocketClient(9008);
+  await client.awaitConnection();
+  const connections = server.getWebsocketInstance().getConnections();
+  expect(connections).toBeDefined();
+  expect(connections.length).toBeGreaterThanOrEqual(1);
+});
