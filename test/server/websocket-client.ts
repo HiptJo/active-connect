@@ -10,6 +10,11 @@ export class WebsocketClient {
         }
       : undefined;
     this.connection = new ws(`ws://127.0.0.1:${port || 9000}`, opts);
+    this.connection.on("ping", () => {
+      if (this.pingCallbacks.length > 0) {
+        this.pingCallbacks.shift()();
+      }
+    });
   }
   private messageHistory: Map<string, any> = new Map();
   public async awaitConnection(): Promise<boolean> {
@@ -38,6 +43,13 @@ export class WebsocketClient {
       } else {
         this.expectedMessages.set(method, resolve);
       }
+    });
+  }
+
+  private pingCallbacks: Function[] = [];
+  public async awaitPing() {
+    return new Promise((resolve) => {
+      this.pingCallbacks.push(resolve);
     });
   }
 

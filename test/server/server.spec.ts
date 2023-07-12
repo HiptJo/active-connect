@@ -141,3 +141,10 @@ it("should invoke methods decorated with @OnWebsocketConnectionClosed after clos
     client.close();
   });
 });
+
+it("should send a ping message to the client every 45 seconds", async () => {
+  jest.setTimeout(46000);
+  const client = new WebsocketClient(9008);
+  await client.awaitConnection();
+  await client.awaitPing();
+});
