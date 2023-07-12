@@ -456,3 +456,26 @@ it("should not trigger outbound updating when route request is unauth", async ()
   });
   await conn.awaitMessage("m.error");
 });
+
+it("should raise an error when multiple or authenticators are added", async () => {
+  expect(() => {
+    class Testing {
+      @StandaloneRoute("standalone.route3")
+      @Auth(new Authenticator().or(new Authenticator()).or(new Authenticator()))
+      route() {}
+    }
+    expect(Testing).toBeDefined();
+  }).toThrow("Or authenticator is already defined");
+});
+it("should raise an error when multiple and authenticators are added", async () => {
+  expect(() => {
+    class Testing {
+      @StandaloneRoute("standalone.route4")
+      @Auth(
+        new Authenticator().and(new Authenticator()).and(new Authenticator())
+      )
+      route() {}
+    }
+    expect(Testing).toBeDefined();
+  }).toThrow("And authenticator is already defined");
+});
