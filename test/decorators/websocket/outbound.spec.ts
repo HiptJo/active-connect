@@ -236,3 +236,24 @@ describe("Outbound resend after auth change", () => {
     );
   });
 });
+
+describe("outbound duplicate label checks", () => {
+  it("should raise an error when a two outbounds with the same method are registered", () => {
+    expect(() => {
+      class Testing {
+        @Outbound("out.duplicate")
+        get1() {
+          return 1;
+        }
+
+        @Outbound("out.duplicate")
+        get2() {
+          return 2;
+        }
+      }
+      expect(Testing).toBeDefined();
+    }).toThrow(
+      "Two outbounds have been registered using the same method (out.duplicate)"
+    );
+  });
+});

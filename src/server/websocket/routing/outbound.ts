@@ -263,6 +263,13 @@ export class WebsocketOutbounds {
    * @param outbound - The outbound configuration to register.
    */
   public static addOutbound(outbound: WebsocketOutbound) {
+    if (this.hasOutbound(outbound.method)) {
+      throw Error(
+        "ActiveConnect: Two outbounds have been registered using the same method (" +
+          outbound.method +
+          ")"
+      );
+    }
     WebsocketOutbounds.outbounds.set(outbound.method, outbound);
   }
 
@@ -273,6 +280,15 @@ export class WebsocketOutbounds {
    */
   public static getOutbound(method: string): WebsocketOutbound | null {
     return WebsocketOutbounds.outbounds.get(method) || null;
+  }
+
+  /**
+   * Checks if an outbound configuration with the specified method exists.
+   * @param method - The method of the outbound configuration.
+   * @returns The registered outbound configuration, or undefined if not found.
+   */
+  public static hasOutbound(method: string): boolean {
+    return this.getOutbound(method) != null;
   }
 
   /**
