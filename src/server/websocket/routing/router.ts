@@ -12,7 +12,20 @@ export class WebsocketRouter {
    * Register a standalone route.
    * @param route - The standalone websocket route to register.
    */
-  public static registerStandaloneRoute(route: WebsocketRoute) {
+  public static registerStandaloneRoute(route: StandaloneWebsocketRoute) {
+    let error = false;
+    try {
+      error = this.getRouteByMethod(route.Method) ? true : false;
+    } catch {
+      // expect to get an error here, as the route must not exist before it is registered
+    }
+    if (error) {
+      throw Error(
+        "ActiveConnect: Two routes have been registered using the same method (" +
+          route.Method +
+          ")"
+      );
+    }
     WebsocketRouter.standaloneRoutes.push(route);
   }
 
@@ -20,7 +33,8 @@ export class WebsocketRouter {
    * Register a route.
    * @param route - The websocket route to register.
    */
-  public static registerRoute(route: StandaloneWebsocketRoute) {
+  public static registerRoute(route: WebsocketRoute) {
+    route.checkForDuplicates();
     WebsocketRouter.routes.push(route);
   }
 

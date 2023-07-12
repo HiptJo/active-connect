@@ -347,3 +347,73 @@ it("should be possible to access the `this.method()` object within a standalone 
   const data = await conn.awaitMessage("m.standalone.r6");
   expect(data).toStrictEqual(data);
 });
+
+describe("route duplicate label checks", () => {
+  it("should raise an error when a two routes with the same method are registered", () => {
+    expect(() => {
+      @Route("parent11")
+      class Testing {
+        @Route("route")
+        route1() {}
+
+        @Route("route")
+        route2() {}
+      }
+      expect(Testing).toBeDefined();
+    }).toThrow(
+      "Two routes have been registered using the same method (parent11.route)"
+    );
+
+    expect(() => {
+      @Route("parent12")
+      class Testing1 {}
+      expect(Testing1).toBeDefined();
+      @Route("parent12")
+      class Testing2 {}
+      expect(Testing2).toBeDefined();
+    }).toThrow(
+      "Two routes have been registered using the same method (parent12)"
+    );
+
+    expect(() => {
+      class Testing {
+        @StandaloneRoute("standalone.r7")
+        route1() {}
+        @StandaloneRoute("standalone.r7")
+        route2() {}
+      }
+      expect(Testing).toBeDefined();
+    }).toThrow(
+      "Two routes have been registered using the same method (standalone.r7)"
+    );
+
+    expect(() => {
+      @Route("parent13")
+      class Testing {
+        @Route("route")
+        route1() {}
+        @StandaloneRoute("parent13.route")
+        route2() {}
+      }
+      expect(Testing).toBeDefined();
+    }).toThrow(
+      "Two routes have been registered using the same method (parent13.route)"
+    );
+
+    expect(() => {
+      class Testing1 {
+        @StandaloneRoute("parent13.route")
+        route2() {}
+      }
+      @Route("parent13")
+      class Testing2 {
+        @Route("route")
+        route1() {}
+      }
+      expect(Testing1).toBeDefined();
+      expect(Testing2).toBeDefined();
+    }).toThrow(
+      "Two routes have been registered using the same method (parent13.route)"
+    );
+  });
+});
