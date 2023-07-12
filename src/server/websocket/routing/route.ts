@@ -333,6 +333,4 @@ export class SimpleWebsocketRoute extends StandaloneWebsocketRoute {
   get Func(): (...data: any[]) => Promise<any> | any {
     return this.func;
   }
-
-  public static loadDecoratorConfig() {}
 }

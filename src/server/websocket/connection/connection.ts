@@ -22,6 +22,10 @@ export class WebsocketConnection {
   }
 
   private static AUTO_INCREMENT = 0;
+  /**
+   * Unique client id per server instance.
+   * This incremental value is resetted once the process is restarted.
+   */
   public _id: number = ++WebsocketConnection.AUTO_INCREMENT;
 
   /**
@@ -31,8 +35,14 @@ export class WebsocketConnection {
     return this._id;
   }
 
+  /**
+   * Can be used to store session credentials.
+   */
   public token: string | null = null;
 
+  /**
+   * Reffers to a websocket router instance.
+   */
   public static router: WebsocketRouter = new WebsocketRouter();
   private interval;
 

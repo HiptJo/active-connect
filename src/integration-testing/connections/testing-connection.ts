@@ -2,6 +2,10 @@ import { WebsocketConnection } from "../..";
 import { JsonParser } from "../../json/json-parser";
 import { WebsocketOutbounds } from "../../server/websocket/routing/outbound";
 
+/**
+ * @deprecated
+ * Use TCWrapper instead.
+ */
 export abstract class TestingConnectionWrapper<T> extends WebsocketConnection {
   private expectedMethodCalled: boolean = false;
 
@@ -34,6 +38,10 @@ export abstract class TestingConnectionWrapper<T> extends WebsocketConnection {
   }
 }
 
+/**
+ * @deprecated
+ * Use TCWrapper instead.
+ */
 export abstract class UpdateTestingConnectionWrapper<
   T,
   R
@@ -69,6 +77,10 @@ export abstract class UpdateTestingConnectionWrapper<
   }
 }
 
+/**
+ * @deprecated
+ * Use TCWrapper instead.
+ */
 export abstract class TrippleTestingConnectionWrapper<
   T,
   R,

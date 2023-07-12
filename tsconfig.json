@@ -17,5 +17,5 @@
     "strictNullChecks": false,
     "target": "es6"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "test/json/json-parse.spec.ts"]
 }

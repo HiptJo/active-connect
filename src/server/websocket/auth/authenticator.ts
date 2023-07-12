@@ -26,19 +26,39 @@ export abstract class WebsocketAuthenticator {
     requestData: any
   ): Promise<boolean>;
 
+  /**
+   * Can contain a reference to another authenticator.
+   * When this authenticator instance is used for authentication, either this authenticator or the referred authenticator need to grant permission.
+   */
   public orAuthenticator: WebsocketAuthenticator | null = null;
+  /**
+   * Add another authenticator.
+   * When this authenticator instance is used for authentication, either this authenticator or the referred authenticator need to grant permission.
+   */
   public or(authenticator: WebsocketAuthenticator): WebsocketAuthenticator {
-    if (!this.orAuthenticator) {
-      this.orAuthenticator = authenticator;
-    } else throw new Error("Or authenticator is already defined");
+    if (!this.andAuthenticator) {
+      if (!this.orAuthenticator) {
+        this.orAuthenticator = authenticator;
+      } else throw new Error("Or authenticator is already defined");
+    } else throw new Error("And authenticator is already defined");
     return this;
   }
 
+  /**
+   * Can contain a reference to another authenticator.
+   * When this authenticator instance is used for authentication, this authenticator and the referred authenticator need to grant permission.
+   */
   public andAuthenticator: WebsocketAuthenticator | null = null;
+  /**
+   * Add another authenticator.
+   * When this authenticator instance is used for authentication, this authenticator and the referred authenticator need to grant permission.
+   */
   public and(authenticator: WebsocketAuthenticator): WebsocketAuthenticator {
-    if (!this.andAuthenticator) {
-      this.andAuthenticator = authenticator;
-    } else throw new Error("And authenticator is already defined");
+    if (!this.orAuthenticator) {
+      if (!this.andAuthenticator) {
+        this.andAuthenticator = authenticator;
+      } else throw new Error("And authenticator is already defined");
+    } else throw new Error("Or authenticator is already defined");
     return this;
   }
 

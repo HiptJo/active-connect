@@ -8,9 +8,21 @@ import { WebsocketRouter } from "../../server/websocket/routing/router";
 import * as randomstring from "randomstring";
 import { JsonParser } from "../../json/json-parser";
 
+/**
+ * Can be used to create application-based integration tests.
+ */
 export class TCWrapper extends WebsocketConnection {
+  /**
+   * The router used for routing WebSocket requests.
+   */
   public static router = new WebsocketRouter();
+
   protected client: WebsocketClient;
+
+  /**
+   * Creates an instance of TCWrapper.
+   * @param token - The token for authentication (optional).
+   */
   public constructor(token?: string | undefined) {
     super(null);
     this.token = token || null;
@@ -44,6 +56,12 @@ export class TCWrapper extends WebsocketConnection {
     func: Function;
   }[] = [];
 
+  /**
+   * Sends a WebSocket message.
+   * @param method - The method of the message.
+   * @param value - The value of the message.
+   * @param messageId - The ID of the message (optional).
+   */
   send(method: string, value: any, messageId?: number) {
     // parsing the string provides real data situation (date parsing, ...)
     const parsedValue = JsonParser.parse(JsonParser.stringify(value));

@@ -44,6 +44,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   }
 
   private _lazyLoading: boolean = false;
+
+  /**
+   * When enabled, data is not sent initially to all clients. They can request it if needed.
+   */
   public set lazyLoading(lazyLoading: boolean) {
     if (lazyLoading && lazyLoading != this._lazyLoading) {
       const method = this.method;
@@ -58,6 +62,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     }
     this._lazyLoading = lazyLoading;
   }
+
+  /**
+   * When enabled, data is not sent initially to all clients. They can request it if needed.
+   */
   public get lazyLoading() {
     return this._lazyLoading;
   }
