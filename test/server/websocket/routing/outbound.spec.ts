@@ -2,20 +2,17 @@ import {
   MessageFilter,
   WebsocketAuthenticator,
   WebsocketConnection,
-  WebsocketRequest,
   WebsocketRoute,
   WebsocketRouter,
 } from "../../../../src";
+import { StubWebsocketConnection } from "../../../../src/integration-testing";
 import { testEach } from "../../../../src/jest";
 import {
   WebsocketOutbound,
   WebsocketOutbounds,
 } from "../../../../src/server/websocket/routing/outbound";
-import { StubWebsocketConnection, WebsocketMocks } from "../../websocket-mocks";
+import { WebsocketMocks } from "../../websocket-mocks";
 
-beforeEach(() => {
-  WebsocketOutbounds.clear();
-});
 class target {
   out() {
     return {
@@ -35,7 +32,7 @@ class target {
   }
 }
 
-beforeEach(() => {
+beforeAll(() => {
   WebsocketOutbounds.addOutbound(
     new WebsocketOutbound(
       "data",
@@ -77,7 +74,7 @@ describe("default outbound", () => {
 
     const conn = WebsocketMocks.getConnectionStub();
 
-    const data: any = await conn.awaitMessage("testing.delivery");
+    const data: any = await conn.expectMethod("testing.delivery");
     expect(data.value).toBe("ok");
   });
 
@@ -103,35 +100,30 @@ describe("lazy-loading outbound", () => {
       )
     );
     const conn = WebsocketMocks.getConnectionStub();
-    conn.awaitMessage("testing.requestable").then(() => {
-      fail("Lazy-loaded data was sent initially.");
-    });
+    conn.dontExpectMethod("testing.requestable1");
   });
 
   it("should be possible to receive a requesting outbound", async () => {
     WebsocketOutbounds.addOutbound(
       new WebsocketOutbound(
-        "testing.requestable",
+        "testing.requestable2",
         { target: target.prototype, propertyKey: "requestable" },
         true
       )
     );
     const conn = WebsocketMocks.getConnectionStub();
-    const router = new WebsocketRouter();
-    router.route(
-      new WebsocketRequest("request.testing.requestable", null, conn)
-    );
-    const data: any = await conn.awaitMessage("testing.requestable");
+    conn.runRequest("request.testing.requestable2", null);
+    const data: any = await conn.expectMethod("testing.requestable2");
     expect(data.value).toBe("ok-requested");
   });
 });
 
 describe("error handling", () => {
   class target {
-    async outbound1(conn: StubWebsocketConnection) {
+    async outbound1() {
       throw Error("...");
     }
-    async outbound2(conn: StubWebsocketConnection) {
+    async outbound2() {
       throw "...";
     }
   }
@@ -144,10 +136,13 @@ describe("error handling", () => {
       });
       WebsocketOutbounds.addOutbound(out);
     });
+    afterEach(() => {
+      WebsocketOutbounds.removeOutboundByMethod("d.out");
+    });
 
     it("should send m.error when a error is thrown inside the outbound method", async () => {
       const conn = WebsocketMocks.getConnectionStub();
-      expect(await conn.awaitMessage("m.error")).toBe("...");
+      expect(await conn.expectMethod("m.error")).toBe("...");
     });
   });
 
@@ -164,15 +159,15 @@ describe("subscription testing", () => {
   describe("default subscription", () => {
     class target {
       data: string[] = [];
-      outbound(conn: StubWebsocketConnection) {
+      outbound() {
         return this.data;
       }
-      async addEntry(content: string, conn: StubWebsocketConnection) {
+      async addEntry(content: string) {
         this.data.push(content);
       }
     }
 
-    beforeEach(() => {
+    beforeAll(() => {
       const out1 = new WebsocketOutbound("d.high", {
         target: target.prototype,
         propertyKey: "outbound",
@@ -192,7 +187,8 @@ describe("subscription testing", () => {
       });
       route.modifies(["d.high", "d.low"]);
       WebsocketRouter.registerRoute(route);
-
+    });
+    beforeEach(() => {
       // reset data before each test run
       if ((target.prototype as any).___data?._obj?.data) {
         (target.prototype as any).___data._obj.data = [];
@@ -204,48 +200,46 @@ describe("subscription testing", () => {
       let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
-          conn1.awaitMessage("d.high"),
-          conn2.awaitMessage("d.high"),
+          conn1.expectMethod("d.high"),
+          conn2.expectMethod("d.high"),
         ])
       ).toStrictEqual([[], []]);
       conn1.runRequest("add", "new");
       expect(
         await Promise.all([
-          conn1.awaitMessage("d.high"),
-          conn2.awaitMessage("d.high"),
+          conn1.expectMethod("d.high"),
+          conn1.expectMethod("m.add"),
+          conn2.expectMethod("d.high"),
         ])
-      ).toStrictEqual([["new"], ["new"]]);
-      await conn1.awaitMessage("m.add");
+      ).toStrictEqual([["new"], undefined, ["new"]]);
     });
     it("should re-send low-priority data to subscribed connections", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
       let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
-          conn1.awaitMessage("d.low"),
-          conn2.awaitMessage("d.low"),
+          conn1.expectMethod("d.low"),
+          conn2.expectMethod("d.low"),
         ])
       ).toStrictEqual([[], []]);
       conn1.runRequest("add", "new");
-      await conn1.awaitMessage("m.add");
+      await conn1.expectMethod("m.add");
       expect(
         await Promise.all([
-          conn1.awaitMessage("d.low"),
-          conn2.awaitMessage("d.low"),
+          conn1.expectMethod("d.low"),
+          conn2.expectMethod("d.low"),
         ])
       ).toStrictEqual([["new"], ["new"]]);
     });
     it("should cancel subscription once the client closes the connection", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
-      expect(await conn1.awaitMessage("d.high")).toHaveLength(0);
+      expect(await conn1.expectMethod("d.high")).toHaveLength(0);
       conn1.closeConnection();
 
       const newConn = WebsocketMocks.getConnectionStub();
       newConn.runRequest("add", "_");
-      conn1.awaitMessage("d.high").then((data) => {
-        fail("Data was sent to a closed connection " + data);
-      });
-      await newConn.awaitMessage("m.add");
+      conn1.dontExpectMethod("d.high");
+      await newConn.expectMethod("m.add");
     });
   });
 
@@ -275,7 +269,7 @@ describe("subscription testing", () => {
       }
     }
 
-    beforeEach(() => {
+    beforeAll(() => {
       const out1 = new WebsocketOutbound("f.high", {
         target: target.prototype,
         propertyKey: "outbound",
@@ -295,7 +289,8 @@ describe("subscription testing", () => {
       });
       route.modifies(["f.high", "f.low"], new filter());
       WebsocketRouter.registerRoute(route);
-
+    });
+    beforeEach(() => {
       // reset data before each test run
       if ((target.prototype as any).___data?._obj?.data) {
         (target.prototype as any).___data._obj.data = new Map();
@@ -307,47 +302,42 @@ describe("subscription testing", () => {
       let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
-          conn1.awaitMessage("f.high"),
-          conn2.awaitMessage("f.high"),
+          conn1.expectMethod("f.high"),
+          conn2.expectMethod("f.high"),
         ])
       ).toStrictEqual([[], []]);
+
+      conn2.dontExpectMethod("f.high");
       conn1.runRequest("fadd", "new");
-      conn2.awaitMessage("f.high").then(() => {
-        fail("The second connection should not recieve updated data");
-      });
-      expect(await conn1.awaitMessage("f.high")).toStrictEqual(["new"]);
-      await conn1.awaitMessage("m.fadd");
+
+      expect(
+        await Promise.all([
+          conn1.expectMethod("m.fadd"),
+          conn1.expectMethod("f.high"),
+        ])
+      ).toStrictEqual([undefined, ["new"]]);
     });
     it("should re-send low-priority data to subscribed connections matching the filter", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
       let conn2 = WebsocketMocks.getConnectionStub();
       expect(
         await Promise.all([
-          conn1.awaitMessage("f.low"),
-          conn2.awaitMessage("f.low"),
+          conn1.expectMethod("f.low"),
+          conn2.expectMethod("f.low"),
         ])
       ).toStrictEqual([[], []]);
       conn1.runRequest("fadd", "new");
-      conn2.awaitMessage("f.low").then(() => {
-        fail("The second connection should not recieve updated data");
-      });
-      await conn1.awaitMessage("m.fadd");
-      expect(await conn1.awaitMessage("f.low")).toStrictEqual(["new"]);
+      conn2.dontExpectMethod("f.low");
+      await conn1.expectMethod("m.fadd");
+      expect(await conn1.expectMethod("f.low")).toStrictEqual(["new"]);
     });
     it("should cancel subscription once the client closes the connection", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
-      expect(await conn1.awaitMessage("f.low")).toHaveLength(0);
+      expect(await conn1.expectMethod("f.low")).toHaveLength(0);
       conn1.closeConnection();
 
       conn1.runRequest("fadd", "_");
-      conn1
-        .awaitMessage("f.low")
-        .then((data) =>
-          fail(
-            "Data was sent to a closed connection (filtered subscription) " +
-              data
-          )
-        );
+      conn1.dontExpectMethod("f.low");
     });
   });
 });
@@ -364,7 +354,7 @@ describe("after-auth resend testing", () => {
     }
   }
 
-  beforeEach(() => {
+  beforeAll(() => {
     const out1 = new WebsocketOutbound(
       "a.id1",
       {
@@ -396,7 +386,8 @@ describe("after-auth resend testing", () => {
       true
     );
     WebsocketRouter.registerRoute(route);
-
+  });
+  beforeEach(() => {
     // reset data before each test run
     if ((target.prototype as any).___data?._obj?.data) {
       (target.prototype as any).___data._obj.data = 1;
@@ -406,45 +397,41 @@ describe("after-auth resend testing", () => {
   it("should be possible to manually trigger auth resend", async () => {
     let conn = WebsocketMocks.getConnectionStub();
 
-    expect(await conn.awaitMessage("a.id1")).toBe(1);
+    expect(await conn.expectMethod("a.id1")).toBe(1);
 
     WebsocketOutbounds.resendDataAfterAuth(conn).then();
 
-    expect(await conn.awaitMessage("a.id1")).toBe(1);
+    expect(await conn.expectMethod("a.id1")).toBe(1);
   });
   it("should resend eager-loaded data after calling a route with resendAuth tag", async () => {
     let conn = WebsocketMocks.getConnectionStub();
 
-    expect(await conn.awaitMessage("a.id1")).toBe(1);
+    expect(await conn.expectMethod("a.id1")).toBe(1);
 
     conn.runRequest("auth", null);
-    expect(await conn.awaitMessage("m.auth")).toBeTruthy();
-    expect(await conn.awaitMessage("a.id1")).toBe(2);
+    expect(await conn.expectMethod("m.auth")).toBeTruthy();
+    expect(await conn.expectMethod("a.id1")).toBe(2);
   });
   it("should resend lazy-loaded data if the client is subscribed after calling a route with resendAuth tag", async () => {
     let conn = WebsocketMocks.getConnectionStub();
 
     const conn1 = WebsocketMocks.getConnectionStub();
     conn1.runRequest("request.a.id2", null);
-    await conn1.awaitMessage("a.id2");
+    await conn1.expectMethod("a.id2");
 
     conn.runRequest("request.a.id2", null);
-    expect(await conn.awaitMessage("a.id2")).toBe(1);
+    expect(await conn.expectMethod("a.id2")).toBe(1);
 
     conn.runRequest("auth", null);
-    expect(await conn.awaitMessage("m.auth")).toBeTruthy();
-    expect(await conn.awaitMessage("a.id2")).toBe(2);
+    expect(await conn.expectMethod("m.auth")).toBeTruthy();
+    expect(await conn.expectMethod("a.id2")).toBe(2);
   });
   it("should not resend lazy-loaded data if the client is not subscribed to it after calling a route with resendAuth tag", async () => {
     let conn = WebsocketMocks.getConnectionStub();
 
     conn.runRequest("auth", null);
-    expect(await conn.awaitMessage("m.auth")).toBeTruthy();
-    conn.awaitMessage("a.id2").then(() => {
-      fail(
-        "Lazy-loaded data was sent after changing the authentication. The client has not requested it, so it should not be sent."
-      );
-    });
+    expect(await conn.expectMethod("m.auth")).toBeTruthy();
+    conn.dontExpectMethod("a.id2");
   });
 });
 
@@ -502,7 +489,7 @@ describe("authentication", () => {
       }
     }
 
-    beforeEach(() => {
+    beforeAll(() => {
       const out2 = new WebsocketOutbound("auth.out2", {
         target: target1.prototype,
         propertyKey: "granted",
@@ -586,50 +573,42 @@ describe("authentication", () => {
 
     it("should send authenticated outbound on connect (eager-loading, access granted)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
-      expect(await conn.awaitMessage("auth.out2")).toBe(target1.data);
+      expect(await conn.expectMethod("auth.out2")).toBe(target1.data);
     });
     it("should not send authenticated outbound on connect (eager-loading, access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
-      conn.awaitMessage("auth.out3").then(() => {
-        fail("should not receive data as auth should fail");
-      });
+      conn.dontExpectMethod("auth.out3");
     });
     it("should be possible to request an outbound (lazy-loading, access granted)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("request.auth.out4", null);
-      expect(await conn.awaitMessage("auth.out4")).toBe(target1.data);
+      expect(await conn.expectMethod("auth.out4")).toBe(target1.data);
     });
     it("should not be possible to request an outbound (lazy-loading, access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("request.auth.out5", null);
-      expect(await conn.awaitMessage("m.error")).toBe("not-authenticated");
-      conn.awaitMessage("auth.out5").then(() => {
-        fail("should not receive data as auth should fail");
-      });
+      expect(await conn.expectMethod("m.error")).toBe("not-authenticated");
+      conn.dontExpectMethod("auth.out5");
     });
 
     it("should be possible to daisy-chain authenticators (eager-loading, access granted)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
-      expect(await conn.awaitMessage("auth.out6")).toBe(target1.data);
+      expect(await conn.expectMethod("auth.out6")).toBe(target1.data);
     });
     it("should be possible to daisy-chain authenticators (eager-loading, access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
-      conn.awaitMessage("auth.out7").then(() => {
-        fail("should not receive data as auth should fail");
-      });
+      conn.dontExpectMethod("auth.out7");
     });
     it("should be possible to daisy-chain authenticators (lazy-loading, access granted)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("request.auth.out8", null);
-      expect(await conn.awaitMessage("auth.out8")).toBe(target1.data);
+      expect(await conn.expectMethod("auth.out8")).toBe(target1.data);
     });
     it("should be possible to daisy-chain authenticators (lazy-loading, access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("request.auth.out9", null);
-      expect(await conn.awaitMessage("m.error")).toBe("not-authenticated");
-      conn.awaitMessage("auth.out9").then(() => {
-        fail("should not receive data as auth should fail");
-      });
+      expect(await conn.expectMethod("m.error")).toBe("not-authenticated");
+      conn.dontExpectMethod("auth.out9");
     });
   });
 });

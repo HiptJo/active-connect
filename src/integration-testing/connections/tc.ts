@@ -21,7 +21,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
    */
   constructor() {
     super(null);
-    this.testingIdentifier = StubWebsocketConnection.maxTestingIdentifier++;
+    this.testingIdentifier = ++StubWebsocketConnection.maxTestingIdentifier;
     this.loadDecoratorConfig();
   }
 
