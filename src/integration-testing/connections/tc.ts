@@ -1,5 +1,6 @@
 import { WebsocketClient } from "..";
 import {
+  ActiveConnect,
   WebsocketConnection,
   WebsocketOutbounds,
   WebsocketRequest,
@@ -84,11 +85,22 @@ export class TCWrapper extends WebsocketConnection {
    * @returns Promise, that is resolved once the provided method is received.
    */
   async expectMethod(method: string): Promise<any> {
-    return new Promise((func) => {
-      this.stack.push({
+    return new Promise((func, reject) => {
+      const stackObject = {
         method,
         func,
-      });
+      };
+      this.stack.push(stackObject);
+      setTimeout(() => {
+        if (this.stack.includes(stackObject)) {
+          reject(
+            "ActiveConnect: Message was not received within the timout inverval of " +
+              ActiveConnect.getTimeout() +
+              "ms: " +
+              method
+          );
+        }
+      }, ActiveConnect.getTimeout());
     });
   }
 
