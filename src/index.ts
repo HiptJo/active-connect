@@ -5,8 +5,18 @@ export * from "./content";
 export * from "./decorators";
 
 export class ActiveConnect {
-  public static loadCurrentDirectory() {
-    var normalizedPath = require("path").join(__dirname);
+  /**
+   * Loads all ts/js files in the speficied directory.
+   * Can be used to load route config without importing the files.
+   * @param dirname - absolute path of directory to load.
+   *
+   * @example
+   * ```
+   * ActiveConnect.loadCurrentDirectory(__dirname);
+   * ```
+   */
+  public static loadCurrentDirectory(dirname: string) {
+    var normalizedPath = require("path").join(dirname);
     require("fs")
       .readdirSync(normalizedPath)
       .forEach(function (file: string) {
@@ -15,7 +25,7 @@ export class ActiveConnect {
           (file.endsWith(".ts") || file.endsWith(".js")) &&
           !file.endsWith(".spec.ts")
         )
-          require("./" + file);
+          require(dirname + "/" + file);
       });
   }
 }
