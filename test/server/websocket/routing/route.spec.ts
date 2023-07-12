@@ -84,33 +84,30 @@ describe("default route", () => {
     });
   });
   describe("children management", () => {
-    class target {
-      f1() {}
-      f2(data: any) {
-        expect(data).toEqual({ in: "here" });
-        return { value: "anything" };
-      }
-    }
-
-    const route = new WebsocketRoute("testing", {
-      target: target.prototype,
-      propertyKey: "f1",
-    });
-    const child = new WebsocketRoute("child", {
-      target: target.prototype,
-      propertyKey: "f2",
-    });
     it("should be possible to add a child to a route", async () => {
+      class target {
+        f1() {}
+        f2(data: any) {
+          expect(data).toEqual({ in: "here" });
+          return { value: "anything" };
+        }
+      }
+
+      const route = new WebsocketRoute("testing1", {
+        target: target.prototype,
+        propertyKey: "f1",
+      });
+      const child = new WebsocketRoute("child", {
+        target: target.prototype,
+        propertyKey: "f2",
+      });
       route.addChild(child);
+      WebsocketRouter.registerRoute(route);
       const conn = WebsocketMocks.getConnectionStub();
 
-      const res = await route.route(
-        new WebsocketRequest("testing.child", { in: "here" }, conn),
-        ["testing", "child"]
-      );
-      expect(res).toBeTruthy();
+      conn.runRequest("testing1.child", { in: "here" });
 
-      const data = await conn.awaitMessage("m.testing.child");
+      const data = await conn.expectMethod("m.testing1.child");
       expect(data).toStrictEqual({ value: "anything" });
     });
   });
@@ -179,33 +176,19 @@ describe("default route", () => {
       propertyKey: "child",
     });
     route.addChild(child);
+    WebsocketRouter.registerRoute(route);
 
     it("should be possible to route the request", async () => {
       const conn = WebsocketMocks.getConnectionStub();
 
-      await route.route(new WebsocketRequest("f1", {}, conn), ["f1"]);
-      expect(await conn.awaitMessage("m.f1")).toBeTruthy();
-      expect(
-        await route.route(new WebsocketRequest("f1.child", {}, conn), [
-          "f1",
-          "child",
-        ])
-      ).toBeTruthy();
-      expect(await conn.awaitMessage("m.f1.child")).toBe(-2);
-
-      // this route is not defined, should return false
-      expect(
-        await route.route(new WebsocketRequest("f1.404", {}, conn), [
-          "f1",
-          "404",
-        ])
-      ).toBeFalsy();
+      conn.runRequest("f1", {});
+      expect(await conn.expectMethod("m.f1")).toBeTruthy();
+      conn.runRequest("f1.child", {});
+      expect(await conn.expectMethod("m.f1.child")).toBe(-2);
     });
   });
 
   describe("error handling", () => {
-    const conn = WebsocketMocks.getConnectionStub();
-
     class target {
       async f1() {
         throw Error("...");
@@ -214,33 +197,28 @@ describe("default route", () => {
         throw "...";
       }
     }
-    const route1 = new WebsocketRoute("f1", {
+    const route1 = new WebsocketRoute("f1_", {
       target: target.prototype,
       propertyKey: "f1",
     });
-    const route2 = new WebsocketRoute("f2", {
+    const route2 = new WebsocketRoute("f2_", {
       target: target.prototype,
       propertyKey: "f2",
     });
+    WebsocketRouter.registerRoute(route1);
+    WebsocketRouter.registerRoute(route2);
 
     testEach<WebsocketRoute>(
       [route1, route2],
-      ["f1", "f2"],
+      ["f1_", "f2_"],
       (route: WebsocketRoute, label: string) => {
         it(
           "should not resolve the promise when " + label + " failed",
           async () => {
-            route.route(
-              new WebsocketRequest(label, null, conn),
-              label.split(".")
-            );
-            expect(await conn.awaitMessage("m.error")).toBe("...");
-
-            conn.awaitMessage("m." + label).then(() => {
-              fail(
-                "Message response has been sent even though a exception has been thrown"
-              );
-            });
+            const conn = WebsocketMocks.getConnectionStub();
+            conn.runRequest(label, null);
+            conn.dontExpectMethod("m." + label);
+            expect(await conn.expectError()).toBe("...");
           }
         );
       }
@@ -378,12 +356,15 @@ describe("standalone route", () => {
       target: target.prototype,
       propertyKey: "f1",
     });
+    beforeAll(() => {
+      WebsocketRouter.registerStandaloneRoute(route);
+    });
 
     it("should be possible to route the request", async () => {
       const conn = WebsocketMocks.getConnectionStub();
 
-      await route.route(new WebsocketRequest("f1.t", {}, conn), ["f1"]);
-      expect(await conn.awaitMessage("m.f1.t")).toBeTruthy();
+      conn.runRequest("f1.t", {});
+      expect(await conn.expectMethod("m.f1.t")).toBeTruthy();
 
       // this route is not defined, should return false
       expect(
@@ -393,8 +374,6 @@ describe("standalone route", () => {
   });
 
   describe("error handling", () => {
-    const conn = WebsocketMocks.getConnectionStub();
-
     class target {
       async f1() {
         throw Error("...");
@@ -403,33 +382,29 @@ describe("standalone route", () => {
         throw "...";
       }
     }
-    const route1 = new StandaloneWebsocketRoute("f1.t", {
+    const route1 = new StandaloneWebsocketRoute("f1.t_", {
       target: target.prototype,
       propertyKey: "f1",
     });
-    const route2 = new StandaloneWebsocketRoute("f2.t", {
+    const route2 = new StandaloneWebsocketRoute("f2.t_", {
       target: target.prototype,
       propertyKey: "f2",
     });
 
     testEach<WebsocketRoute>(
       [route1, route2],
-      ["f1.t", "f2.t"],
+      ["f1.t_", "f2.t_"],
       (route: WebsocketRoute, label: string) => {
+        beforeAll(() => {
+          WebsocketRouter.registerStandaloneRoute(route);
+        });
         it(
           "should not resolve the promise when " + label + " failed",
           async () => {
-            route.route(
-              new WebsocketRequest(label, null, conn),
-              label.split(".")
-            );
-            expect(await conn.awaitMessage("m.error")).toBe("...");
-
-            conn.awaitMessage("m." + label).then(() => {
-              fail(
-                "Message response has been sent even though a exception has been thrown"
-              );
-            });
+            const conn = WebsocketMocks.getConnectionStub();
+            conn.runRequest(label, null);
+            conn.dontExpectMethod("m." + label);
+            expect(await conn.expectMethod("m.error")).toBe("...");
           }
         );
       }
@@ -539,53 +514,35 @@ describe("authentication", () => {
     it("should be possible to call an authenticated route with (access granted)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("auth", 1);
-      expect(await conn.awaitMessage("m.auth")).toBe(2);
+      expect(await conn.expectMethod("m.auth")).toBe(2);
     });
     it("should reject the call when the authentication process fails (access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("unauth", 1);
-      conn
-        .awaitMessage("m.unauth")
-        .then(() =>
-          fail(
-            "Callback was called, even though the request should be unauthenticated"
-          )
-        );
-      expect(await conn.awaitMessage("m.error")).toBe(UNAUTH);
+      expect(await conn.expectMethod("m.error")).toBe(UNAUTH);
+      conn.dontExpectMethod("m.unauth");
     });
     it("should be possible to daisy-chain authenticators (acccess granted)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("daisy_auth", 5);
-      expect(await conn.awaitMessage("m.daisy_auth")).toBe(6);
+      expect(await conn.expectMethod("m.daisy_auth")).toBe(6);
     });
     it("should be possible to daisy-chain authenticators (access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("daisy_unauth", 1);
-      conn
-        .awaitMessage("m.daisy_unauth")
-        .then(() =>
-          fail(
-            "Callback was called, even though the request should be unauthenticated"
-          )
-        );
-      expect(await conn.awaitMessage("m.error")).toBe(UNAUTH);
+      conn.dontExpectMethod("m.daisy_unauth");
+      expect(await conn.expectMethod("m.error")).toBe(UNAUTH);
     });
     it("should be possible to call an authenticated standalone route with (access granted)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("standalone.auth", 10);
-      expect(await conn.awaitMessage("m.standalone.auth")).toBe(11);
+      expect(await conn.expectMethod("m.standalone.auth")).toBe(11);
     });
     it("should not be possible to call an authenticated standalone route with (access denied)", async () => {
       const conn = WebsocketMocks.getConnectionStub();
       conn.runRequest("standalone.unauth", 1);
-      conn
-        .awaitMessage("m.standalone.unauth")
-        .then(() =>
-          fail(
-            "Callback was called, even though the request should be unauthenticated"
-          )
-        );
-      expect(await conn.awaitMessage("m.error")).toBe(UNAUTH);
+      conn.dontExpectMethod("m.standalone.unauth");
+      expect(await conn.expectMethod("m.error")).toBe(UNAUTH);
     });
   });
 });
@@ -619,10 +576,8 @@ it("should not trigger the sendUpdates action if the route modifies something an
   WebsocketRouter.registerStandaloneRoute(route);
 
   const conn = WebsocketMocks.getConnectionStub();
-  expect(await conn.awaitMessage("target2.out")).toBe("");
+  expect(await conn.expectMethod("target2.out")).toBe("");
   conn.runRequest("target2.add", 6);
-  expect(await conn.awaitMessage("m.error")).toBe("not-authenticated");
-  conn.awaitMessage("target2.out").then(() => {
-    fail("Data should not be re-sent as method did fail");
-  });
+  expect(await conn.expectMethod("m.error")).toBe("not-authenticated");
+  conn.dontExpectMethod("target2.out");
 });

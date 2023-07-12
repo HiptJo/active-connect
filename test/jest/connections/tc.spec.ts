@@ -86,7 +86,7 @@ describe("message timeout", () => {
     const conn = new TCWrapper();
     conn.send("s.noresolve1", null);
     await expect(conn.expectMethod("m.s.noresolve1")).rejects.toBe(
-      "ActiveConnect: Message was not received within the timout inverval of 3000ms: m.s.noresolve1"
+      "ActiveConnect: Message was not received within the timeout inverval of 3000ms: m.s.noresolve1"
     );
   });
   it("should not receive a method", async () => {

@@ -54,8 +54,9 @@ export class StubWebsocketConnection extends WebsocketConnection {
     // parsing the string provides real data situation (date parsing, ...)
     const parsedValue = JsonParser.parse(JsonParser.stringify(value));
     if (this.stack.length > 0) {
-      if (this.stack[0].method == method) {
-        this.stack.shift()?.func(parsedValue);
+      const entry = this.stack.filter((s) => s.method == method);
+      if (entry.length > 0) {
+        this.stack.splice(this.stack.indexOf(entry[0]))[0].func(parsedValue);
         return true;
       }
     }
@@ -82,7 +83,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
       setTimeout(() => {
         if (this.stack.includes(stackObject)) {
           reject(
-            "ActiveConnect: Message was not received within the timout inverval of " +
+            "ActiveConnect: Message was not received within the timeout inverval of " +
               ActiveConnect.getTimeout() +
               "ms: " +
               method
@@ -106,7 +107,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
         },
       };
       this.stack.push(stackObject);
-    });
+    }).then();
   }
 
   /**
