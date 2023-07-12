@@ -28,4 +28,20 @@ export class ActiveConnect {
           require(dirname + "/" + file);
       });
   }
+
+  private static timeout = 3000;
+  /**
+   * When an expected method is not received in that amount of milliseconds, the test fails.
+   * @returns the timeout value
+   */
+  public static getTimeout() {
+    return ActiveConnect.timeout;
+  }
+  /**
+   * When an expected method is not received in that amount of milliseconds, the test fails.
+   * @returns the timeout value
+   */
+  public static setTimeout(ms: number) {
+    ActiveConnect.timeout = ms;
+  }
 }
