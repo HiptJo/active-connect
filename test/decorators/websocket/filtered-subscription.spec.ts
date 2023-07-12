@@ -1,6 +1,7 @@
 import {
   MessageFilter,
   ModifiesFor,
+  ModifiesMatching,
   Outbound,
   Route,
   StandaloneRoute,
@@ -223,36 +224,36 @@ describe("deprecated decorator testing: @ModifiesMatching", () => {
     public static value: any = { value: "oldvalue1" };
 
     @Outbound("out5.subscribe1")
-    @SubscribeMatchingChanges(new F())
+    @SubscribeFor(new F())
     public async sendData1(conn: WebsocketConnection) {
       return Testing.value;
     }
 
-    @SubscribeMatchingChanges(new F())
+    @SubscribeFor(new F())
     @Outbound("out6.subscribe1")
     public async sendData2(conn: WebsocketConnection) {
       return Testing.value;
     }
 
     @StandaloneRoute("standalone.subscribe5")
-    @ModifiesFor(new F(), "out5.subscribe1", "out6.subscribe1")
+    @ModifiesMatching(new F(), "out5.subscribe1", "out6.subscribe1")
     public async standalone1(value: any, conn: WebsocketConnection) {
       Testing.value = value;
     }
 
-    @ModifiesFor(new F(), "out6.subscribe1", "out5.subscribe1")
+    @ModifiesMatching(new F(), "out6.subscribe1", "out5.subscribe1")
     @StandaloneRoute("standalone.subscribe6")
     public async standalone2(value: any, conn: WebsocketConnection) {
       Testing.value = value;
     }
 
     @Route("subscribe1")
-    @ModifiesFor(new F(), "out5.subscribe1", "out6.subscribe1")
+    @ModifiesMatching(new F(), "out5.subscribe1", "out6.subscribe1")
     public async subscribe1(value: any, conn: WebsocketConnection) {
       Testing.value = value;
     }
 
-    @ModifiesFor(new F(), "out6.subscribe1", "out5.subscribe1")
+    @ModifiesMatching(new F(), "out6.subscribe1", "out5.subscribe1")
     @Route("subscribe2")
     public async subscribe2(value: any, conn: WebsocketConnection) {
       Testing.value = value;

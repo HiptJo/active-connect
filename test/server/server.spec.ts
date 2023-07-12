@@ -8,6 +8,7 @@ import {
   WebsocketServer,
 } from "../../src/active-connect";
 import { WebsocketClient } from "./websocket-client";
+import * as Randomstring from "randomstring";
 
 let server: HttpServer;
 
@@ -70,6 +71,21 @@ describe("websocket logging testing", () => {
     const client = new WebsocketClient(9008);
     client.awaitConnection().then(() => {
       client.send("fetch.example", null);
+      client.close();
+    });
+  });
+
+  it("should cut the string when logging a long request", (done) => {
+    console.log = (message: string) => {
+      if (message.startsWith("Received message: ")) {
+        expect(message).toHaveLength(200);
+        done();
+      }
+    };
+    server.enableLogging();
+    const client = new WebsocketClient(9008);
+    client.awaitConnection().then(() => {
+      client.send("fetch.example", Randomstring.generate(500));
       client.close();
     });
   });
@@ -147,4 +163,11 @@ it("should send a ping message to the client every 45 seconds", async () => {
   const client = new WebsocketClient(9008);
   await client.awaitConnection();
   await client.awaitPing();
+});
+
+it("should be possible to send an ip to the server (deprecated", async () => {
+  const client = new WebsocketClient(9008);
+  await client.awaitConnection();
+  client.send("___ip", "1.1.1.1");
+  await client.awaitMessage("m.___ip");
 });
