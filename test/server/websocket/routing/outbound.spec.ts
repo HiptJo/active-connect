@@ -207,11 +207,12 @@ describe("subscription testing", () => {
       conn1.runRequest("add", "new");
       expect(
         await Promise.all([
-          conn1.expectMethod("d.high"),
           conn1.expectMethod("m.add"),
+
+          conn1.expectMethod("d.high"),
           conn2.expectMethod("d.high"),
         ])
-      ).toStrictEqual([["new"], undefined, ["new"]]);
+      ).toStrictEqual([undefined, ["new"], ["new"]]);
     });
     it("should re-send low-priority data to subscribed connections", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
@@ -310,12 +311,8 @@ describe("subscription testing", () => {
       conn2.dontExpectMethod("f.high");
       conn1.runRequest("fadd", "new");
 
-      expect(
-        await Promise.all([
-          conn1.expectMethod("m.fadd"),
-          conn1.expectMethod("f.high"),
-        ])
-      ).toStrictEqual([undefined, ["new"]]);
+      await conn1.expectMethod("m.fadd");
+      expect(await conn1.expectMethod("f.high")).toStrictEqual(["new"]);
     });
     it("should re-send low-priority data to subscribed connections matching the filter", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
