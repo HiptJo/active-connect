@@ -61,9 +61,14 @@ export class StubWebsocketConnection extends WebsocketConnection {
   }
 
   private messageId: number = 0;
-  async runRequest(method: string, data: any) {
+  async runRequest(method: string, data: any, noMessageId?: boolean) {
     new WebsocketRouter().route(
-      new WebsocketRequest(method, data, this, this.messageId)
+      new WebsocketRequest(
+        method,
+        data,
+        this,
+        noMessageId ? undefined : this.messageId
+      )
     );
     this.messageId++;
   }

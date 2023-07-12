@@ -1,3 +1,4 @@
+import { StandaloneRoute } from "../../src";
 import { StubWebsocketConnection, WebsocketMocks } from "./websocket-mocks";
 import * as assert from "assert";
 
@@ -40,4 +41,18 @@ describe("connection testing (stub)", () => {
   });
 });
 
-it.todo("should raise an error when a message without message-id is received");
+it("should raise an error when a message without message-id is received", async () => {
+  class Testing {
+    @StandaloneRoute("standlone.nomessageid")
+    async route() {
+      fail("no message id has been provided");
+    }
+  }
+  expect(Testing).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+  conn.runRequest("standlone.nomessageid", null, true);
+  expect(
+    ((await conn.awaitMessage("m.error")) as string).includes("no messageId")
+  );
+});
