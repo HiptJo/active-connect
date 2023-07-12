@@ -1,4 +1,4 @@
-import { WebsocketOutboundDecoratorConfig } from "../../../decorators/websocket/config/websocket-outbound-decorator-config";
+import { WebsocketOutboundDecoratorConfig } from "../../../decorators/config/websocket-outbound-decorator-config";
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { AuthableDecorableFunction } from "./function";

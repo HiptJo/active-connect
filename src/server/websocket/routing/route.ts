@@ -1,4 +1,4 @@
-import { WebsocketRouteDecoratorConfig } from "../../../decorators/websocket/config/websocket-route-decorator-config";
+import { WebsocketRouteDecoratorConfig } from "../../../decorators/config/websocket-route-decorator-config";
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";

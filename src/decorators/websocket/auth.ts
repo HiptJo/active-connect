@@ -1,7 +1,7 @@
 import { WebsocketAuthenticator } from "../../server/websocket/auth/authenticator";
-import { WebsocketDecoratorConfig } from "./config/websocket-decorator-config";
-import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-decorator-config";
-import { WebsocketRouteDecoratorConfig } from "./config/websocket-route-decorator-config";
+import { WebsocketDecoratorConfig } from "../config/decorator-config";
+import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-decorator-config";
+import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
 
 /**
  * @decorator

@@ -41,7 +41,7 @@ export class WebsocketConnection {
   public token: string | null = null;
 
   /**
-   * Reffers to a websocket router instance.
+   * Refers to a websocket router instance.
    */
   public static router: WebsocketRouter = new WebsocketRouter();
   private interval;

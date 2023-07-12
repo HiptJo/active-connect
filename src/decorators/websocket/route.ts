@@ -3,7 +3,7 @@ import {
   WebsocketRoute,
 } from "../../server/websocket/routing/route";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
-import { WebsocketRouteDecoratorConfig } from "./config/websocket-route-decorator-config";
+import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
 
 /**
  * @decorator
