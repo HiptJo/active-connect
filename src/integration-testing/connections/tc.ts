@@ -1,5 +1,9 @@
 import { WebsocketClient } from "..";
-import { WebsocketConnection, WebsocketRequest } from "../..";
+import {
+  WebsocketConnection,
+  WebsocketOutbounds,
+  WebsocketRequest,
+} from "../..";
 import { WebsocketRouter } from "../../server/websocket/routing/router";
 import * as randomstring from "randomstring";
 import { JsonParser } from "../../json/json-parser";
@@ -26,6 +30,13 @@ export class TCWrapper extends WebsocketConnection {
         new WebsocketRequest(method, data, _this, messageId)
       );
     });
+    this.loadDecoratorConfig();
+  }
+
+  private loadDecoratorConfig() {
+    // the loading of the decorator config usually occurs on starting the ws server (in production)
+    WebsocketRouter.loadDecoratorConfig();
+    WebsocketOutbounds.loadDecoratorConfig();
   }
 
   private stack: {

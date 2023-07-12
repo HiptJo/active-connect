@@ -76,4 +76,18 @@ export class StubWebsocketConnection extends WebsocketConnection {
   public closeConnection() {
     this.onClose();
   }
+
+  /**
+   * Wait a given amount of ms during a test case.
+   *
+   * @param ms - Time duration in milliseconds before the promise is resolved.
+   * @returns Promise, that is resolved after the given amount of milliseconds.
+   */
+  timeout(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    });
+  }
 }
