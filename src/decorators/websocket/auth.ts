@@ -1,5 +1,5 @@
 import { WebsocketAuthenticator } from "../../server/websocket/auth/authenticator";
-import { WebsocketDecoratorConfig } from "../config/websocket-decorator-config";
+import { DecoratorConfig } from "../config/decorator-config";
 import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-decorator-config";
 import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
 
@@ -25,7 +25,7 @@ import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorat
  */
 export function Auth(authenticator: WebsocketAuthenticator) {
   return function _Auth(target: any, propertyKey: string): any {
-    const configs: WebsocketDecoratorConfig[] = [
+    const configs: DecoratorConfig[] = [
       WebsocketOutboundDecoratorConfig.get(target, propertyKey),
       WebsocketRouteDecoratorConfig.get(target, propertyKey),
     ];
