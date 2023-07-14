@@ -114,10 +114,10 @@ it("should be possible to call any method", async () => {
   const conn = WebsocketMocks.getConnectionStub();
   const router = new WebsocketRouter();
 
-  await router.route(new WebsocketRequest("parent5.m2", null, conn));
-  await router.route(new WebsocketRequest("parent5.m1", null, conn));
-  const data1 = await conn.awaitMessage("m.parent5.m1");
-  const data2 = await conn.awaitMessage("m.parent5.m2");
+  router.route(new WebsocketRequest("parent5.m2", null, conn));
+  const data2 = await conn.expectMethod("m.parent5.m2");
+  router.route(new WebsocketRequest("parent5.m1", null, conn));
+  const data1 = await conn.expectMethod("m.parent5.m1");
 
   expect(data1).toBe(1);
   expect(data2).toBe(2);
@@ -141,7 +141,7 @@ it("should be possible to return false", async () => {
   const router = new WebsocketRouter();
 
   await router.route(new WebsocketRequest("parent6.m1", null, conn));
-  const data1 = await conn.awaitMessage("m.parent6.m1");
+  const data1 = await conn.expectMethod("m.parent6.m1");
   expect(data1).toBe(false);
 });
 
@@ -173,7 +173,7 @@ it("should be possible to call a standalone routed method", async () => {
   const router = new WebsocketRouter();
 
   router.route(new WebsocketRequest("standalone.r2", null, conn));
-  const data = await conn.awaitMessage("m.standalone.r2");
+  const data = await conn.expectMethod("m.standalone.r2");
   expect(data).toStrictEqual({ value: "ok-standalone" });
 });
 
@@ -192,7 +192,7 @@ it("should be possible to access the `this` object within a route", async () => 
   const conn = WebsocketMocks.getConnectionStub();
 
   await router.route(new WebsocketRequest("parent7.child", null, conn));
-  const data = await conn.awaitMessage("m.parent7.child");
+  const data = await conn.expectMethod("m.parent7.child");
   expect(data).toStrictEqual({ value: "accessible data" });
 });
 it("should be possible to access the `this` object within a standalone route", async () => {
@@ -209,7 +209,7 @@ it("should be possible to access the `this` object within a standalone route", a
   const conn = WebsocketMocks.getConnectionStub();
 
   await router.route(new WebsocketRequest("standalone.r3", null, conn));
-  const data = await conn.awaitMessage("m.standalone.r3");
+  const data = await conn.expectMethod("m.standalone.r3");
   expect(data).toStrictEqual({ value: "accessible data" });
 });
 
@@ -238,13 +238,13 @@ it("should be possible to modify a shared variable", async () => {
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  const data = await conn.awaitMessage("d.parent8");
+  const data = await conn.expectMethod("d.parent8");
   expect(data).toStrictEqual(1);
   const router = new WebsocketRouter();
   router.route(new WebsocketRequest("parent8.modify", 5, conn));
-  const updated = await conn.awaitMessage("d.parent8");
+  const updated = await conn.expectMethod("d.parent8");
   expect(updated).toBe(5);
-  const res = await conn.awaitMessage("m.parent8.modify");
+  const res = await conn.expectMethod("m.parent8.modify");
   expect(res).toBeUndefined();
 });
 
@@ -275,7 +275,7 @@ describe("error management", () => {
     const conn = WebsocketMocks.getConnectionStub();
     try {
       await router.route(new WebsocketRequest("parent9.m1", null, conn));
-      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+      expect(await conn.expectMethod("m.error")).toBe("I am an error");
     } catch (e) {}
   });
   it("should send a m.error when a route throws an error", async () => {
@@ -291,7 +291,7 @@ describe("error management", () => {
     const conn = WebsocketMocks.getConnectionStub();
     try {
       await router.route(new WebsocketRequest("parent10.m1", null, conn));
-      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+      expect(await conn.expectMethod("m.error")).toBe("I am an error");
     } catch (e) {}
   });
 
@@ -308,7 +308,7 @@ describe("error management", () => {
     try {
       await router.route(new WebsocketRequest("standalone.r4", null, conn));
 
-      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+      expect(await conn.expectMethod("m.error")).toBe("I am an error");
     } catch (e) {}
   });
   it("should send a m.error when a standalone route throws an error", async () => {
@@ -323,7 +323,7 @@ describe("error management", () => {
     const conn = WebsocketMocks.getConnectionStub();
     try {
       await router.route(new WebsocketRequest("standalone.r5", null, conn));
-      expect(await conn.awaitMessage("m.error")).toBe("I am an error");
+      expect(await conn.expectMethod("m.error")).toBe("I am an error");
     } catch (e) {}
   });
 });
@@ -343,7 +343,7 @@ it("should be possible to access the `this.method()` object within a standalone 
   const router = new WebsocketRouter();
   const conn = WebsocketMocks.getConnectionStub();
 
-  await router.route(new WebsocketRequest("standalone.r6", null, conn));
-  const data = await conn.awaitMessage("m.standalone.r6");
+  router.route(new WebsocketRequest("standalone.r6", null, conn));
+  const data = await conn.expectMethod("m.standalone.r6");
   expect(data).toStrictEqual(data);
 });

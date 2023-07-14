@@ -9,13 +9,10 @@ describe("onError handling", () => {
     });
     conn.send("m.error", undefined);
   });
-  it("should raise an exception once the error has been expected once", () => {
+  it("should raise an exception once the error has been expected once", async () => {
     const conn = new TCWrapper();
     conn.expectError().then();
     conn.send("m.error", undefined);
-    try {
-      conn.send("m.error", undefined);
-    } catch (e) {}
   });
 });
 

@@ -75,11 +75,11 @@ testEach(
     it(label + ": should resend subscribed data", async () => {
       expect(Testing).toBeDefined();
       const conn = WebsocketMocks.getConnectionStub();
-      const data = await conn.awaitMessage(routes[0]);
+      const data = await conn.expectMethod(routes[0]);
       expect(data).toStrictEqual({ value: "oldvalue1" });
       conn.runRequest(routes[3], { value: "updated" });
       expect(Testing.value).toStrictEqual({ value: "updated" });
-      const resentData = await conn.awaitMessage(routes[0]);
+      const resentData = await conn.expectMethod(routes[0]);
       expect(resentData).toStrictEqual({ value: "updated" });
     });
 
@@ -89,17 +89,17 @@ testEach(
         expect(Testing).toBeDefined();
         const conn = WebsocketMocks.getConnectionStub();
         const data = await Promise.all([
-          conn.awaitMessage(routes[0]),
-          conn.awaitMessage(routes[1]),
+          conn.expectMethod(routes[0]),
+          conn.expectMethod(routes[1]),
         ]);
         expect(data[0]).toStrictEqual({ value: "oldvalue1" });
         expect(data[1]).toStrictEqual({ value: "oldvalue1" });
 
         conn.runRequest(routes[3], { value: "updated" });
-        expect(await conn.awaitMessage(routes[1])).toStrictEqual({
+        expect(await conn.expectMethod(routes[1])).toStrictEqual({
           value: "updated",
         });
-        expect(await conn.awaitMessage(routes[0])).toStrictEqual({
+        expect(await conn.expectMethod(routes[0])).toStrictEqual({
           value: "updated",
         });
       }
@@ -173,11 +173,11 @@ describe("deprecated decorator testing: @SubscribeChanges", () => {
       it(label + ": should resend subscribed data", async () => {
         expect(Testing).toBeDefined();
         const conn = WebsocketMocks.getConnectionStub();
-        const data = await conn.awaitMessage(routes[0]);
+        const data = await conn.expectMethod(routes[0]);
         expect(data).toStrictEqual({ value: "oldvalue1" });
         conn.runRequest(routes[3], { value: "updated" });
         expect(Testing.value).toStrictEqual({ value: "updated" });
-        const resentData = await conn.awaitMessage(routes[0]);
+        const resentData = await conn.expectMethod(routes[0]);
         expect(resentData).toStrictEqual({ value: "updated" });
       });
 
@@ -187,17 +187,17 @@ describe("deprecated decorator testing: @SubscribeChanges", () => {
           expect(Testing).toBeDefined();
           const conn = WebsocketMocks.getConnectionStub();
           const data = await Promise.all([
-            conn.awaitMessage(routes[0]),
-            conn.awaitMessage(routes[1]),
+            conn.expectMethod(routes[0]),
+            conn.expectMethod(routes[1]),
           ]);
           expect(data[0]).toStrictEqual({ value: "oldvalue1" });
           expect(data[1]).toStrictEqual({ value: "oldvalue1" });
 
           conn.runRequest(routes[3], { value: "updated" });
-          expect(await conn.awaitMessage(routes[1])).toStrictEqual({
+          expect(await conn.expectMethod(routes[1])).toStrictEqual({
             value: "updated",
           });
-          expect(await conn.awaitMessage(routes[0])).toStrictEqual({
+          expect(await conn.expectMethod(routes[0])).toStrictEqual({
             value: "updated",
           });
         }

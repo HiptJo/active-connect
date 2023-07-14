@@ -52,16 +52,23 @@ export class StubWebsocketConnection extends WebsocketConnection {
    */
   send(method: string, value: any, messageId?: number) {
     // parsing the string provides real data situation (date parsing, ...)
-    const parsedValue = JsonParser.parse(JsonParser.stringify(value));
-    if (this.stack.length > 0) {
-      const entry = this.stack.filter((s) => s.method == method);
-      if (entry.length > 0) {
-        this.stack.splice(this.stack.indexOf(entry[0]))[0].func(parsedValue);
-        return true;
-      }
-    }
-    if (method == "m.error") throw new Error(parsedValue);
-    return false;
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+        if (this.stack.length > 0) {
+          const entry = this.stack.filter((s) => s.method == method);
+          if (entry.length > 0) {
+            const el = entry[0];
+            this.stack = this.stack.filter((s) => s != el);
+            el.func(parsedValue);
+            resolve(true);
+            return;
+          }
+        }
+        if (method == "m.error") throw new Error(parsedValue);
+        resolve(false);
+      }, 100); // timeout 100ms
+    }).then();
   }
 
   /**
@@ -90,7 +97,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
           );
         }
       }, timeout || ActiveConnect.getTimeout());
-    });
+    }).then();
   }
 
   /**
@@ -142,9 +149,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
       noMessageId ? undefined : this.messageId
     );
     this.messageId++;
-    setTimeout(() => {
-      new WebsocketRouter().route(request).then();
-    }, 100);
+    new WebsocketRouter().route(request).then();
   }
 
   public closeConnection() {
@@ -195,11 +200,13 @@ export class TCWrapper extends StubWebsocketConnection {
    * @param messageId - The ID of the message (optional).
    */
   send(method: string, value: any, messageId?: number) {
-    const handled = super.send(method, value, messageId);
-    if (!handled) {
-      const parsedValue = JsonParser.parse(JsonParser.stringify(value));
-      this.client.messageReceived({ method, data: parsedValue, messageId });
-    }
-    return true;
+    return new Promise(async (resolve) => {
+      const handled = await super.send(method, value, messageId);
+      if (!handled) {
+        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+        this.client.messageReceived({ method, data: parsedValue, messageId });
+      }
+      resolve(true);
+    }).then();
   }
 }

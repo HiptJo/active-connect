@@ -20,7 +20,7 @@ it("should be possible to create a outbound", async () => {
   }
   expect(Out).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
-  const data = await conn.awaitMessage("out.example");
+  const data = await conn.expectMethod("out.example");
   expect(data).toStrictEqual({ value: "anything1" });
 });
 
@@ -35,7 +35,7 @@ describe("lazy loading (default constructor annotation)", () => {
     expect(Out).toBeDefined();
     const conn = WebsocketMocks.getConnectionStub();
     conn.runRequest("request.out.requesting0", null);
-    const data = await conn.awaitMessage("out.requesting0");
+    const data = await conn.expectMethod("out.requesting0");
     expect(data).toStrictEqual({ value: "anything" });
   });
   it("should not auto-send lazy-loaded data", async () => {
@@ -47,9 +47,7 @@ describe("lazy loading (default constructor annotation)", () => {
     }
     expect(Out).toBeDefined();
     const conn = WebsocketMocks.getConnectionStub();
-    conn.awaitMessage("out.requesting1").then(() => {
-      fail("lazy-loaded data has been sent without requesting");
-    });
+    conn.dontExpectMethod("out.requesting1");
   });
 });
 describe("lazy loading (separate lazy decorator before)", () => {
@@ -65,7 +63,7 @@ describe("lazy loading (separate lazy decorator before)", () => {
     const conn = WebsocketMocks.getConnectionStub();
     conn.runRequest("request.out.requesting2", null);
 
-    const data = await conn.awaitMessage("out.requesting2");
+    const data = await conn.expectMethod("out.requesting2");
     expect(data).toStrictEqual({ value: "anything" });
   });
 });
@@ -82,7 +80,7 @@ describe("lazy loading (separate lazy decorator after)", () => {
     const conn = WebsocketMocks.getConnectionStub();
     conn.runRequest("request.out.requesting3", null);
 
-    const data = await conn.awaitMessage("out.requesting3");
+    const data = await conn.expectMethod("out.requesting3");
     expect(data).toStrictEqual({ value: "anything" });
   });
 });
@@ -99,7 +97,7 @@ it("should be possible to access the `this` object within a outbound", async () 
   expect(Out).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
 
-  const data = await conn.awaitMessage("out.this");
+  const data = await conn.expectMethod("out.this");
   expect(data).toStrictEqual({ content: "something" });
 });
 
@@ -117,10 +115,11 @@ it("should be possible to create multiple outbounds", async () => {
   expect(Out).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
 
-  const data = await conn.awaitMessage("multiple.1");
-  expect(data).toStrictEqual(1);
-  const data1 = await conn.awaitMessage("multiple.2");
-  expect(data1).toStrictEqual(2);
+  const data = await Promise.all([
+    conn.expectMethod("multiple.1"),
+    conn.expectMethod("multiple.2"),
+  ]);
+  expect(data).toStrictEqual([1, 2]);
 });
 
 describe("error handling", () => {
@@ -134,9 +133,7 @@ describe("error handling", () => {
     expect(Testing).toBeDefined();
     const conn = WebsocketMocks.getConnectionStub();
     conn.runRequest("request.throws.error.1", null);
-    expect(await conn.awaitMessage("m.error")).toBe(
-      "Received error message from websocket server: I am an error1"
-    );
+    expect(await conn.expectMethod("m.error")).toBe("I am an error1");
   });
   it("should send a m.error when a route throws an string (requestable route)", async () => {
     class Testing {
@@ -147,7 +144,7 @@ describe("error handling", () => {
     }
     expect(Testing).toBeDefined();
     const conn = WebsocketMocks.getConnectionStub();
-    expect(await conn.awaitMessage("m.error")).toBe("I am an error2");
+    expect(await conn.expectMethod("m.error")).toBe("I am an error2");
   });
   afterAll(() => {
     // clear after execution to remove outbound `throw.error.2`
@@ -216,11 +213,11 @@ describe("Outbound resend after auth change", () => {
       it(label + ": should re-send data after auth change", async () => {
         expect(Testing).toBeDefined();
         const conn = WebsocketMocks.getConnectionStub();
-        const data = await conn.awaitMessage(routes[0]);
+        const data = await conn.expectMethod(routes[0]);
         expect(data).toStrictEqual({ value: "oldvalue1" });
         conn.runRequest(routes[1], { value: "updated" });
         expect(Testing.value).toStrictEqual({ value: "updated" });
-        const resentData = await conn.awaitMessage(routes[0]);
+        const resentData = await conn.expectMethod(routes[0]);
         expect(resentData).toStrictEqual({ value: "updated" });
       });
     }

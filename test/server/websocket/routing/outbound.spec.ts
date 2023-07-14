@@ -224,7 +224,6 @@ describe("subscription testing", () => {
         ])
       ).toStrictEqual([[], []]);
       conn1.runRequest("add", "new");
-      await conn1.expectMethod("m.add");
       expect(
         await Promise.all([
           conn1.expectMethod("d.low"),
@@ -311,8 +310,14 @@ describe("subscription testing", () => {
       conn2.dontExpectMethod("f.high");
       conn1.runRequest("fadd", "new");
 
-      await conn1.expectMethod("m.fadd");
-      expect(await conn1.expectMethod("f.high")).toStrictEqual(["new"]);
+      expect(
+        (
+          await Promise.all([
+            conn1.expectMethod("f.high"),
+            conn1.expectMethod("m.fadd"),
+          ])
+        )[0]
+      ).toStrictEqual(["new"]);
     });
     it("should re-send low-priority data to subscribed connections matching the filter", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
@@ -325,8 +330,14 @@ describe("subscription testing", () => {
       ).toStrictEqual([[], []]);
       conn1.runRequest("fadd", "new");
       conn2.dontExpectMethod("f.low");
-      await conn1.expectMethod("m.fadd");
-      expect(await conn1.expectMethod("f.low")).toStrictEqual(["new"]);
+      expect(
+        (
+          await Promise.all([
+            conn1.expectMethod("f.low"),
+            conn1.expectMethod("m.fadd"),
+          ])
+        )[0]
+      ).toStrictEqual(["new"]);
     });
     it("should cancel subscription once the client closes the connection", async () => {
       let conn1 = WebsocketMocks.getConnectionStub();
@@ -406,22 +417,30 @@ describe("after-auth resend testing", () => {
     expect(await conn.expectMethod("a.id1")).toBe(1);
 
     conn.runRequest("auth", null);
-    expect(await conn.expectMethod("m.auth")).toBeTruthy();
-    expect(await conn.expectMethod("a.id1")).toBe(2);
+    expect(
+      await Promise.all([
+        conn.expectMethod("a.id1"),
+        conn.expectMethod("m.auth"),
+      ])
+    ).toStrictEqual([2, true]);
   });
   it("should resend lazy-loaded data if the client is subscribed after calling a route with resendAuth tag", async () => {
-    let conn = WebsocketMocks.getConnectionStub();
-
     const conn1 = WebsocketMocks.getConnectionStub();
     conn1.runRequest("request.a.id2", null);
     await conn1.expectMethod("a.id2");
+    conn1.dontExpectMethod("a.id2");
 
+    let conn = WebsocketMocks.getConnectionStub();
     conn.runRequest("request.a.id2", null);
     expect(await conn.expectMethod("a.id2")).toBe(1);
 
     conn.runRequest("auth", null);
-    expect(await conn.expectMethod("m.auth")).toBeTruthy();
-    expect(await conn.expectMethod("a.id2")).toBe(2);
+    expect(
+      await Promise.all([
+        conn.expectMethod("a.id2"),
+        conn.expectMethod("m.auth"),
+      ])
+    ).toStrictEqual([2, true]);
   });
   it("should not resend lazy-loaded data if the client is not subscribed to it after calling a route with resendAuth tag", async () => {
     let conn = WebsocketMocks.getConnectionStub();

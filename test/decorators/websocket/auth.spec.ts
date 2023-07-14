@@ -50,9 +50,9 @@ it("should be possible to use authenticators for methods", async () => {
 
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("auth1.m1", null);
-  const data1 = await conn.awaitMessage("m.auth1.m1");
+  const data1 = await conn.expectMethod("m.auth1.m1");
   conn.runRequest("auth1.m2", null);
-  const data2 = await conn.awaitMessage("m.auth1.m2");
+  const data2 = await conn.expectMethod("m.auth1.m2");
 
   expect(data1).toBe(1);
   expect(data2).toBe(2);
@@ -82,11 +82,11 @@ it("should recejt a unauthorized request", async () => {
   const conn = WebsocketMocks.getConnectionStub();
 
   conn.runRequest("auth2.m2", null);
-  const data1 = await conn.awaitMessage("m.error");
+  const data1 = await conn.expectMethod("m.error");
   expect(data1).toBe("error message");
 
   conn.runRequest("auth2.m1", null);
-  const data2 = await conn.awaitMessage("m.error");
+  const data2 = await conn.expectMethod("m.error");
   expect(data2).toBe("error message");
 });
 
@@ -102,7 +102,7 @@ it("should be possible to use authenticators for outbounds (out decorator first)
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  const data = await conn.awaitMessage("out.example1");
+  const data = await conn.expectMethod("out.example1");
   expect(data).toStrictEqual({ value: "anything" });
 });
 it("should be possible to use authenticators for outbounds (auth decorator first)", async () => {
@@ -117,7 +117,7 @@ it("should be possible to use authenticators for outbounds (auth decorator first
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  const data = await conn.awaitMessage("out.example1");
+  const data = await conn.expectMethod("out.example1");
   expect(data).toStrictEqual({ value: "anything" });
 });
 it("should not send an error message when outbound authentication fails (out decorator first)", async () => {
@@ -132,11 +132,7 @@ it("should not send an error message when outbound authentication fails (out dec
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  conn.awaitMessage("out.example3").then(() => {
-    fail(
-      "received data even though the authenticator does not authenticate this request"
-    );
-  });
+  conn.dontExpectMethod("out.example3");
 });
 it("should not send an error message when outbound authentication fails (auth decorator first)", async () => {
   class Out {
@@ -150,11 +146,7 @@ it("should not send an error message when outbound authentication fails (auth de
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  conn.awaitMessage("out.example4").then(() => {
-    fail(
-      "received data even though the authenticator does not authenticate this request"
-    );
-  });
+  conn.dontExpectMethod("out.example4");
 });
 
 it("should be possible to use authenticators for requestable outbounds (out decorator first)", async () => {
@@ -170,7 +162,7 @@ it("should be possible to use authenticators for requestable outbounds (out deco
 
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("request.out.example5", null);
-  const data = await conn.awaitMessage("out.example5");
+  const data = await conn.expectMethod("out.example5");
   expect(data).toStrictEqual({ value: "anything" });
 });
 it("should be possible to use authenticators for requestable outbounds (auth decorator first)", async () => {
@@ -186,7 +178,7 @@ it("should be possible to use authenticators for requestable outbounds (auth dec
 
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("request.out.example6", null);
-  const data = await conn.awaitMessage("out.example6");
+  const data = await conn.expectMethod("out.example6");
   expect(data).toStrictEqual({ value: "anything" });
 });
 it("should send an error when authenticator for requestable outbounds fails (out decorator first)", async () => {
@@ -202,7 +194,7 @@ it("should send an error when authenticator for requestable outbounds fails (out
 
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("request.out.example7", null);
-  expect(await conn.awaitMessage("m.error")).toBe("error message");
+  expect(await conn.expectMethod("m.error")).toBe("error message");
 });
 it("should send an error when authenticator for requestable outbounds fails (auth decorator first)", async () => {
   class Out {
@@ -217,7 +209,7 @@ it("should send an error when authenticator for requestable outbounds fails (aut
 
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("request.out.example8", null);
-  expect(await conn.awaitMessage("m.error")).toBe("error message");
+  expect(await conn.expectMethod("m.error")).toBe("error message");
 });
 
 it("should be possible to access the `this` object within a authenticated route (auth first)", async () => {
@@ -235,7 +227,7 @@ it("should be possible to access the `this` object within a authenticated route 
   const conn = WebsocketMocks.getConnectionStub();
 
   conn.runRequest("parent1.child", null);
-  const data = await conn.awaitMessage("m.parent1.child");
+  const data = await conn.expectMethod("m.parent1.child");
   expect(data).toStrictEqual({ value: "accessible data" });
 });
 it("should be possible to access the `this` object within a authenticated route (route first)", async () => {
@@ -253,7 +245,7 @@ it("should be possible to access the `this` object within a authenticated route 
   const conn = WebsocketMocks.getConnectionStub();
 
   conn.runRequest("parent2.child", null);
-  const data = await conn.awaitMessage("m.parent2.child");
+  const data = await conn.expectMethod("m.parent2.child");
   expect(data).toStrictEqual({ value: "accessible data" });
 });
 it("should be possible to access the `this` object within a authenticated standalone route (auth first)", async () => {
@@ -270,7 +262,7 @@ it("should be possible to access the `this` object within a authenticated standa
   expect(Testing).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("standalone.route1", null);
-  const data = await conn.awaitMessage("m.standalone.route1");
+  const data = await conn.expectMethod("m.standalone.route1");
   expect(data).toStrictEqual(original);
 });
 it("should be possible to access the `this` object within a authenticated standalone route (route first)", async () => {
@@ -287,7 +279,7 @@ it("should be possible to access the `this` object within a authenticated standa
   expect(Testing).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("standalone.route2", null);
-  const data = await conn.awaitMessage("m.standalone.route2");
+  const data = await conn.expectMethod("m.standalone.route2");
   expect(data).toStrictEqual(original);
 });
 it("should be possible to access the `this` object within a authenticated outbound (auth first)", async () => {
@@ -303,7 +295,7 @@ it("should be possible to access the `this` object within a authenticated outbou
   expect(Out).toBeDefined();
 
   const conn = WebsocketMocks.getConnectionStub();
-  const data = await conn.awaitMessage("out.example9");
+  const data = await conn.expectMethod("out.example9");
   expect(data).toStrictEqual({ content: "something" });
 });
 it("should be possible to access the `this` object within a authenticated outbound (out first)", async () => {
@@ -320,7 +312,7 @@ it("should be possible to access the `this` object within a authenticated outbou
 
   const conn = WebsocketMocks.getConnectionStub();
 
-  const data = await conn.awaitMessage("out.example10");
+  const data = await conn.expectMethod("out.example10");
   expect(data).toStrictEqual({ content: "something" });
 });
 
@@ -356,10 +348,8 @@ it("should be possible to daisy-chain (and/or) authenticators using annotations"
   }
   expect(Out).toBeDefined();
   const conn = WebsocketMocks.getConnectionStub();
-  conn.awaitMessage("out.example12").then(() => {
-    fail("should not receive this as the authenticator is false");
-  });
-  await conn.awaitMessage("out.example13");
+  conn.dontExpectMethod("out.example12");
+  await conn.expectMethod("out.example13");
 });
 
 it("should subscribe for changes after outbound has been sent", async () => {
@@ -378,10 +368,9 @@ it("should subscribe for changes after outbound has been sent", async () => {
   expect(Out).toBeDefined();
 
   const conn = WebsocketMocks.getConnectionStub();
-  await conn.awaitMessage("out.example14");
+  await conn.expectMethod("out.example14");
   conn.runRequest("update.example14", null);
-  await conn.awaitMessage("out.example14");
-  await conn.awaitMessage("m.update.example14");
+  await conn.expectMethod("out.example14");
 });
 it("should not subscribe for changes when no outbound is sent", async () => {
   class Out {
@@ -400,12 +389,8 @@ it("should not subscribe for changes when no outbound is sent", async () => {
 
   const conn = WebsocketMocks.getConnectionStub();
   conn.runRequest("update.example15", null);
-  conn.awaitMessage("out.example15").then(() => {
-    fail(
-      "should not receive updated data as authentication failed in the first place"
-    );
-  });
-  await conn.awaitMessage("m.update.example15");
+  conn.dontExpectMethod("out.example15");
+  await conn.expectMethod("m.update.example15");
 });
 it("should trigger outbound updating when route request is auth", async () => {
   class Out {
@@ -423,10 +408,9 @@ it("should trigger outbound updating when route request is auth", async () => {
   expect(Out).toBeDefined();
 
   const conn = WebsocketMocks.getConnectionStub();
-  await conn.awaitMessage("out.example16");
+  await conn.expectMethod("out.example16");
   conn.runRequest("update.example16", null);
-  await conn.awaitMessage("out.example16");
-  await conn.awaitMessage("m.update.example16");
+  await conn.expectMethod("out.example16");
 });
 it("should not trigger outbound updating when route request is unauth", async () => {
   class Out {
@@ -444,17 +428,11 @@ it("should not trigger outbound updating when route request is unauth", async ()
   expect(Out).toBeDefined();
 
   const conn = WebsocketMocks.getConnectionStub();
-  await conn.awaitMessage("out.example17");
+  await conn.expectMethod("out.example17");
   conn.runRequest("update.example17", null);
-  conn.awaitMessage("out.example17").then(() => {
-    fail(
-      "outbound update should not be sent as request auth failed in the first place"
-    );
-  });
-  conn.awaitMessage("m.update.example17").then(() => {
-    fail("callback shall not be called");
-  });
-  await conn.awaitMessage("m.error");
+  conn.dontExpectMethod("out.example17");
+  conn.dontExpectMethod("m.update.example17");
+  await conn.expectMethod("m.error");
 });
 
 it("should raise an error when multiple or authenticators are added", async () => {
