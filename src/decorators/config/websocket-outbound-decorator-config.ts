@@ -1,4 +1,4 @@
-import { MessageFilter } from "../../../server";
+import { MessageFilter } from "../../server";
 import { WebsocketDecoratorConfig } from "./websocket-decorator-config";
 
 export class WebsocketOutboundDecoratorConfig extends WebsocketDecoratorConfig {

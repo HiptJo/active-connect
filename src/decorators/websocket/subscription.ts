@@ -1,6 +1,6 @@
 import { MessageFilter } from "../../server";
-import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-decorator-config";
-import { WebsocketRouteDecoratorConfig } from "./config/websocket-route-decorator-config";
+import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-decorator-config";
+import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
 
 /**
  * @decorator

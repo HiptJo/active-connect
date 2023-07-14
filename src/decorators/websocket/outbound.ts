@@ -2,7 +2,7 @@ import {
   WebsocketOutbound,
   WebsocketOutbounds,
 } from "../../server/websocket/routing/outbound";
-import { WebsocketOutboundDecoratorConfig } from "./config/websocket-outbound-decorator-config";
+import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-decorator-config";
 
 /**
  * @decorator
