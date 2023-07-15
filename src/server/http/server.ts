@@ -59,6 +59,12 @@ export class HttpServer {
     HttpServer.postMethods.forEach(function registerPostMethod(post) {
       t.app.post(post.method, post.Func);
     });
+    HttpServer.putMethods.forEach(function registerPutMethod(put) {
+      t.app.put(put.method, put.Func);
+    });
+    HttpServer.deleteMethods.forEach(function registerDeleteMethod(del) {
+      t.app.delete(del.method, del.Func);
+    });
   }
 
   public enableLogging() {
@@ -296,6 +302,14 @@ export class HttpServer {
   private static postMethods: Array<HttpMethod> = new Array();
   public static registerPost(config: HttpMethod) {
     HttpServer.postMethods.push(config);
+  }
+  private static putMethods: Array<HttpMethod> = new Array();
+  public static registerPut(config: HttpMethod) {
+    HttpServer.putMethods.push(config);
+  }
+  private static deleteMethods: Array<HttpMethod> = new Array();
+  public static registerDelete(config: HttpMethod) {
+    HttpServer.deleteMethods.push(config);
   }
 
   public getWebsocketInstance(): WebsocketServer | null {

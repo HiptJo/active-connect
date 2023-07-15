@@ -8,4 +8,6 @@ export * from "./content/provide-file";
 export * from "./content/provide-image";
 export * from "./http/get";
 export * from "./http/post";
+export * from "./http/put";
+export * from "./http/delete";
 export * from "./cron/cron";
