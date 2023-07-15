@@ -6,7 +6,6 @@ import { WebsocketRouter } from "../../server/websocket/routing/router";
 import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
 
 /**
- * @decorator
  * Route decorator for WebSocket routes.
  * Can be used to register WebSocket routes.
  * This annotation can be used for methods and classes.
@@ -91,7 +90,6 @@ export function Route(
 }
 
 /**
- * @decorator
  * StandaloneRoute decorator for WebSocket routes.
  * Can be used to register Standalone WebSocket routes.
  * This annotation can be used for methods only.

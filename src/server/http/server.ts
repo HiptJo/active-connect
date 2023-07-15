@@ -5,20 +5,25 @@ import * as fs from "fs-extra";
 import * as http from "http";
 
 import { ProvidedFile } from "../../content/files/provided-file";
-import { ProvidedImage } from "../../content/images/provided-image";
 import { WebsocketServer } from "../websocket/server";
 import { FileProvider } from "./file-provider";
 import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
+import { HttpResponse } from "./http-response";
 
+/**
+ * Represents an HTTP server.
+ */
 export class HttpServer {
   private app: express.Application;
-  get App(): express.Application {
-    return this.app;
-  }
   private server: http.Server;
   private websocket: WebsocketServer;
 
+  /**
+   * Creates a new instance of the `HttpServer` class.
+   * @param port - The port number for the server to listen on.
+   * @param supportWebsocket - Determines whether to support WebSocket connections.
+   */
   constructor(private port: number, private supportWebsocket: boolean) {
     this.initializeServer();
 
@@ -34,7 +39,16 @@ export class HttpServer {
     this.initializeImageProvider();
   }
 
+  /**
+   * Gets the underlying Express application instance.
+   * @returns The Express application instance.
+   */
+  get App(): express.Application {
+    return this.app;
+  }
+
   private isServerStarted: boolean = false;
+
   private initializeServer() {
     this.app = express();
     this.app.use(bodyParser.urlencoded({ extended: true }));
@@ -55,18 +69,63 @@ export class HttpServer {
   private initializeHttpMethods() {
     const t = this;
     HttpServer.getMethods.forEach(function registerGetMethod(get) {
-      t.app.get(get.method, get.callback);
+      t.app.get(get.method, t.handleRequest(get));
     });
     HttpServer.postMethods.forEach(function registerPostMethod(post) {
-      t.app.post(post.method, post.callback);
+      t.app.post(post.method, t.handleRequest(post));
+    });
+    HttpServer.putMethods.forEach(function registerPutMethod(put) {
+      t.app.put(put.method, t.handleRequest(put));
+    });
+    HttpServer.deleteMethods.forEach(function registerDeleteMethod(del) {
+      t.app.delete(del.method, t.handleRequest(del));
     });
   }
 
+  private handleRequest(method: HttpMethod): express.RequestHandler {
+    return (req: express.Request, res: express.Response, next: Function) => {
+      method
+        .Func(req, res)
+        .then(function requestCompleted(response: HttpResponse) {
+          if (response.contentType) {
+            res.writeHead(response.status || 500, {
+              "Content-Type": response.contentType,
+            });
+          } else {
+            res.writeHead(response.status || 500);
+          }
+          res.end(response.content, response.contentEncoding);
+        })
+        .catch((err: any) => {
+          if (err.BAD_REQUEST) {
+            res.end(400);
+          } else if (err.UNAUTHORIZED) {
+            res.end(401);
+          } else if (err.FORBIDDEN) {
+            res.end(403);
+          } else if (err.NOTFOUND) {
+            res.end(404);
+          } else {
+            res.end(500);
+            throw Error(err);
+          }
+        });
+    };
+  }
+
+  /**
+   * Enables logging for WebSocket connections.
+   */
   public enableLogging() {
     this.websocket.enableLogging();
   }
 
   private indexCache: Buffer | undefined;
+
+  /**
+   * Sets up file serving for an Angular application.
+   * @param path - The path to the Angular application build files.
+   */
   public setupAngularFileServing(path: string) {
     this.setupAssetFileServing(path);
     const t = this;
@@ -98,12 +157,21 @@ export class HttpServer {
       }
     );
   }
+
+  /**
+   * Sets up file serving for static assets.
+   * @param path - The path to the directory containing the static assets.
+   */
   public setupAssetFileServing(path: string) {
     this.app.use(express.static(path));
   }
 
   private basicAuthenticationEnabled = false;
   private credentials: Array<{ user: string; password: string }> = new Array();
+
+  /**
+   * Enables basic authentication for requests.
+   */
   public enableBasicAuthentication() {
     if (!this.basicAuthenticationEnabled) {
       const t = this;
@@ -142,6 +210,12 @@ export class HttpServer {
       });
     }
   }
+
+  /**
+   * Adds credentials for basic authentication.
+   * @param user - The username.
+   * @param password - The password.
+   */
   public addBasicCredentials(user: string, password: string) {
     this.credentials.push({ user: user, password: password });
   }
@@ -150,6 +224,7 @@ export class HttpServer {
     const sendFile = this.sendFile;
     const t = this;
     HttpServer.fileProvider.forEach(function provideFileForEach(provider) {
+      provider.loadDecoratorConfig();
       t.app.get(
         `/file/${provider.label}/:id/:auth`,
         async function provideFile(
@@ -193,10 +268,12 @@ export class HttpServer {
       );
     });
   }
+
   private initializeImageProvider() {
     const sendImage = this.sendImage;
     const t = this;
     HttpServer.imageProvider.forEach(function registerImageProvider(provider) {
+      provider.loadDecoratorConfig();
       t.app.get(
         `/image/${provider.label}/:id/:auth`,
         async function provideFile(
@@ -229,6 +306,7 @@ export class HttpServer {
       );
     });
   }
+
   private async sendFile(
     res: express.Response,
     provider: FileProvider,
@@ -236,7 +314,7 @@ export class HttpServer {
     auth?: string
   ) {
     try {
-      const data: ProvidedFile = await provider.callback(id, auth);
+      const data: ProvidedFile = await provider.Func(id, auth);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
@@ -246,6 +324,7 @@ export class HttpServer {
       res.sendStatus(404);
     }
   }
+
   private async sendImage(
     res: express.Response,
     provider: ImageProvider,
@@ -253,7 +332,7 @@ export class HttpServer {
     auth?: string
   ) {
     try {
-      const data: ProvidedFile = await provider.callback(id, auth);
+      const data: ProvidedFile = await provider.Func(id, auth);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
@@ -265,11 +344,17 @@ export class HttpServer {
   }
 
   private serverStartedResolves: Array<Function> = [];
+
   private serverStarted() {
     this.serverStartedResolves.forEach(function resolveServerStarted(r) {
       r(true);
     });
   }
+
+  /**
+   * Waits for the server to start listening for requests.
+   * @returns A promise that resolves when the server has started.
+   */
   public async awaitStart(): Promise<boolean> {
     if (this.isServerStarted) return true;
     const t = this;
@@ -279,45 +364,78 @@ export class HttpServer {
   }
 
   private static fileProvider: Array<FileProvider> = new Array();
-  public static registerFileProvider(
-    label: string,
-    callback: (id: string, auth: string) => Promise<ProvidedFile>
-  ) {
-    HttpServer.fileProvider.push(new FileProvider(label, callback));
+
+  /**
+   * Registers a file provider.
+   * @param fileProvider - The file provider to register.
+   */
+  public static registerFileProvider(fileProvider: FileProvider) {
+    HttpServer.fileProvider.push(fileProvider);
   }
 
   private static imageProvider: Array<ImageProvider> = new Array();
-  public static registerImageProvider(
-    label: string,
-    callback: (id: string, auth: string) => Promise<ProvidedImage>
-  ) {
-    HttpServer.imageProvider.push(new ImageProvider(label, callback));
+
+  /**
+   * Registers an image provider.
+   * @param imageProvider - The image provider to register.
+   */
+  public static registerImageProvider(imageProvider: ImageProvider) {
+    HttpServer.imageProvider.push(imageProvider);
   }
 
   private static getMethods: Array<HttpMethod> = new Array();
-  public static registerGet(
-    method: string,
-    callback: (req: Express.Request, res: Express.Response) => void
-  ) {
-    HttpServer.getMethods.push(new HttpMethod(method, callback));
-  }
-  private static postMethods: Array<HttpMethod> = new Array();
-  public static registerPost(
-    method: string,
-    callback: (req: Express.Request, res: Express.Response) => void
-  ) {
-    HttpServer.postMethods.push(new HttpMethod(method, callback));
+
+  /**
+   * Registers a GET method.
+   * @param config - The configuration for the GET method.
+   */
+  public static registerGet(config: HttpMethod) {
+    HttpServer.getMethods.push(config);
   }
 
+  private static postMethods: Array<HttpMethod> = new Array();
+
+  /**
+   * Registers a POST method.
+   * @param config - The configuration for the POST method.
+   */
+  public static registerPost(config: HttpMethod) {
+    HttpServer.postMethods.push(config);
+  }
+
+  private static putMethods: Array<HttpMethod> = new Array();
+
+  /**
+   * Registers a PUT method.
+   * @param config - The configuration for the PUT method.
+   */
+  public static registerPut(config: HttpMethod) {
+    HttpServer.putMethods.push(config);
+  }
+
+  private static deleteMethods: Array<HttpMethod> = new Array();
+
+  /**
+   * Registers a DELETE method.
+   * @param config - The configuration for the DELETE method.
+   */
+  public static registerDelete(config: HttpMethod) {
+    HttpServer.deleteMethods.push(config);
+  }
+
+  /**
+   * Gets the WebsocketServer instance associated with the HTTP server.
+   * @returns The WebsocketServer instance, or `null` if WebSocket support is not enabled.
+   */
   public getWebsocketInstance(): WebsocketServer | null {
     return this.websocket;
   }
 
   /**
-   * Stops the server from accepting new connections and keeps existing
-   * connections. This function is asynchronous, the server is finally closed
-   * when all connections are ended and the server emits a `'close'` event.
-   * @returns a promise that is resolved once all connections are closed
+   * Stops the server from accepting new connections and keeps existing connections.
+   * This function is asynchronous, and the server is finally closed when all connections are ended
+   * and the server emits a `'close'` event.
+   * @returns A promise that is resolved once all connections are closed.
    */
   public stop() {
     return new Promise<void>(async (resolve, reject) => {

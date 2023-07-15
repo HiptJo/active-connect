@@ -4,3 +4,7 @@ export * from "./http-response";
 export * from "./file-provider";
 export * from "./image-provider";
 export * from "./http-method";
+export * from "./errors/bad-request";
+export * from "./errors/forbidden";
+export * from "./errors/not-found";
+export * from "./errors/unauthorized";

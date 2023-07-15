@@ -38,6 +38,10 @@ export class WebsocketRouter {
     WebsocketRouter.routes.push(route);
   }
 
+  /**
+   * Removes a WebSocket route if it exists.
+   * @param method - The method name of the route to remove.
+   */
   public static removeRouteIfExists(method: string) {
     WebsocketRouter.standaloneRoutes = WebsocketRouter.standaloneRoutes.filter(
       (r) => method != r.Method

@@ -4,7 +4,6 @@ import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-d
 import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
 
 /**
- * @decorator
  * Adds an authenticator to either a websocket route or outbound.
  * The outbound is only sent when the authentication passes. Otherwise, no error message is sent.
  * If a route is secured using this outbound, the function is only called when the authenticator passes.
@@ -43,7 +42,6 @@ export function Auth(authenticator: WebsocketAuthenticator) {
 }
 
 /**
- * @decorator
  * Routes decorated with this annotation indicate that the authentication of the user might change during the method call.
  * This annotation triggers the re-sending of all outbounds that the user has received and are decorated using `@ResendAfterAuthenticationChange`.
  *
@@ -65,7 +63,6 @@ export function ModifiesAuthentication(target: any, propertyKey: string): any {
 }
 
 /**
- * @decorator
  * Outbounds decorated with this decorator are re-sent to the client once the client's authentication changes.
  * The authentication change is detected when a method decorated with `@ModifiesAuthentication` is called by the client.
  *

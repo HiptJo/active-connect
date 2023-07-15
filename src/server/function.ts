@@ -1,5 +1,5 @@
-import { WebsocketAuthenticator } from "../auth/authenticator";
-import { WebsocketConnection } from "../connection/connection";
+import { WebsocketAuthenticator } from "./websocket/auth/authenticator";
+import { WebsocketConnection } from "./websocket/connection/connection";
 
 /**
  * Represents the reference to an object method used for websocket routes and outbounds.

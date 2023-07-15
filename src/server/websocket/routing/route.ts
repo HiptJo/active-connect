@@ -2,7 +2,7 @@ import { WebsocketRouteDecoratorConfig } from "../../../decorators/config/websoc
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
-import { AuthableDecorableFunction } from "./function";
+import { AuthableDecorableFunction } from "../../function";
 import { WebsocketOutbounds } from "./outbound";
 import { WebsocketRouter } from "./router";
 
@@ -168,7 +168,7 @@ export class WebsocketRoute extends AuthableDecorableFunction {
         return data;
       } catch (e) {
         if (!e?.isAuthenticationError) {
-          console.error(e);
+          if (!e.SILENT) console.error(e);
           request.connection.send("m.error", e?.message || e);
         }
         return ERROR;
@@ -247,6 +247,10 @@ export class WebsocketRoute extends AuthableDecorableFunction {
     }
   }
 
+  /**
+   * Checks for duplicate routes with the same method.
+   * @param method - The method name to check.
+   */
   public checkForDuplicates(method?: string) {
     const concatMethod = method ? method + "." + this.method : this.method;
     let error = false;

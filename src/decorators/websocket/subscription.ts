@@ -3,7 +3,6 @@ import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-d
 import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
 
 /**
- * @decorator
  * Creates a subscription for outbounds.
  * All clients that receive the outbound data will be subscribed.
  * Once the data is modified (route function decorated using @Modifies or @ModifiesMatching has been called), the outbound is re-sent to the clients.
@@ -31,7 +30,6 @@ export function SubscribeChanges(target: any, propertyKey: string) {
 }
 
 /**
- * @decorator
  * Creates a subscription for outbounds using a filter.
  * All clients that receive the outbound data will be subscribed.
  * Once the data is modified (route function decorated using @Modifies or @ModifiesMatching with matching `MessageFilter` has been called), the outbound is re-sent to the clients.
@@ -63,7 +61,6 @@ export function SubscribeMatchingChanges(filter: MessageFilter) {
 }
 
 /**
- * @decorator
  * Once routes decorated with this decorator have been called, the provided outbound routes will be re-sent to all regular subscriptions and filtered subscriptions.
  *
  * @param routes - The outbound methods that are modified and should be re-sent.
@@ -95,7 +92,6 @@ export function Modifies(...routes: string[]) {
   };
 }
 /**
- * @decorator
  * Once routes decorated with this decorator have been called, the provided outbound routes will be re-sent to all regular subscriptions and filtered subscriptions matching the filter.
  *
  * @param filter - The filter to be used for matching the clients (e.g., for updating data for only one mandatory, ...).
