@@ -1,6 +1,10 @@
-export class HttpMethod {
+import { DecorableFunction } from "../function";
+
+export class HttpMethod extends DecorableFunction {
   constructor(
     public method: string,
-    public callback: (req: Express.Request, res: Express.Response) => void
-  ) {}
+    objConfig: { target: any; propertyKey: string }
+  ) {
+    super(objConfig);
+  }
 }

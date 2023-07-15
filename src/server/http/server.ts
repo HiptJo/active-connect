@@ -54,10 +54,10 @@ export class HttpServer {
   private initializeHttpMethods() {
     const t = this;
     HttpServer.getMethods.forEach(function registerGetMethod(get) {
-      t.app.get(get.method, get.callback);
+      t.app.get(get.method, get.Func);
     });
     HttpServer.postMethods.forEach(function registerPostMethod(post) {
-      t.app.post(post.method, post.callback);
+      t.app.post(post.method, post.Func);
     });
   }
 
@@ -290,18 +290,12 @@ export class HttpServer {
   }
 
   private static getMethods: Array<HttpMethod> = new Array();
-  public static registerGet(
-    method: string,
-    callback: (req: Express.Request, res: Express.Response) => void
-  ) {
-    HttpServer.getMethods.push(new HttpMethod(method, callback));
+  public static registerGet(config: HttpMethod) {
+    HttpServer.getMethods.push(config);
   }
   private static postMethods: Array<HttpMethod> = new Array();
-  public static registerPost(
-    method: string,
-    callback: (req: Express.Request, res: Express.Response) => void
-  ) {
-    HttpServer.postMethods.push(new HttpMethod(method, callback));
+  public static registerPost(config: HttpMethod) {
+    HttpServer.postMethods.push(config);
   }
 
   public getWebsocketInstance(): WebsocketServer | null {
