@@ -1,4 +1,5 @@
 import { WebsocketAuthenticator } from "../../server/websocket/auth/authenticator";
+import { ContentProviderDecoratorConfig } from "../config/content-provider-decorator-config";
 import { DecoratorConfig } from "../config/decorator-config";
 import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-decorator-config";
 import { WebsocketRouteDecoratorConfig } from "../config/websocket-route-decorator-config";
@@ -27,6 +28,7 @@ export function Auth(authenticator: WebsocketAuthenticator) {
     const configs: DecoratorConfig[] = [
       WebsocketOutboundDecoratorConfig.get(target, propertyKey),
       WebsocketRouteDecoratorConfig.get(target, propertyKey),
+      ContentProviderDecoratorConfig.get(target, propertyKey),
     ];
     for (var config of configs) {
       if (config.authenticator) {

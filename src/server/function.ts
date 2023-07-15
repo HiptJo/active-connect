@@ -88,7 +88,7 @@ export abstract class AuthableDecorableFunction extends DecorableFunction {
         if (await authenticator.checkAuthentication(conn, requestData)) {
           return func(...data);
         } else {
-          this.sendError(conn, authenticator.unauthenticatedMessage);
+          this.sendError(conn, authenticator.unauthenticatedMessage, true);
           throw new AuthenticationError(authenticator.unauthenticatedMessage);
         }
       };
@@ -113,6 +113,7 @@ export abstract class AuthableDecorableFunction extends DecorableFunction {
    */
   protected abstract sendError(
     conn: WebsocketConnection,
-    message: string
+    message: string,
+    authError?: boolean
   ): void;
 }

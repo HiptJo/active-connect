@@ -1,5 +1,5 @@
 import { ContentProviderDecoratorConfig } from "../../decorators/config/content-provider-decorator-config";
-import { AuthableDecorableFunction } from "../function";
+import { AuthableDecorableFunction, AuthenticationError } from "../function";
 import { WebsocketConnection } from "../websocket";
 
 /**
@@ -24,10 +24,16 @@ export class FileProvider extends AuthableDecorableFunction {
    * @param conn - empty (unused)
    * @param message - error message
    */
-  protected sendError(conn: WebsocketConnection, message: string): void {
-    throw Error(
-      "Error while running FileProvider (" + this.label + "): " + message
-    );
+  protected sendError(
+    conn: WebsocketConnection,
+    message: string | AuthenticationError,
+    authError?: boolean
+  ): void {
+    if (!authError) {
+      throw Error(
+        "Error while running FileProvider (" + this.label + "): " + message
+      );
+    }
   }
 
   private decoratorConfigReference: ContentProviderDecoratorConfig;

@@ -99,20 +99,26 @@ export class HttpServer {
           }
         })
         .catch((err: any) => {
-          if (err.BAD_REQUEST) {
-            res.end(400);
-          } else if (err.UNAUTHORIZED) {
-            res.end(401);
-          } else if (err.FORBIDDEN) {
-            res.end(403);
-          } else if (err.NOTFOUND) {
-            res.end(404);
-          } else {
-            res.end(500);
+          const status = this.getErrorCode(err);
+          res.end(status);
+          if (status == 500) {
             throw Error(err);
           }
         });
     };
+  }
+
+  private getErrorCode(err: any): number {
+    if (err.BAD_REQUEST) {
+      return 400;
+    } else if (err.UNAUTHORIZED) {
+      return 401;
+    } else if (err.FORBIDDEN) {
+      return 403;
+    } else if (err.NOTFOUND) {
+      return 404;
+    }
+    return 500;
   }
 
   /**
@@ -223,7 +229,7 @@ export class HttpServer {
   }
 
   private initializeFileProvider() {
-    const sendFile = this.sendFile;
+    const sendFile = this.sendFile.bind(this);
     const t = this;
     HttpServer.fileProvider.forEach(function provideFileForEach(provider) {
       provider.loadDecoratorConfig();
@@ -323,7 +329,11 @@ export class HttpServer {
       });
       res.end(data.data);
     } catch (e) {
-      res.sendStatus(404);
+      if (e?.isAuthenticationError) {
+        res.sendStatus(401);
+      } else {
+        res.sendStatus(this.getErrorCode(e));
+      }
     }
   }
 

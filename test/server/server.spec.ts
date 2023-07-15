@@ -168,7 +168,7 @@ it("should send a ping message to the client every 45 seconds", async () => {
   client.close();
 });
 
-it("should be possible to send an ip to the server (deprecated", async () => {
+it("should be possible to send an ip to the server (deprecated)", async () => {
   const client = new WebsocketClient(9008);
   await client.awaitConnection();
   client.send("___ip", "1.1.1.1");

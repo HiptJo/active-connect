@@ -73,3 +73,8 @@ it("should be possible to get a message that has been sent earlier on (using his
   expect(await conn.expectMethod("m.standalone.route1")).toBe(1);
   expect(await conn.expectMethod("m.standalone.route2")).toBe(2);
 });
+
+it("should be possible to wait 1s", async () => {
+  const conn = WebsocketMocks.getConnectionStub();
+  await conn.timeout(1000);
+});
