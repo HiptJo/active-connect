@@ -5,7 +5,6 @@ import * as fs from "fs-extra";
 import * as http from "http";
 
 import { ProvidedFile } from "../../content/files/provided-file";
-import { ProvidedImage } from "../../content/images/provided-image";
 import { WebsocketServer } from "../websocket/server";
 import { FileProvider } from "./file-provider";
 import { HttpMethod } from "./http-method";
@@ -150,6 +149,7 @@ export class HttpServer {
     const sendFile = this.sendFile;
     const t = this;
     HttpServer.fileProvider.forEach(function provideFileForEach(provider) {
+      provider.loadDecoratorConfig();
       t.app.get(
         `/file/${provider.label}/:id/:auth`,
         async function provideFile(
@@ -197,6 +197,7 @@ export class HttpServer {
     const sendImage = this.sendImage;
     const t = this;
     HttpServer.imageProvider.forEach(function registerImageProvider(provider) {
+      provider.loadDecoratorConfig();
       t.app.get(
         `/image/${provider.label}/:id/:auth`,
         async function provideFile(
@@ -236,7 +237,7 @@ export class HttpServer {
     auth?: string
   ) {
     try {
-      const data: ProvidedFile = await provider.callback(id, auth);
+      const data: ProvidedFile = await provider.Func(id, auth);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
@@ -253,7 +254,7 @@ export class HttpServer {
     auth?: string
   ) {
     try {
-      const data: ProvidedFile = await provider.callback(id, auth);
+      const data: ProvidedFile = await provider.Func(id, auth);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
@@ -279,19 +280,13 @@ export class HttpServer {
   }
 
   private static fileProvider: Array<FileProvider> = new Array();
-  public static registerFileProvider(
-    label: string,
-    callback: (id: string, auth: string) => Promise<ProvidedFile>
-  ) {
-    HttpServer.fileProvider.push(new FileProvider(label, callback));
+  public static registerFileProvider(fileProvider: FileProvider) {
+    HttpServer.fileProvider.push(fileProvider);
   }
 
   private static imageProvider: Array<ImageProvider> = new Array();
-  public static registerImageProvider(
-    label: string,
-    callback: (id: string, auth: string) => Promise<ProvidedImage>
-  ) {
-    HttpServer.imageProvider.push(new ImageProvider(label, callback));
+  public static registerImageProvider(imageProvider: ImageProvider) {
+    HttpServer.imageProvider.push(imageProvider);
   }
 
   private static getMethods: Array<HttpMethod> = new Array();
