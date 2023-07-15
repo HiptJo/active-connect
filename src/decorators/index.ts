@@ -11,3 +11,6 @@ export * from "./http/post";
 export * from "./http/put";
 export * from "./http/delete";
 export * from "./cron/cron";
+export * from "./config/content-provider-decorator-config";
+export * from "./config/websocket-outbound-decorator-config";
+export * from "./config/websocket-route-decorator-config";
