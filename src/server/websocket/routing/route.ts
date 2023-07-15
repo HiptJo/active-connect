@@ -4,6 +4,7 @@ import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
 import { AuthableDecorableFunction } from "./function";
 import { WebsocketOutbounds } from "./outbound";
+import { WebsocketRouter } from "./router";
 
 const ERROR = "__active-connect_error__";
 
@@ -80,7 +81,20 @@ export class WebsocketRoute extends AuthableDecorableFunction {
    * @param child - The child route to add.
    */
   public addChild(child: WebsocketRoute) {
+    this.checkForDuplicateChild(child);
     this.children.push(child);
+  }
+
+  private checkForDuplicateChild(child: WebsocketRoute) {
+    if (this.children.filter((c) => c.Method == child.method).length > 0) {
+      throw Error(
+        "ActiveConnect: Two routes have been registered using the same method (" +
+          this.method +
+          "." +
+          child.Method +
+          ")"
+      );
+    }
   }
 
   /**
@@ -231,6 +245,24 @@ export class WebsocketRoute extends AuthableDecorableFunction {
         child.loadDecoratorConfig();
       }
     }
+  }
+
+  public checkForDuplicates(method?: string) {
+    const concatMethod = method ? method + "." + this.method : this.method;
+    let error = false;
+    try {
+      error = WebsocketRouter.getRouteByMethod(concatMethod) ? true : false;
+    } catch {}
+
+    if (error) {
+      throw Error(
+        "ActiveConnect: Two routes have been registered using the same method (" +
+          concatMethod +
+          ")"
+      );
+    }
+
+    this.children.forEach((c) => c.checkForDuplicates(concatMethod));
   }
 }
 
