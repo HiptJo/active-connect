@@ -3,8 +3,8 @@ import { GET, HttpServer } from "../../../src/active-connect";
 import { Response, Request } from "express";
 
 let server: HttpServer;
-afterEach(() => {
-  server.stop();
+afterEach(async () => {
+  await server.stop();
 });
 it("should be possible to register a get method", async () => {
   class Testing {

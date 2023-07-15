@@ -3,8 +3,8 @@ import { HttpServer, ProvideFile } from "../../../src/active-connect";
 import { ProvidedFile } from "../../../src/content/files/provided-file";
 
 let server: HttpServer;
-afterEach(() => {
-  server.stop();
+afterEach(async () => {
+  await server.stop();
 });
 it("should be possible to register a file provider", async () => {
   class Testing {

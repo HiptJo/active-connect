@@ -314,7 +314,12 @@ export class HttpServer {
   }
 
   public stop() {
-    this.server.close();
-    if (this.supportWebsocket) this.websocket.close();
+    return new Promise<void>(async (resolve, reject) => {
+      this.server.close((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      if (this.supportWebsocket) this.websocket.close();
+    }).then();
   }
 }

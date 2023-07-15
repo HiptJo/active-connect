@@ -7,20 +7,20 @@ describe("server creation", () => {
     const server = new HttpServer(9003, false);
 
     assert.strictEqual(await server.awaitStart(), true);
-    server.stop();
+    await server.stop();
   });
   it("should return true once awaitStart() is awaited when the server is already running", async () => {
     const server = new HttpServer(9004, false);
     await server.awaitStart();
     assert.strictEqual(await server.awaitStart(), true);
-    server.stop();
+    await server.stop();
   });
 });
 
 describe("angular asset serving", () => {
   let server: HttpServer;
-  afterEach(() => {
-    server.stop();
+  afterEach(async () => {
+    await server.stop();
   });
   it("should be possible to setup angular file serving", async () => {
     server = new HttpServer(9005, false);
@@ -50,8 +50,8 @@ describe("angular asset serving", () => {
 
 describe("basic auth", () => {
   let server: HttpServer;
-  afterEach(() => {
-    server.stop();
+  afterEach(async () => {
+    await server.stop();
   });
 
   it("should be possible to authenticate http requests", async () => {

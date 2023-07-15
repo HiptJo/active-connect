@@ -5,8 +5,8 @@ import { ProvidedFile } from "../../../src/content/files/provided-file";
 import { ProvidedImage } from "../../../src/content/images/provided-image";
 
 let server: HttpServer;
-afterEach(() => {
-  server.stop();
+afterEach(async () => {
+  await server.stop();
 });
 it("should be possible to register a file provider", async () => {
   class Testing {

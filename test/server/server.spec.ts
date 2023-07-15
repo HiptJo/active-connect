@@ -16,8 +16,8 @@ beforeAll(async () => {
   server = new HttpServer(9008, true);
   await server.awaitStart();
 });
-afterAll(() => {
-  server.stop();
+afterAll(async () => {
+  await server.stop();
 });
 
 it("should be possible to fetch the client information of a connection", async () => {
@@ -45,6 +45,7 @@ it("should be possible to fetch the client information of a connection", async (
     ip: string;
     browser: string | undefined;
   };
+  client.close();
   expect(data.ip).toBeDefined();
   expect(data.browser).toBeDefined();
   expect(data.browser).toBe("SampleLabel");
@@ -125,6 +126,7 @@ describe("websocket client ip access", () => {
     client.send("location.test", "null");
     const location = await client.awaitMessage("m.location.test");
     expect(location).toBeDefined();
+    client.close();
   });
 });
 
@@ -134,6 +136,7 @@ it("should be possible to access all connected clients", async () => {
   const connections = server.getWebsocketInstance().getConnections();
   expect(connections).toBeDefined();
   expect(connections.length).toBeGreaterThanOrEqual(1);
+  client.close();
 });
 
 it("should invoke methods decorated with @OnWebsocketConnectionClosed after closing the websocket connection (multiple decorators should be supported)", (done) => {
@@ -162,6 +165,7 @@ it("should send a ping message to the client every 45 seconds", async () => {
   const client = new WebsocketClient(9008);
   await client.awaitConnection();
   await client.awaitPing();
+  client.close();
 });
 
 it("should be possible to send an ip to the server (deprecated", async () => {
@@ -169,4 +173,5 @@ it("should be possible to send an ip to the server (deprecated", async () => {
   await client.awaitConnection();
   client.send("___ip", "1.1.1.1");
   await client.awaitMessage("m.___ip");
+  client.close();
 });

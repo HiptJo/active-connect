@@ -16,8 +16,8 @@ beforeEach(async () => {
   client = new WebsocketClient(9001);
   assert.strictEqual(await client.awaitConnection(), true);
 });
-afterEach(() => {
-  server.stop();
+afterEach(async () => {
+  if (server) await server.stop();
 });
 
 describe("test connection event handling", () => {
@@ -41,9 +41,6 @@ describe("test connection event handling", () => {
     expect(data).toStrictEqual({
       value: "connection established successfully",
     });
-  });
-
-  it("should be possible to close the connection", () => {
     client.close();
   });
 });

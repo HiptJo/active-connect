@@ -20,8 +20,8 @@ describe("server creation", () => {
   beforeEach(() => {
     server = new HttpServer(9002, true);
   });
-  afterEach(() => {
-    server.stop();
+  afterEach(async () => {
+    await server.stop();
   });
   it("should be possible to create a server with websocket support", async () => {
     assert.strictEqual(await server.awaitStart(), true);
