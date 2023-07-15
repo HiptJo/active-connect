@@ -103,8 +103,7 @@ describe("standalone routes", () => {
   }
 
   const router = new WebsocketRouter();
-  var conn = WebsocketMocks.getConnectionStub();
-  beforeEach(() => {
+  beforeAll(() => {
     const f = new StandaloneWebsocketRoute("stand.f", {
       target: target.prototype,
       propertyKey: "f",
@@ -120,8 +119,6 @@ describe("standalone routes", () => {
     WebsocketRouter.registerStandaloneRoute(f);
     WebsocketRouter.registerStandaloneRoute(c);
     WebsocketRouter.registerStandaloneRoute(increase);
-
-    conn = WebsocketMocks.getConnectionStub();
   });
 
   it("should have registered the required routes", () => {
@@ -129,6 +126,7 @@ describe("standalone routes", () => {
   });
 
   it("should be possible to register a route", async () => {
+    var conn = WebsocketMocks.getConnectionStub();
     expect(
       router.route(new WebsocketRequest("stand.f", original, conn))
     ).toBeTruthy();
@@ -136,6 +134,7 @@ describe("standalone routes", () => {
   });
 
   it("should be possible to route to a child", async () => {
+    var conn = WebsocketMocks.getConnectionStub();
     expect(
       router.route(new WebsocketRequest("stand.c", original, conn))
     ).toBeTruthy();
@@ -143,6 +142,7 @@ describe("standalone routes", () => {
   });
 
   it("should be possible to call a route with data", async () => {
+    var conn = WebsocketMocks.getConnectionStub();
     expect(
       router.route(new WebsocketRequest("stand.increase", 5, conn))
     ).toBeTruthy();
