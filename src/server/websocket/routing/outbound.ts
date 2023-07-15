@@ -132,9 +132,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       }
     } catch (e) {
       if (!e?.isAuthenticationError) {
-        console.error(e);
+        if (!e.SILENT) console.error(e);
         conn.send("m.error", e?.message || e);
-      } else if (this.lazyLoading) {
+      } else if (this.lazyLoading || e.SILENT) {
         conn.send("m.error", e?.message || e);
       }
     }

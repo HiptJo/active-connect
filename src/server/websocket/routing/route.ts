@@ -168,7 +168,7 @@ export class WebsocketRoute extends AuthableDecorableFunction {
         return data;
       } catch (e) {
         if (!e?.isAuthenticationError) {
-          console.error(e);
+          if (!e.SILENT) console.error(e);
           request.connection.send("m.error", e?.message || e);
         }
         return ERROR;
