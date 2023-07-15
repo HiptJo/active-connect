@@ -9,11 +9,6 @@ const cron = require("node-cron");
  * @returns - The decorator function.
  */
 export function Cron(crontab: string) {
-  /**
-   * Decorator function to bind a cron task to the target method.
-   * @param target - The target object.
-   * @param propertyKey - The property key of the target method.
-   */
   return function _Cron(target: any, propertyKey: string) {
     const obj = new DecorableFunction({ target, propertyKey });
     cron.schedule(crontab, () => {

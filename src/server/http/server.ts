@@ -11,14 +11,19 @@ import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
 import { HttpResponse } from "./http-response";
 
+/**
+ * Represents an HTTP server.
+ */
 export class HttpServer {
   private app: express.Application;
-  get App(): express.Application {
-    return this.app;
-  }
   private server: http.Server;
   private websocket: WebsocketServer;
 
+  /**
+   * Creates a new instance of the `HttpServer` class.
+   * @param port - The port number for the server to listen on.
+   * @param supportWebsocket - Determines whether to support WebSocket connections.
+   */
   constructor(private port: number, private supportWebsocket: boolean) {
     this.initializeServer();
 
@@ -34,7 +39,16 @@ export class HttpServer {
     this.initializeImageProvider();
   }
 
+  /**
+   * Gets the underlying Express application instance.
+   * @returns The Express application instance.
+   */
+  get App(): express.Application {
+    return this.app;
+  }
+
   private isServerStarted: boolean = false;
+
   private initializeServer() {
     this.app = express();
     this.app.use(bodyParser.urlencoded({ extended: true }));
@@ -99,11 +113,19 @@ export class HttpServer {
     };
   }
 
+  /**
+   * Enables logging for WebSocket connections.
+   */
   public enableLogging() {
     this.websocket.enableLogging();
   }
 
   private indexCache: Buffer | undefined;
+
+  /**
+   * Sets up file serving for an Angular application.
+   * @param path - The path to the Angular application build files.
+   */
   public setupAngularFileServing(path: string) {
     this.setupAssetFileServing(path);
     const t = this;
@@ -135,12 +157,21 @@ export class HttpServer {
       }
     );
   }
+
+  /**
+   * Sets up file serving for static assets.
+   * @param path - The path to the directory containing the static assets.
+   */
   public setupAssetFileServing(path: string) {
     this.app.use(express.static(path));
   }
 
   private basicAuthenticationEnabled = false;
   private credentials: Array<{ user: string; password: string }> = new Array();
+
+  /**
+   * Enables basic authentication for requests.
+   */
   public enableBasicAuthentication() {
     if (!this.basicAuthenticationEnabled) {
       const t = this;
@@ -179,6 +210,12 @@ export class HttpServer {
       });
     }
   }
+
+  /**
+   * Adds credentials for basic authentication.
+   * @param user - The username.
+   * @param password - The password.
+   */
   public addBasicCredentials(user: string, password: string) {
     this.credentials.push({ user: user, password: password });
   }
@@ -231,6 +268,7 @@ export class HttpServer {
       );
     });
   }
+
   private initializeImageProvider() {
     const sendImage = this.sendImage;
     const t = this;
@@ -268,6 +306,7 @@ export class HttpServer {
       );
     });
   }
+
   private async sendFile(
     res: express.Response,
     provider: FileProvider,
@@ -285,6 +324,7 @@ export class HttpServer {
       res.sendStatus(404);
     }
   }
+
   private async sendImage(
     res: express.Response,
     provider: ImageProvider,
@@ -304,11 +344,17 @@ export class HttpServer {
   }
 
   private serverStartedResolves: Array<Function> = [];
+
   private serverStarted() {
     this.serverStartedResolves.forEach(function resolveServerStarted(r) {
       r(true);
     });
   }
+
+  /**
+   * Waits for the server to start listening for requests.
+   * @returns A promise that resolves when the server has started.
+   */
   public async awaitStart(): Promise<boolean> {
     if (this.isServerStarted) return true;
     const t = this;
@@ -318,41 +364,78 @@ export class HttpServer {
   }
 
   private static fileProvider: Array<FileProvider> = new Array();
+
+  /**
+   * Registers a file provider.
+   * @param fileProvider - The file provider to register.
+   */
   public static registerFileProvider(fileProvider: FileProvider) {
     HttpServer.fileProvider.push(fileProvider);
   }
 
   private static imageProvider: Array<ImageProvider> = new Array();
+
+  /**
+   * Registers an image provider.
+   * @param imageProvider - The image provider to register.
+   */
   public static registerImageProvider(imageProvider: ImageProvider) {
     HttpServer.imageProvider.push(imageProvider);
   }
 
   private static getMethods: Array<HttpMethod> = new Array();
+
+  /**
+   * Registers a GET method.
+   * @param config - The configuration for the GET method.
+   */
   public static registerGet(config: HttpMethod) {
     HttpServer.getMethods.push(config);
   }
+
   private static postMethods: Array<HttpMethod> = new Array();
+
+  /**
+   * Registers a POST method.
+   * @param config - The configuration for the POST method.
+   */
   public static registerPost(config: HttpMethod) {
     HttpServer.postMethods.push(config);
   }
+
   private static putMethods: Array<HttpMethod> = new Array();
+
+  /**
+   * Registers a PUT method.
+   * @param config - The configuration for the PUT method.
+   */
   public static registerPut(config: HttpMethod) {
     HttpServer.putMethods.push(config);
   }
+
   private static deleteMethods: Array<HttpMethod> = new Array();
+
+  /**
+   * Registers a DELETE method.
+   * @param config - The configuration for the DELETE method.
+   */
   public static registerDelete(config: HttpMethod) {
     HttpServer.deleteMethods.push(config);
   }
 
+  /**
+   * Gets the WebsocketServer instance associated with the HTTP server.
+   * @returns The WebsocketServer instance, or `null` if WebSocket support is not enabled.
+   */
   public getWebsocketInstance(): WebsocketServer | null {
     return this.websocket;
   }
 
   /**
-   * Stops the server from accepting new connections and keeps existing
-   * connections. This function is asynchronous, the server is finally closed
-   * when all connections are ended and the server emits a `'close'` event.
-   * @returns a promise that is resolved once all connections are closed
+   * Stops the server from accepting new connections and keeps existing connections.
+   * This function is asynchronous, and the server is finally closed when all connections are ended
+   * and the server emits a `'close'` event.
+   * @returns A promise that is resolved once all connections are closed.
    */
   public stop() {
     return new Promise<void>(async (resolve, reject) => {

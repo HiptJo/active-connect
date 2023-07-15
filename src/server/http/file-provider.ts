@@ -2,7 +2,15 @@ import { ContentProviderDecoratorConfig } from "../../decorators/config/content-
 import { AuthableDecorableFunction } from "../function";
 import { WebsocketConnection } from "../websocket";
 
+/**
+ * Represents a file provider for serving files.
+ */
 export class FileProvider extends AuthableDecorableFunction {
+  /**
+   * Creates a new instance of the `FileProvider` class.
+   * @param label - The label of the file provider.
+   * @param objConfig - The configuration object containing the target and property key.
+   */
   constructor(
     public label: string,
     objConfig: { target: any; propertyKey: string }
@@ -10,7 +18,17 @@ export class FileProvider extends AuthableDecorableFunction {
     super(objConfig);
   }
 
-  protected sendError(conn: WebsocketConnection, message: string): void {}
+  /**
+   * Handles errors during the process
+   *
+   * @param conn - empty (unused)
+   * @param message - error message
+   */
+  protected sendError(conn: WebsocketConnection, message: string): void {
+    throw Error(
+      "Error while running FileProvider (" + this.label + "): " + message
+    );
+  }
 
   private decoratorConfigReference: ContentProviderDecoratorConfig;
 

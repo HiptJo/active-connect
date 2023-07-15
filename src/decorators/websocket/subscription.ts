@@ -24,6 +24,7 @@ export function Subscribe(target: any, propertyKey: string) {
   config.enableSubscription();
 }
 /**
+ * @decorator
  * @deprecated
  */
 export function SubscribeChanges(target: any, propertyKey: string) {
@@ -56,6 +57,7 @@ export function SubscribeFor(filter: MessageFilter) {
   };
 }
 /**
+ * @decorator
  * @deprecated
  */
 export function SubscribeMatchingChanges(filter: MessageFilter) {
@@ -128,6 +130,7 @@ export function ModifiesFor(filter: MessageFilter, ...routes: string[]) {
   };
 }
 /**
+ * @decorator
  * @deprecated
  */
 export function ModifiesMatching(filter: MessageFilter, ...routes: string[]) {

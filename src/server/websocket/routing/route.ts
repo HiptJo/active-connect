@@ -247,6 +247,10 @@ export class WebsocketRoute extends AuthableDecorableFunction {
     }
   }
 
+  /**
+   * Checks for duplicate routes with the same method.
+   * @param method - The method name to check.
+   */
   public checkForDuplicates(method?: string) {
     const concatMethod = method ? method + "." + this.method : this.method;
     let error = false;

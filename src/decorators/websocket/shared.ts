@@ -1,4 +1,5 @@
 /**
+ * @decorator
  * @deprecated
  */
 export function Shared<T>(defaultValue?: T) {
