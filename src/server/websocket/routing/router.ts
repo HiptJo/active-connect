@@ -12,7 +12,20 @@ export class WebsocketRouter {
    * Register a standalone route.
    * @param route - The standalone websocket route to register.
    */
-  public static registerStandaloneRoute(route: WebsocketRoute) {
+  public static registerStandaloneRoute(route: StandaloneWebsocketRoute) {
+    let error = false;
+    try {
+      error = WebsocketRouter.getRouteByMethod(route.Method) ? true : false;
+    } catch {
+      // expect to get an error here, as the route must not exist before it is registered
+    }
+    if (error) {
+      throw Error(
+        "ActiveConnect: Two routes have been registered using the same method (" +
+          route.Method +
+          ")"
+      );
+    }
     WebsocketRouter.standaloneRoutes.push(route);
   }
 
@@ -20,8 +33,35 @@ export class WebsocketRouter {
    * Register a route.
    * @param route - The websocket route to register.
    */
-  public static registerRoute(route: StandaloneWebsocketRoute) {
+  public static registerRoute(route: WebsocketRoute) {
+    route.checkForDuplicates();
     WebsocketRouter.routes.push(route);
+  }
+
+  public static removeRouteIfExists(method: string) {
+    WebsocketRouter.standaloneRoutes = WebsocketRouter.standaloneRoutes.filter(
+      (r) => method != r.Method
+    );
+
+    var routes = WebsocketRouter.routes;
+    var selectedRoute: WebsocketRoute = null;
+    var parent: WebsocketRoute | null = null;
+    var parts = method.split(".");
+    parts.forEach((part) => {
+      parent = selectedRoute;
+      var res = routes.filter((r) => r.Method == part);
+      if (res.length > 0) {
+        selectedRoute = res[0];
+        routes = selectedRoute.Children;
+      } else {
+        throw Error(
+          `Websocket Routing: Could not find route by method "${method}"`
+        );
+      }
+    });
+    if (parent && selectedRoute) {
+      parent.Children.splice(parent.Children.indexOf(selectedRoute));
+    }
   }
 
   /**
@@ -86,10 +126,10 @@ export class WebsocketRouter {
    * Iterates through each route and invokes the `loadDecoratorConfig` method to load the configuration.
    */
   public static loadDecoratorConfig() {
-    for (var route of this.routes) {
+    for (var route of WebsocketRouter.routes) {
       route.loadDecoratorConfig();
     }
-    for (var route of this.standaloneRoutes) {
+    for (var route of WebsocketRouter.standaloneRoutes) {
       route.loadDecoratorConfig();
     }
   }
