@@ -7,7 +7,7 @@ import {
   WebsocketRouter,
   WebsocketServer,
 } from "../../src/active-connect";
-import { WebsocketClient } from "./websocket-client";
+import { WebsocketClient } from "../../src/integration-testing/connections/websocket-client";
 import * as Randomstring from "randomstring";
 
 let server: HttpServer;

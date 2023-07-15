@@ -6,7 +6,7 @@ import {
   WebsocketRouter,
 } from "../../../src/active-connect";
 import * as assert from "assert";
-import { WebsocketClient } from "../websocket-client";
+import { WebsocketClient } from "../../../src/integration-testing/connections/websocket-client";
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => {

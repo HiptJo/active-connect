@@ -1,5 +1,5 @@
 import * as ws from "ws";
-import { JsonParser } from "../../src/json/json-parser";
+import { JsonParser } from "../../json/json-parser";
 
 export class WebsocketClient {
   private connection: ws;
@@ -36,13 +36,7 @@ export class WebsocketClient {
   private expectedMessages: Map<string, Function> = new Map();
   awaitMessage<T>(method: string): Promise<T> {
     return new Promise((resolve) => {
-      if (this.messageHistory.has(method)) {
-        const historyElement = this.messageHistory.get(method);
-        this.messageHistory.delete(method);
-        resolve(historyElement);
-      } else {
-        this.expectedMessages.set(method, resolve);
-      }
+      this.expectedMessages.set(method, resolve);
     });
   }
 

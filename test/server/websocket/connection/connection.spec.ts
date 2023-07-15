@@ -6,7 +6,7 @@ import {
   WebsocketRouter,
 } from "../../../../src/active-connect";
 import { WebsocketConnection } from "../../../../src/server/websocket/connection/connection";
-import { WebsocketClient } from "../../websocket-client";
+import { WebsocketClient } from "../../../../src/integration-testing/connections/websocket-client";
 
 let client: WebsocketClient;
 let server: HttpServer;
