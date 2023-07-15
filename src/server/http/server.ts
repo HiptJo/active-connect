@@ -313,6 +313,12 @@ export class HttpServer {
     return this.websocket;
   }
 
+  /**
+   * Stops the server from accepting new connections and keeps existing
+   * connections. This function is asynchronous, the server is finally closed
+   * when all connections are ended and the server emits a `'close'` event.
+   * @returns a promise that is resolved once all connections are closed
+   */
   public stop() {
     return new Promise<void>(async (resolve, reject) => {
       this.server.close((err) => {
