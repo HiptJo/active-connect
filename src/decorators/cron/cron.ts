@@ -1,3 +1,5 @@
+import { DecorableFunction } from "../../server";
+
 const cron = require("node-cron");
 
 /**
@@ -13,6 +15,9 @@ export function Cron(crontab: string) {
    * @param propertyKey - The property key of the target method.
    */
   return function _Cron(target: any, propertyKey: string) {
-    cron.schedule(crontab, target[propertyKey].bind(target.___data));
+    const obj = new DecorableFunction({ target, propertyKey });
+    cron.schedule(crontab, () => {
+      obj.Func().then();
+    });
   };
 }
