@@ -2,7 +2,7 @@ import { WebsocketRouteDecoratorConfig } from "../../../decorators/config/websoc
 import { MessageFilter } from "../auth/authenticator";
 import { WebsocketConnection } from "../connection/connection";
 import { WebsocketRequest } from "../message/request";
-import { AuthableDecorableFunction } from "./function";
+import { AuthableDecorableFunction } from "../../function";
 import { WebsocketOutbounds } from "./outbound";
 import { WebsocketRouter } from "./router";
 

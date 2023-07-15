@@ -5,7 +5,7 @@ import { WebsocketRequest } from "../message/request";
 import { WebsocketOutbounds } from "../routing/outbound";
 import { WebsocketRouter } from "../routing/router";
 import { WebsocketServer } from "../server";
-import { DecorableFunction } from "../routing/function";
+import { DecorableFunction } from "../../function";
 
 /**
  * Represents a WebSocket connection.
