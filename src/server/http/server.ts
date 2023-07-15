@@ -9,6 +9,7 @@ import { WebsocketServer } from "../websocket/server";
 import { FileProvider } from "./file-provider";
 import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
+import { HttpResponse } from "./http-response";
 
 export class HttpServer {
   private app: express.Application;
@@ -54,17 +55,48 @@ export class HttpServer {
   private initializeHttpMethods() {
     const t = this;
     HttpServer.getMethods.forEach(function registerGetMethod(get) {
-      t.app.get(get.method, get.Func);
+      t.app.get(get.method, t.handleRequest(get));
     });
     HttpServer.postMethods.forEach(function registerPostMethod(post) {
-      t.app.post(post.method, post.Func);
+      t.app.post(post.method, t.handleRequest(post));
     });
     HttpServer.putMethods.forEach(function registerPutMethod(put) {
-      t.app.put(put.method, put.Func);
+      t.app.put(put.method, t.handleRequest(put));
     });
     HttpServer.deleteMethods.forEach(function registerDeleteMethod(del) {
-      t.app.delete(del.method, del.Func);
+      t.app.delete(del.method, t.handleRequest(del));
     });
+  }
+
+  private handleRequest(method: HttpMethod): express.RequestHandler {
+    return (req: express.Request, res: express.Response, next: Function) => {
+      method
+        .Func(req, res)
+        .then(function requestCompleted(response: HttpResponse) {
+          if (response.contentType) {
+            res.writeHead(response.status || 500, {
+              "Content-Type": response.contentType,
+            });
+          } else {
+            res.writeHead(response.status || 500);
+          }
+          res.end(response.content, response.contentEncoding);
+        })
+        .catch((err: any) => {
+          if (err.BAD_REQUEST) {
+            res.end(400);
+          } else if (err.UNAUTHORIZED) {
+            res.end(401);
+          } else if (err.FORBIDDEN) {
+            res.end(403);
+          } else if (err.NOTFOUND) {
+            res.end(404);
+          } else {
+            res.end(500);
+            throw Error(err);
+          }
+        });
+    };
   }
 
   public enableLogging() {

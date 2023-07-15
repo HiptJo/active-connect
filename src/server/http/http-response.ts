@@ -1,2 +1,6 @@
-import { Response } from "express";
-export interface HttpResponse extends Response {}
+export interface HttpResponse {
+  content: any;
+  contentType: string | null | undefined;
+  status: number;
+  contentEncoding: "binary" | "base64" | null | undefined;
+}
