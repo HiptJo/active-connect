@@ -1,4 +1,4 @@
-import { StandaloneRoute } from "../../../src";
+import { ActiveConnect, StandaloneRoute } from "../../../src";
 import { TCWrapper } from "../../../src/integration-testing/";
 
 describe("onError handling", () => {
@@ -109,6 +109,7 @@ describe("message timeout", () => {
 
 describe("message timeout", () => {
   it("should raise an error when a message is not received for 3000ms", async () => {
+    ActiveConnect.setTimeout(3000);
     class Testing {
       @StandaloneRoute("noresolve")
       nonResolvingMethod() {
