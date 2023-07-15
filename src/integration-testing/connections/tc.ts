@@ -91,7 +91,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
         if (this.stack.includes(stackObject)) {
           reject(
             "ActiveConnect: Message was not received within the timeout inverval of " +
-              ActiveConnect.getTimeout() +
+              (timeout || ActiveConnect.getTimeout()) +
               "ms: " +
               method
           );
