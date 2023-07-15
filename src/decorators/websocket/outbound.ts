@@ -5,7 +5,6 @@ import {
 import { WebsocketOutboundDecoratorConfig } from "../config/websocket-outbound-decorator-config";
 
 /**
- * @decorator
  * Outbound decorator for WebSocket outbound messages.
  * This annotation can be used for methods only.
  *
@@ -60,7 +59,6 @@ export function Outbound(
 }
 
 /**
- * @decorator
  * Annotates that the outbound should be lazy-loaded by clients.
  *
  * @example Method annotation for outbound:

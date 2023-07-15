@@ -3,8 +3,8 @@ import { DecorableFunction } from "../../server";
 const cron = require("node-cron");
 
 /**
- * @decorator
  * Creates a decorator @Cron("...") to create a cron task.
+ *
  * @param crontab - The cron schedule in string format.
  * @returns - The decorator function.
  */

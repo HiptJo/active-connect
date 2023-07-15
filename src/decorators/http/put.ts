@@ -2,7 +2,6 @@ import { HttpMethod } from "../../server";
 import { HttpServer } from "../../server/http/server";
 
 /**
- * @decorator
  * Decorator that registers a PUT method on the HTTP server.
  *
  * @param path - The path for the PUT method.

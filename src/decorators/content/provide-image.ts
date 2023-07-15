@@ -3,14 +3,13 @@ import { HttpServer } from "../../server/http/server";
 import { ContentProviderDecoratorConfig } from "../config/content-provider-decorator-config";
 
 /**
- * @decorator
  * Decorator that marks a method as an image provider.
  * The method will be called when a request is made to retrieve an image.
  *
- * @param {string} accessor - The accessor for the image provider.
- *
  * Supported Decorators:
  * - `@Auth`
+ *
+ * @param {string} accessor - The accessor for the image provider.
  *
  * @example
  * The following code initializes the image provider.
