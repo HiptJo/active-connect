@@ -17,18 +17,23 @@ function delay(ms: number): Promise<void> {
 describe("server creation", () => {
   let server: HttpServer;
 
-  beforeEach(() => {
+  beforeAll(() => {
     server = new HttpServer(9002, true);
   });
-  afterEach(async () => {
-    await server.stop();
+  afterAll(async () => {
+    if (server) {
+      await server.awaitStart();
+      await server.stop();
+    }
   });
   it("should be possible to create a server with websocket support", async () => {
     assert.strictEqual(await server.awaitStart(), true);
   });
   it("should be possible to connect to websocket", async () => {
     assert.strictEqual(await server.awaitStart(), true);
-    assert.strictEqual(await new WebsocketClient(9002).awaitConnection(), true);
+    const client = new WebsocketClient(9002);
+    assert.strictEqual(await client.awaitConnection(), true);
+    client.close();
   });
 
   it("should be possible to receive messages", async () => {
@@ -52,6 +57,7 @@ describe("server creation", () => {
 
     const msg = await client.awaitMessage("await.message");
     expect(msg).toBe("hellomsg");
+    client.close();
   });
 
   it("should be possible to get false", async () => {
@@ -76,6 +82,7 @@ describe("server creation", () => {
     client.send("falseval.awaitfalse", null);
     const msg = await client.awaitMessage("m.falseval.awaitfalse");
     expect(msg).toBe(false);
+    client.close();
   });
 
   it("should be possible to close a websocket client", async () => {
@@ -113,7 +120,7 @@ describe("server creation", () => {
         return "hellomsg".repeat(10000);
       }
     }
-    const out = new WebsocketOutbound("await.message1", {
+    const out = new WebsocketOutbound("await.message2", {
       target: Testing.prototype,
       propertyKey: "message",
     });
@@ -124,7 +131,7 @@ describe("server creation", () => {
     const client = new WebsocketClient(9002);
     assert.strictEqual(await client.awaitConnection(), true);
 
-    const msg = await client.awaitMessage("await.message1");
+    const msg = await client.awaitMessage("await.message2");
     expect(msg).toBe("hellomsg".repeat(10000));
     client.close();
   });
