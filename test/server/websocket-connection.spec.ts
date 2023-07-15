@@ -52,3 +52,24 @@ it("should raise an error when a message without message-id is received", async 
     ((await conn.expectMethod("m.error")) as string).includes("no messageId")
   );
 });
+
+it("should be possible to get a message that has been sent earlier on (using history)", async () => {
+  class Testing {
+    @StandaloneRoute("standalone.route1")
+    route1() {
+      return 1;
+    }
+
+    @StandaloneRoute("standalone.route2")
+    route2() {
+      return 2;
+    }
+  }
+  expect(Testing).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+  conn.runRequest("standalone.route1", null);
+  conn.runRequest("standalone.route2", null);
+  expect(await conn.expectMethod("m.standalone.route1")).toBe(1);
+  expect(await conn.expectMethod("m.standalone.route2")).toBe(2);
+});
