@@ -10,6 +10,7 @@ import { FileProvider } from "./file-provider";
 import { HttpMethod } from "./http-method";
 import { ImageProvider } from "./image-provider";
 import { HttpResponse } from "./http-response";
+import { ProvidedImage } from "../../content";
 
 /**
  * Represents an HTTP server.
@@ -278,7 +279,7 @@ export class HttpServer {
   }
 
   private initializeImageProvider() {
-    const sendImage = this.sendImage;
+    const sendImage = this.sendImage.bind(this);
     const t = this;
     HttpServer.imageProvider.forEach(function registerImageProvider(provider) {
       provider.loadDecoratorConfig();
@@ -344,14 +345,18 @@ export class HttpServer {
     auth?: string
   ) {
     try {
-      const data: ProvidedFile = await provider.Func(id, auth);
+      const data: ProvidedImage = await provider.Func(id, auth);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
       });
       res.end(data.data, "base64");
     } catch (e) {
-      res.sendStatus(404);
+      if (e?.isAuthenticationError) {
+        res.sendStatus(401);
+      } else {
+        res.sendStatus(this.getErrorCode(e));
+      }
     }
   }
 
