@@ -120,7 +120,7 @@ describe("message timeout", () => {
     conn.send("noresolve", null);
 
     await expect(conn.expectMethod("m.noresolve")).rejects.toBe(
-      "ActiveConnect: Message was not received within the timout inverval of 3000ms: m.noresolve"
+      "ActiveConnect: Message was not received within the timeout inverval of 3000ms: m.noresolve"
     );
   });
 });
