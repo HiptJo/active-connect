@@ -101,7 +101,8 @@ export class HttpServer {
         })
         .catch((err: any) => {
           const status = this.getErrorCode(err);
-          res.end(status);
+          res.status(status);
+          res.end("");
           if (status == 500) {
             throw Error(err);
           }
