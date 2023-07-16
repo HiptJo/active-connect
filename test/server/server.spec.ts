@@ -9,6 +9,7 @@ import {
 } from "../../src/active-connect";
 import { WebsocketClient } from "../../src/integration-testing/connections/websocket-client";
 import * as Randomstring from "randomstring";
+import * as test from "supertest";
 
 let server: HttpServer;
 
@@ -20,6 +21,14 @@ afterAll(async () => {
   await server.stop();
 });
 
+it("should be possible to access the websocket entrypoint GET /wss", async () => {
+  await test(server.App)
+    .get("/wss")
+    .then((response) => {
+      expect(response.status).toBe(200);
+      expect(response.text).toBe("wss entrypoint");
+    });
+});
 it("should be possible to fetch the client information of a connection", async () => {
   class Testing {
     async route(data: any, conn: WebsocketConnection) {
