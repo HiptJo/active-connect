@@ -1,5 +1,5 @@
 import { ActiveConnect, StandaloneRoute } from "../../../src";
-import { TCWrapper } from "../../../src/integration-testing/";
+import { TCWrapper } from "../../../src/integration-testing";
 
 describe("onError handling", () => {
   it("should trigger onError", (d) => {
