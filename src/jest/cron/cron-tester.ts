@@ -30,9 +30,11 @@ export class CronTester {
         "The cron-tester was not initialized. Please call CronTester.init() before running tests."
       );
     }
-    expect(
-      CronTester.jobs.filter((j) => j.crontab == crontab).length
-    ).toBeGreaterThan(0);
+
+    if (CronTester.jobs.filter((j) => j.crontab == crontab).length == 0) {
+      throw Error("Cronjob was not found");
+    }
+
     return new Promise(async (resolve) => {
       const value = await CronTester.jobs
         .filter((j) => j.crontab == crontab)[0]
