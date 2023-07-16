@@ -39,6 +39,52 @@ it("should be possible to register a file provider", async () => {
     });
 });
 
+it("should be possible to register a file provider with id value", async () => {
+  class Testing {
+    @ProvideFile("samplefile1")
+    public async getSampleFile(id: number): Promise<ProvidedFile> {
+      return new ProvidedFile(
+        100,
+        "provided:samplefile",
+        "i am some plain text: id=" + id,
+        "plain/text"
+      );
+    }
+  }
+  server = new HttpServer(9012, false);
+  await server.awaitStart();
+  expect(Testing).toBeDefined();
+  await test(server.App)
+    .get("/file/samplefile1/100")
+    .then((response) => {
+      expect(response.status).toBe(200);
+      expect(response.text).toBe("i am some plain text: id=100");
+    });
+});
+
+it("should be possible to register a file provider with id and filename value", async () => {
+  class Testing {
+    @ProvideFile("samplefile2")
+    public async getSampleFile(id: number): Promise<ProvidedFile> {
+      return new ProvidedFile(
+        100,
+        "provided:samplefile",
+        "i am some plain text: id=" + id,
+        "plain/text"
+      );
+    }
+  }
+  server = new HttpServer(9012, false);
+  await server.awaitStart();
+  expect(Testing).toBeDefined();
+  await test(server.App)
+    .get("/file/samplefile2/100/_/filename")
+    .then((response) => {
+      expect(response.status).toBe(200);
+      expect(response.text).toBe("i am some plain text: id=100");
+    });
+});
+
 class Authenticator extends WebsocketAuthenticator {
   public label: string = "auth";
   public unauthenticatedMessage: string = "unauth";

@@ -241,7 +241,7 @@ export class HttpServer {
           req: express.Request,
           res: express.Response
         ) {
-          const id = req.params.id;
+          const id = +req.params.id || req.params.id;
           const auth = req.params.auth;
           await sendFile(res, provider, id, auth);
         }
@@ -252,7 +252,7 @@ export class HttpServer {
           req: express.Request,
           res: express.Response
         ) {
-          const id = req.params.id;
+          const id = +req.params.id || req.params.id;
           const auth = req.params.auth;
           await sendFile(res, provider, id, auth);
         }
@@ -263,7 +263,7 @@ export class HttpServer {
           req: express.Request,
           res: express.Response
         ) {
-          const id = req.params.id;
+          const id = +req.params.id || req.params.id;
           await sendFile(res, provider, id);
         }
       );
@@ -290,7 +290,7 @@ export class HttpServer {
           req: express.Request,
           res: express.Response
         ) {
-          const id = req.params.id;
+          const id = +req.params.id || req.params.id;
           const auth = req.params.auth;
           await sendImage(res, provider, id, auth);
         }
@@ -301,7 +301,7 @@ export class HttpServer {
           req: express.Request,
           res: express.Response
         ) {
-          const id = req.params.id;
+          const id = +req.params.id || req.params.id;
           await sendImage(res, provider, id);
         }
       );

@@ -39,6 +39,34 @@ describe("server testing", () => {
       });
   });
 
+  it("should be possible to register a file provider with id value", async () => {
+    class Testing {
+      @ProvideImage("sampleimage1")
+      public async getSampleFile(id: number | string): Promise<ProvidedImage> {
+        if (!(id == 100 || id == "data"))
+          throw Error("Data has not been transmitted");
+        return ProvidedImage.getFromDataURL(
+          "data:image/png;base64,iVasdfasdfasdf",
+          1,
+          ""
+        );
+      }
+    }
+    server = new HttpServer(9011, false);
+    await server.awaitStart();
+    expect(Testing).toBeDefined();
+    await test(server.App)
+      .get("/image/sampleimage1/100")
+      .then((response) => {
+        expect(response.status).toBe(200);
+      });
+    await test(server.App)
+      .get("/image/sampleimage1/data")
+      .then((response) => {
+        expect(response.status).toBe(200);
+      });
+  });
+
   class Authenticator extends WebsocketAuthenticator {
     public label: string = "auth";
     public unauthenticatedMessage: string = "unauth";
