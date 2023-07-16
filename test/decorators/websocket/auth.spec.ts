@@ -457,3 +457,28 @@ it("should raise an error when multiple and authenticators are added", async () 
     expect(Testing).toBeDefined();
   }).toThrow("And authenticator is already defined");
 });
+
+it("should raise an error when an and authenticator is added and an or authenticators exists already", async () => {
+  expect(() => {
+    class Testing {
+      @StandaloneRoute("standalone.route3")
+      @Auth(
+        new Authenticator().or(new Authenticator()).and(new Authenticator())
+      )
+      route() {}
+    }
+    expect(Testing).toBeDefined();
+  }).toThrow("Or authenticator is already defined");
+});
+it("should raise an error when an or authenticator is added and an and authenticators exists already", async () => {
+  expect(() => {
+    class Testing {
+      @StandaloneRoute("standalone.route4")
+      @Auth(
+        new Authenticator().and(new Authenticator()).or(new Authenticator())
+      )
+      route() {}
+    }
+    expect(Testing).toBeDefined();
+  }).toThrow("And authenticator is already defined");
+});
