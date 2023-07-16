@@ -1,4 +1,10 @@
-import { Modifies, Outbound, Subscribe, WebsocketRequest } from "../../../src";
+import {
+  Modifies,
+  Outbound,
+  SilentError,
+  Subscribe,
+  WebsocketRequest,
+} from "../../../src";
 import {
   Route,
   StandaloneRoute,
@@ -325,6 +331,21 @@ describe("error management", () => {
       await router.route(new WebsocketRequest("standalone.r5", null, conn));
       expect(await conn.expectMethod("m.error")).toBe("I am an error");
     } catch (e) {}
+  });
+
+  it("should send a m.error when a route throws an string but should not throw when using a silent-error", async () => {
+    @Route("parent14")
+    class Testing {
+      @Route("m1")
+      func() {
+        throw new SilentError("I am an error");
+      }
+    }
+    expect(Testing).toBeDefined();
+    const router = new WebsocketRouter();
+    const conn = WebsocketMocks.getConnectionStub();
+    await router.route(new WebsocketRequest("parent14.m1", null, conn));
+    expect(await conn.expectMethod("m.error")).toBe("I am an error");
   });
 });
 
