@@ -12,7 +12,12 @@ export function Cron(crontab: string) {
   return function _Cron(target: any, propertyKey: string) {
     const obj = new DecorableFunction({ target, propertyKey });
     cron.schedule(crontab, () => {
-      obj.Func().then();
+      const res = obj.Func();
+      if (res.then) {
+        return res.then();
+      } else {
+        return res;
+      }
     });
   };
 }
