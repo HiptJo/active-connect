@@ -2,7 +2,7 @@
  * Raises an Error, can be used to stop a test case and mark as failed.
  * @param [error] - Error message
  */
-export function failMethod(error: any = "fail was called in a test."): never {
+export function failMethod(error: any = "Test not successful (fail)"): never {
   throw new Error(error);
 }
 
