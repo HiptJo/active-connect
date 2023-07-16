@@ -9,7 +9,7 @@ export function Route(
     // method annotation
     const original = target[propertyKey];
     target[propertyKey] = async function execRoute(data: any): Promise<any> {
-      const promise = original(data);
+      const promise = original.bind(this)(data);
       const res = await this.client.send(method, data);
       await promise;
       return res;

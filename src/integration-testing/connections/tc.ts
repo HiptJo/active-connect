@@ -172,10 +172,10 @@ export class TCWrapper extends StubWebsocketConnection {
    * Creates an instance of TCWrapper.
    * @param token - The token for authentication (optional).
    */
-  public constructor(token?: string | undefined) {
+  public constructor(client?: WebsocketClient, token?: string | undefined) {
     super();
     this.token = token || null;
-    this.client = new WebsocketClient();
+    this.client = client || new WebsocketClient();
 
     this.clientInformation.ip = randomstring.generate(20);
     this.clientInformation.location = randomstring.generate(20);
@@ -202,7 +202,7 @@ export class TCWrapper extends StubWebsocketConnection {
   send(method: string, value: any, messageId?: number) {
     return new Promise(async (resolve) => {
       const handled = await super.send(method, value, messageId);
-      if (!handled) {
+      if (!handled || method != "m.error") {
         const parsedValue = JsonParser.parse(JsonParser.stringify(value));
         this.client.messageReceived({ method, data: parsedValue, messageId });
       }

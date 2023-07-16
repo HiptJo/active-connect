@@ -9,15 +9,15 @@ export class WebsocketClient {
    */
   pool: { WssConnected: boolean } | null;
 
-  /**
-   * @constructor
-   * Creates a new WebsocketClient
-   */
-  constructor() {
-    WebsocketClient.conn = this;
-  }
-
   private messageId: number = 0;
+
+  constructor(prototype?: { ___expectOutboundsCall: Function | undefined }) {
+    if (prototype && prototype.___expectOutboundsCall) {
+      (prototype.___expectOutboundsCall as any as Function[]).forEach((c) =>
+        c(this)
+      );
+    }
+  }
 
   private _token = "";
   /**
@@ -124,7 +124,7 @@ export class WebsocketClient {
         this.expectedMethods.delete(method);
         callback(data);
       } else {
-        const out = WebsocketClient.outbounds.get(method);
+        const out = this.outbounds.get(method);
         if (out) {
           out(data);
         } else {
@@ -137,27 +137,17 @@ export class WebsocketClient {
     }
   }
 
-  private static outbounds: Map<string, (data: any) => void> = new Map();
+  private outbounds: Map<string, (data: any) => void> = new Map();
   /**
    * This allows to listen for outbound data to be received.
    *
    * @param method - method label of the outbound
    * @param callback - this is called once the data has been received
    */
-  public static expectOutbound(method: string, callback: (data: any) => void) {
-    WebsocketClient.outbounds.set(method, callback);
+  public expectOutbound(method: string, callback: (data: any) => void) {
+    this.outbounds.set(method, callback);
   }
 
-  /**
-   * @deprecated
-   */
-  static conn: WebsocketClient;
-  /**
-   * @deprecated
-   */
-  static send(method: string, data: any): Promise<any> {
-    return WebsocketClient.conn?.send(method, data);
-  }
   /**
    * @deprecated
    */
