@@ -164,9 +164,7 @@ export class WebsocketClient {
    * states wether the client is connected
    * @returns true as the client is always connected during test runs
    */
-  public isConnected() {
-    return true;
-  }
+  public isConnected = true;
 
   /**
    * @deprecated
