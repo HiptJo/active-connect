@@ -4,7 +4,7 @@ import { Response } from "express";
  * Represents an HTTP response.
  * @interface
  */
-export interface HttpResponse {
+export class HttpResponse {
   /**
    * The content of the response.
    * @type {any}
@@ -25,6 +25,14 @@ export interface HttpResponse {
    * @type {"binary" | "base64" | null | undefined}
    */
   contentEncoding: "binary" | "base64" | null | undefined;
+
+  static redirect(url: string) {
+    const response = new HttpResponse();
+    response.content = url;
+    response.contentType = "REDIRECT";
+    response.status = 0;
+    response.contentEncoding = null;
+  }
 }
 
 /**
