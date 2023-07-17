@@ -1,3 +1,5 @@
+import { Response } from "express";
+
 /**
  * Represents an HTTP response.
  * @interface
@@ -24,3 +26,10 @@ export interface HttpResponse {
    */
   contentEncoding: "binary" | "base64" | null | undefined;
 }
+
+/**
+ * Represents an HTTP Response.
+ * @interface
+ * @extends express.Response
+ */
+export interface HttpInlineResponse extends Response {}
