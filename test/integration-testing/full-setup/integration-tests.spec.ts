@@ -22,12 +22,16 @@ class Pool extends LoadingStatus {
   }
 }
 class Service {
+  private value = 1;
+
   constructor(private client: WebsocketClient) {
     expect(this.client).toBeDefined();
   }
 
   @ClientRoute("int.update")
-  async update(value: any): Promise<any> {}
+  async update(value: any): Promise<any> {
+    expect(this.value).toBe(1);
+  }
 }
 class TC extends TCWrapper {
   public pool: Pool;

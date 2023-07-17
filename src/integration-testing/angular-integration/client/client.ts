@@ -1,3 +1,5 @@
+import { DecorableFunction } from "../../../server";
+
 /**
  * The WebsocketClient has direct access to the server.
  * It is used to simulate the client. This is usually executed on the client.
@@ -130,7 +132,7 @@ export class WebsocketClient {
         } else {
           const handle = WebsocketClient.handles.get(method);
           if (handle) {
-            handle.target[handle.property](data);
+            handle.Func(data);
           } else if (method == "m.error") throw data;
         }
       }
@@ -151,13 +153,12 @@ export class WebsocketClient {
   /**
    * @deprecated
    */
-  private static handles: Map<string, { target: any; property: string }> =
-    new Map();
+  private static handles: Map<string, DecorableFunction> = new Map();
   /**
    * @deprecated
    */
-  static registerHandle(method: string, target: any, property: string) {
-    WebsocketClient.handles.set(method, { target, property });
+  static registerHandle(method: string, func: DecorableFunction) {
+    WebsocketClient.handles.set(method, func);
   }
 
   /**
@@ -169,12 +170,14 @@ export class WebsocketClient {
   /**
    * @deprecated
    */
-  private static onSuccessHandlers: { callback: Function; regexp: RegExp }[] =
-    [];
+  private static onSuccessHandlers: {
+    callback: DecorableFunction;
+    regexp: RegExp;
+  }[] = [];
   /**
    * @deprecated
    */
-  public static onSuccess(callback: Function, regexp: RegExp) {
+  public static onSuccess(callback: DecorableFunction, regexp: RegExp) {
     this.onSuccessHandlers.push({ callback, regexp });
   }
 
@@ -191,7 +194,7 @@ export class WebsocketClient {
     WebsocketClient.onSuccessHandlers
       .filter((e) => e.regexp.test(method))
       .forEach((e) => {
-        var res = e.callback();
+        var res = e.callback.Func();
         if (res && res.then) {
           res.then();
         }
