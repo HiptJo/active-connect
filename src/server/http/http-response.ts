@@ -26,12 +26,13 @@ export class HttpResponse {
    */
   contentEncoding: "binary" | "base64" | null | undefined;
 
-  static redirect(url: string) {
+  static redirect(url: string): HttpResponse {
     const response = new HttpResponse();
     response.content = url;
     response.contentType = "REDIRECT";
     response.status = 0;
     response.contentEncoding = null;
+    return response;
   }
 }
 
