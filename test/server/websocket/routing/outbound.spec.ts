@@ -249,6 +249,25 @@ describe("subscription testing", () => {
       conn1.dontExpectMethod("d.high");
       await newConn.expectMethod("m.add");
     });
+
+    it("should be possible to send a message to subscribing clients", async () => {
+      var conn1 = WebsocketMocks.getConnectionStub();
+      expect(await conn1.expectMethod("d.high"));
+      var conn2 = WebsocketMocks.getConnectionStub();
+      expect(await conn2.expectMethod("d.high"));
+
+      WebsocketOutbounds.sendMessageToSubscribingConnections(
+        "d.high",
+        "MANUAL_SENT_DATA",
+        "data"
+      );
+      expect(
+        await Promise.all([
+          conn1.expectMethod("MANUAL_SENT_DATA"),
+          conn2.expectMethod("MANUAL_SENT_DATA"),
+        ])
+      ).toStrictEqual(["data", "data"]);
+    });
   });
 
   describe("filtered subscription", () => {
@@ -354,6 +373,19 @@ describe("subscription testing", () => {
 
       conn1.runRequest("fadd", "_");
       conn1.dontExpectMethod("f.low");
+    });
+
+    it("should be possible to send a message to subscribing clients", async () => {
+      var conn1 = WebsocketMocks.getConnectionStub();
+      expect(await conn1.expectMethod("f.high"));
+
+      WebsocketOutbounds.sendMessageToSubscribingConnections(
+        "f.high",
+        "MANUAL_SENT_DATA",
+        "data",
+        conn1.identifier
+      );
+      expect(await conn1.expectMethod("MANUAL_SENT_DATA")).toBe("data");
     });
   });
 });

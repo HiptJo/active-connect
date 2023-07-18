@@ -103,15 +103,24 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   private subscribedConnections: Map<number, WebsocketConnection[]> = new Map();
 
   private addSubscriptionForKey(key: number | null, conn: WebsocketConnection) {
-    const result = this.subscribedConnections.get(key);
+    const result = this.subscribedConnections.get(key || null);
     if (!result) {
       this.subscribedConnections.set(key, [conn]);
     } else {
       // Check if connection is not already inside the map
       if (!result.includes(conn)) {
-        this.subscribedConnections.get(key).push(conn);
+        this.subscribedConnections.get(key || null).push(conn);
       }
     }
+  }
+
+  /**
+   * Gets the WebSocket connections that are subscribed to changes for this outbound.
+   * @param key - Optional key used to filter the connections. If provided, only connections with the specified key will be returned.
+   * @returns An array of WebSocketConnection instances that are subscribed to changes for this outbound.
+   */
+  public getSubscribingConnections(key?: number): WebsocketConnection[] {
+    return this.subscribedConnections.get(key || null);
   }
 
   /**
@@ -366,6 +375,28 @@ export class WebsocketOutbounds {
       await outbound.sendTo(connection);
     } else {
       throw Error(`Websocket: Outbound ${method} has not been found.`);
+    }
+  }
+
+  /**
+   * Sends the provided message data to all WebSocket connections that are subscribed to the specified outbound method.
+   * @param outboundMethod - The method of the outbound for which to send the message data.
+   * @param method - The method representing the message data being sent.
+   * @param data - The data to be sent as part of the message.
+   * @param key - Optional key used to filter the connections to update. If provided, only connections with the specified key will be updated.
+   */
+  public static sendMessageToSubscribingConnections(
+    outboundMethod: string,
+    method: string,
+    data: any,
+    key?: number
+  ) {
+    const outbound = this.getOutbound(outboundMethod);
+    const connections = outbound.getSubscribingConnections(key);
+    if (connections) {
+      connections.forEach((conn) => {
+        conn.send(method, data);
+      });
     }
   }
 
