@@ -37,7 +37,7 @@ Filters are used to associate connections and data with subscription groups. The
 
 ## Outbounds
 
-The `@Outbound(...)` decorator enables easy sending of data to clients. Outbounds automatically handle updates and send them to subscribing clients whenever a subscription is created. 
+The `@Outbound(...)` decorator enables easy sending of data to clients. Outbounds automatically handle updates and send them to subscribing clients whenever a subscription is created.
 
 ### Example
 
@@ -53,9 +53,7 @@ class ArticleManagementWebsocketService {
 
 ## Usage
 
-Active-Connect is primarily designed for server-side applications. To connect an Angular application with an Active-Connect server, developers can use the `active-connect-ng2` framework available via npm.
-
-update this section: it is designed for the entire communication - this package contains the part used on the server-side
+Active-Connect is designed for the entire communication process, but this package contains the server-side implementation. To connect an Angular application with an Active-Connect server, developers can use the `active-connect-ng2` framework available via npm.
 
 ## Contributions
 
