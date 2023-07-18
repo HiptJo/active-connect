@@ -65,7 +65,15 @@ At present, Active-Connect requires the transmission of relatively large amounts
 
 ## Documentation
 
-Comprehensive documentation for Active-Connect can be found at [activeconnect.hiptmairit.at](https://activeconnect.hiptmairit.at).
+Comprehensive documentation for Active-Connect can be found at [activeconnect.hiptmairit.at](https://activeconnect.hiptmairit.at). The documentation is split into different sections:
+
+- `http`: Contains details concerning HTTP connections, such as registering GET methods, etc.
+- `websocket`: Contains details about WebSocket connections, including route definitions and usage.
+- `content`: Contains details on serving images and other content.
+- `integration-testing`: Provides information about the integration testing process, primarily built for Jest, but other frameworks should work as well.
+- `jest`: Contains some Jest-specific methods to improve the process of creating tests.
+
+**Note**: Decorators are generally found in the "Functions" section of each group.
 
 ## Use Cases
 
