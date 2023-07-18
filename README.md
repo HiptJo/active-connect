@@ -1,40 +1,82 @@
-[![Run Jest Tests](https://github.com/HiptJo/active-connect/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/HiptJo/active-connect/actions/workflows/test.yml)
-
 # Active-Connect
 
-Connection framework built for smart web-based projects using NodeJS, Angular and Websockets.
+[![Run Jest Tests](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml)
 
-This project is developed right now. Stay tuned.
+Active-Connect is a powerful connection framework designed for smart web-based projects using Node.js, Angular, and WebSockets. It provides decorators and utilities to simplify the integration of Angular with a WebSocket server, making it easier to handle real-time communication between clients and the server.
 
-# Decorators
+## Features
 
-## Annotations
+- Create a service that allows active connections with clients via HTTP and WebSockets.
+- Utilize decorators to define WebSocket routes, authentication, filters, and outbound methods.
+- Built-in support for authenticators to check client permissions for performing actions.
+- Filters to associate connections and data with subscription groups, enabling efficient updates to clients.
+- Send data to clients effortlessly using the `@Outbound(...)` decorator.
+- Facilitates easy unit and integration testing of WebSocket functionalities.
 
-```javascript
-@Outbound("libraries")
-@SubscribeChanges
-function asdf() {
+## Example
 
+```typescript
+@Route("user")
+class UserManagementWebsocketService {
+    @Auth(new UserLoggedInAuthenticator())
+    @Route("save")
+    async save(user: User, connection: WebsocketConnection): Promise<any> {
+        // update user data
+        return true; // return value (true) is sent back to the client.
+    }
 }
-
-@Route("updatelibrary")
-@Modifies("libraries")
-function update(lib) {
-
-}
-
-
-for class and function
-@StandaloneRoute("xy.xy",baseRoute?)
-@Outbound("xy",requireRequesting?: boolean) for function
-@Auth(x extends WebsocketAuthenticator)
-@SubscribeChanges
-@Modifies(method... Array<String>)
-
-@ProvidesFile(label) + ProvidedFile
-@ProvidesImage(label) + ProvidedImage
 ```
 
+## Authenticators
 
-# testing
-doc: when in testing run, add env flag to avoid exceptions; env: `jest=true`
+Authenticators are used to verify whether a client has sufficient permissions to perform a specific action. They can be applied to routes, outbounds, or when serving files/images. For example, the `@Auth` decorator in the provided example is used to enforce authentication for the `user.save` route.
+
+## Filters
+
+Filters are used to associate connections and data with subscription groups. They facilitate efficient data updates by sending data only to clients matching the filter when the associated data changes. Filters are not used for data validation, but rather for efficient data distribution.
+
+## Outbounds
+
+The `@Outbound(...)` decorator enables easy sending of data to clients. Outbounds automatically handle updates and send them to subscribing clients whenever a subscription is created. 
+
+### Example
+
+```typescript
+class ArticleManagementWebsocketService {
+    @Auth(new UserLoggedInAuthenticator())
+    @Outbound("data.articles")
+    async save(connection: WebsocketConnection): Promise<Article[]> {
+        return await Articles.getAll();
+    }
+}
+```
+
+## Usage
+
+Active-Connect is primarily designed for server-side applications. To connect an Angular application with an Active-Connect server, developers can use the `active-connect-ng2` framework available via npm.
+
+update this section: it is designed for the entire communication - this package contains the part used on the server-side
+
+## Contributions
+
+Contributions to Active-Connect are welcome! If you have any suggestions, bug fixes, or feature implementations, please feel free to fork the repository, make your changes, and submit a pull request.
+
+## Known Limitations
+
+At present, Active-Connect requires the transmission of relatively large amounts of data between the server and clients. To address this, caching mechanisms and partial outbound updates are planned for future releases to optimize data transmission.
+
+## Documentation
+
+Comprehensive documentation for Active-Connect can be found at [activeconnect.hiptmairit.at](https://activeconnect.hiptmairit.at).
+
+## Use Cases
+
+Active-Connect is an ideal solution for any application where data changes frequently and requires real-time updates. Its WebSocket-based communication provides a quick way to implement API requests, reducing the need for frequent polling and improving efficiency.
+
+## Scalability
+
+Active-Connect is currently designed to operate in a single container, and its decorator route configurations limit the service to hosting a single HTTP and WebSocket service on one port at a time. Scalability options are being considered for future development.
+
+## License
+
+Active-Connect is open-source software licensed under the [MIT License](https://github.com/HiptJo/active-connect-ng/blob/master/LICENSE). You are free to use, modify, and distribute it in accordance with the terms of the license.
