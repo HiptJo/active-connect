@@ -1,4 +1,4 @@
-# Active-Connect
+## Active-Connect
 
 [![Run Jest Tests](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml)
 
@@ -24,6 +24,41 @@ class UserManagementWebsocketService {
         // update user data
         return true; // return value (true) is sent back to the client.
     }
+
+    @Auth(new UserLoggedInAuthenticator())
+    @Outbound("data.user")
+    async getUser(connection: WebsocketConnection): Promise<User> {
+        return await Users.getUser(connection.token);
+    }
+}
+
+@HttpRoute("/api/users")
+class UserManagementHttpService {
+    @GET("/")
+    async getAllUsers(): Promise<HttpResponse> {
+        return { content: JSON.stringify(await Users.getAll()), contentType: "application/json", status: 200, contentEncoding: "binary" };
+    }
+
+    @POST("/http/user")
+    async createUser(request: HttpRequest): Promise<HttpResponse> {
+        // Handle the HTTP request here and return an HttpResponse.
+        // For example, create a new user and return the appropriate response.
+        return { content: "User created successfully!", contentType: "text/plain", status: 201, contentEncoding: "binary" };
+    }
+
+    @PUT("/http/user/:id")
+    async updateUser(request: HttpRequest): Promise<HttpResponse> {
+        // Handle the HTTP request here and return an HttpResponse.
+        // For example, update the user data and return the appropriate response.
+        return { content: "User updated successfully!", contentType: "text/plain", status: 200, contentEncoding: "binary" };
+    }
+
+    @DELETE("/api/user/:id")
+    async deleteUser(request: HttpRequest): Promise<HttpResponse> {
+        // Handle the HTTP request here and return an HttpResponse.
+        // For example, delete the user and return the appropriate response.
+        return { content: "User deleted successfully!", contentType: "text/plain", status: 200, contentEncoding: "binary" };
+    }
 }
 ```
 
@@ -39,21 +74,73 @@ Filters are used to associate connections and data with subscription groups. The
 
 The `@Outbound(...)` decorator enables easy sending of data to clients. Outbounds automatically handle updates and send them to subscribing clients whenever a subscription is created.
 
-### Example
+## Regular HTTP Requests
+
+In addition to WebSocket support, Active-Connect allows you to handle regular HTTP requests using decorators. These decorators let you define routes for HTTP methods such as GET, POST, PUT, DELETE.
+
+### FileProviders and ImageProviders
+
+Active-Connect supports FileProviders and ImageProviders to efficiently serve files and images to clients. These providers allow you to customize the handling of file and image requests and deliver them in a structured manner.
+
+### FileProvider Example
 
 ```typescript
-class ArticleManagementWebsocketService {
-    @Auth(new UserLoggedInAuthenticator())
-    @Outbound("data.articles")
-    async save(connection: WebsocketConnection): Promise<Article[]> {
-        return await Articles.getAll();
+class FileProviderService {
+    // This method will be triggered when the client requests a file with the given name.
+    // The decorator @ProvideFile specifies the identifier for this file provider ("document" in this example).
+    // It is accessible via GET /file/document/:id/:auth
+    @Auth(new Authenticator())
+    @ProvideFile("document")
+    public async getDocument(id: string, auth: string): Promise<ProvidedFile> {
+        try {
+            // Replace the following logic with your own file retrieval mechanism.
+            // For example, retrieve the file content from a database or generate it on the fly.
+            const { content, contentType, label } = await retrieveFileContentFromDatabase(id);
+            return new ProvidedFile(
+                id, // The id of the file
+                label, // Unique identifier for the file
+                content, // File content as a Buffer or string
+                contentType, // MIME type of the file content
+            );
+        } catch (error) {
+            // Return an appropriate response if the file is not found or an error occurs.
+            throw new HttpNotFoundError("File has not been found");
+        }
+    }
+}
+
+```
+
+### ImageProvider Example
+
+```typescript
+class ImageProviderService {
+    // This method will be triggered when the client requests an image with the given name.
+    // The decorator @ProvideImage specifies the identifier for this image provider ("ci" in this example).
+    // It is accessible via GET /image/ci/:id/:auth
+    @Auth(new Authenticator())
+    @ProvideImage("ci")
+    public async getSampleImage(id:string, auth:string): Promise<ProvidedImage> {
+        try {
+            // Replace the following logic with your own image retrieval mechanism.
+            // For example, retrieve the image data from a database or generate it on the fly.
+            const imageBuffer = await retrieveImageFromDatabase(id);
+            return ProvidedImage.getFromBuffer(
+                imageBuffer, // Image data as a Buffer
+                1, // Image quality (1 is the highest)
+                "image/png" // MIME type of the image
+            );
+        } catch (error) {
+            // Return an appropriate response if the file is not found or an error occurs.
+            throw new HttpNotFoundError("File has not been found");
+        }
     }
 }
 ```
 
 ## Usage
 
-Active-Connect is designed for the entire communication process, but this package contains the server-side implementation. To connect an Angular application with an Active-Connect server, developers can use the `active-connect-ng2` framework available via npm.
+Active-Connect is designed for the entire communication process, and this package contains the server-side implementation. To connect an Angular application with an Active-Connect server, developers can use the `active-connect-ng2` framework available via npm.
 
 ## Contributions
 
