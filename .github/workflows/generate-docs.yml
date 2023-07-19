@@ -3,7 +3,7 @@ name: Generate Docs
 on:
   push:
 jobs:
-  test:
+  Generate Docs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone Code Repository
