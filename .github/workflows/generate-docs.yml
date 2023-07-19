@@ -1,0 +1,23 @@
+name: Generate Docs
+
+on:
+  push:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Code Repository
+        uses: actions/checkout@v1
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: "15.x"
+      - name: Setup NodeJS
+        run: npm install
+      - name: Generate Docs
+        run: npm run docs
+      - name: Deploy to GH Pages 🚀
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: generated_docs
