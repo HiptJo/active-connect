@@ -1,5 +1,18 @@
 {
   // Comments are supported, like tsconfig.json
-  "entryPoints": ["src/*/index.ts"],
-  "out": "docs"
+  "entryPoints": [
+    "src/http",
+    "src/websocket",
+    "src/content",
+    "src/cron",
+
+    "src/integration-testing",
+    "src/jest",
+
+    "src/active-connect.ts",
+    "src/decorator-config",
+    "src/json"
+  ],
+  "out": "generated_docs",
+  "tsconfig": "tsconfig.docs.json"
 }
