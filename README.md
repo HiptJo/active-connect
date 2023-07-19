@@ -16,7 +16,7 @@ Active-Connect is a powerful connection framework designed for smart web-based p
 
 - **Outbound Methods with Subscription Management**: Active-Connect provides outbound methods that automatically handle subscription management. Developers can easily send data to clients using the `@Outbound(...)` decorator. Subscribing clients receive updates whenever relevant data changes, optimizing data distribution and minimizing unnecessary network traffic.
 
-- **Integration Testing**: Active-Connect facilitates integration testing for both WebSocket and HTTP functionalities. Developers can thoroughly test the server-side implementation of their application's communication process, primarily using Jest and potentially other testing frameworks.
+- **Integration Testing**: Active-Connect facilitates integration testing for both WebSocket and HTTP functionalities. Developers can thoroughly test the server-side implementation of their application's communication process, primarily using Jest and potentially other testing frameworks. Integration testing is also possible for HTTP methods, further ensuring the reliability of the application.
 
 - **Optimized Real-Time Updates**: Active-Connect's WebSocket-based communication reduces the need for frequent polling, resulting in more efficient API requests and real-time data updates. This optimization significantly improves the application's responsiveness and overall user experience.
 
@@ -24,13 +24,43 @@ Active-Connect is a powerful connection framework designed for smart web-based p
 
 These features collectively empower developers to create smart and efficient web-based projects, handle real-time communication with clients, and optimize data distribution for improved user experiences.
 
+## Setup Instructions
+
+To start using Active-Connect in your Node.js project, follow these steps:
+
+1. Install Active-Connect via npm:
+
+```bash
+npm install active-connect --save
+```
+
+2. You can now import the necessary classes and decorators to use Active-Connect in your application:
+
+```javascript
+import { HttpServer, Route, Outbound, GET } from 'active-connect';
+```
+
+3. Define WebSocket routes, authenticators, filters, and outbound methods using the provided decorators and utilities.
+
+4. Optionally, implement custom authenticators by extending the `WebsocketAuthenticator` class. Within the `authenticate` method, perform permission checks and handle client authentication.
+
+5. To handle regular HTTP requests, use decorators like `@GET`, `@POST`, etc., to define routes and functionalities for the HTTP server.
+
+6. If you want to serve images or files via HTTP, implement custom providers for serving files and images using decorators like `@ProvideFile` and `@ProvideImage`.
+
+7. Additionally, you can create cronjobs using the `@Cron` decorator to execute scheduled tasks at specific intervals.
+
+8. For integration testing, utilize the testing functionalities provided by Active-Connect, primarily using Jest. This ensures thorough testing of both WebSocket and HTTP functionalities.
+
+Details on how Http or Websocket Services can be started can be found within the [documentation](https://activeconnect.hiptmairit.at).
+
 ## Authenticators
 
 Authenticators are used to verify whether a client has sufficient permissions to perform a specific action. They can be applied to routes, outbounds, or when serving files/images. For example, the `@Auth` decorator in the provided example is used to enforce authentication for the `user.save` route.
 
 ## Filters
 
-Filters are used to associate connections and data with subscription groups. They facilitate efficient data updates by sending data only to clients matching the filter when the associated data changes. Filters are not used for data validation, but rather for efficient data distribution.
+Filters are used to associate connections and data with subscription groups. They facilitate efficient data updates by sending data only to clients matching the filter when the associated data changes. Filters are not used for data validation but rather for efficient data distribution.
 
 ## Outbounds
 
