@@ -1,36 +1,36 @@
 /**
  * @module
  * @description
- * The `websocket` module in Active-Connect provides a powerful connection framework for real-time communication between clients and the server in smart web-based projects.
- * This module is designed to seamlessly integrate with Node.js, Angular, and WebSockets, simplifying the implementation of WebSocket functionality within applications.
+ * The `websocket` module in Active-Connect provides a powerful connection framework for enabling real-time communication between clients and the server in smart web-based projects. It seamlessly integrates with Node.js, Angular, and WebSockets, simplifying the implementation of WebSocket functionality within applications.
  *
- * Active-Connect's `websocket` module offers a range of decorators and utilities that enable developers to handle real-time updates, authentication, filters, and data distribution efficiently.
- * By leveraging the provided decorators and utilities, developers can establish WebSocket connections and manage real-time data flow with ease, enhancing the overall user experience.
+ * Active-Connect's `websocket` module offers a range of decorators and utilities that empower developers to handle real-time updates, authentication, filters, and data distribution efficiently. By leveraging these provided decorators and utilities, developers can establish WebSocket connections and manage real-time data flow with ease, significantly enhancing the overall user experience.
+ *
+ * **Note:** The WebSocket support is based on the HTTP server. Further details can be found in the {@link http} section.
+ *
+ * For more details about the decorators and functions available in this module, please refer to the "Functions" section of this documentation.
  *
  * @SetupInstructions
- * Step 1: Import Necessary Files
+ * Step 1: Import the necessary files
  * ```javascript
- * import {Route,Outbound,HttpServer} from 'active-connect';
+ * import { HttpServer } from 'active-connect';
  * ```
  *
  * Step 2: Define WebSocket Routes
  * ```javascript
- * // WebSocketRoutes.js
  * import { Route } from 'active-connect';
  *
  * // Define WebSocket routes using decorators
  * @Route('chat')
  * class ChatWebSocket {
  *    @Route('send')
- *    async send(message: Message, conn: WebsocketConnection) {
- *       // handle request
+ *    async send(message: Message, conn: WebsocketConnection): Promise<any> {
+ *       // handle request and return response
  *    }
  * }
  * ```
  *
  * Step 3: Define Outbounds
  * ```javascript
- * // Outbounds.js
  * import { Outbound } from 'active-connect';
  *
  * // Define WebSocket outbounds using decorators
@@ -42,9 +42,9 @@
  * }
  * ```
  *
- * Step 4: Load Files containing Routes and Outbounds within the entrypoint file.
+ * Step 4: Load Files Containing Routes and Outbounds within the Entrypoint File.
  *
- * Step 5: Create HttpServer Object with WebSocket Support
+ * Step 5: Create HttpServer Object with WebSocket Support and Start the Server
  * ```javascript
  * // Start the HTTP server on the selected port with WebSocket support
  * const server = new HttpServer(80, true); // Replace '80' with the desired port number

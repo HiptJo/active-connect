@@ -14,53 +14,7 @@ Active-Connect is a powerful connection framework designed for smart web-based p
 - Facilitates easy unit and integration testing of WebSocket functionalities.
 
 ## Example
-
-```typescript
-@Route("user")
-class UserManagementWebsocketService {
-    @Auth(new UserLoggedInAuthenticator())
-    @Route("save")
-    async save(user: User, connection: WebsocketConnection): Promise<any> {
-        // update user data
-        return true; // return value (true) is sent back to the client.
-    }
-
-    @Auth(new UserLoggedInAuthenticator())
-    @Outbound("data.user")
-    async getUser(connection: WebsocketConnection): Promise<User> {
-        return await Users.getUser(connection.token);
-    }
-}
-
-@HttpRoute("/api/users")
-class UserManagementHttpService {
-    @GET("/")
-    async getAllUsers(): Promise<HttpResponse> {
-        return { content: JSON.stringify(await Users.getAll()), contentType: "application/json", status: 200, contentEncoding: "binary" };
-    }
-
-    @POST("/http/user")
-    async createUser(request: HttpRequest): Promise<HttpResponse> {
-        // Handle the HTTP request here and return an HttpResponse.
-        // For example, create a new user and return the appropriate response.
-        return { content: "User created successfully!", contentType: "text/plain", status: 201, contentEncoding: "binary" };
-    }
-
-    @PUT("/http/user/:id")
-    async updateUser(request: HttpRequest): Promise<HttpResponse> {
-        // Handle the HTTP request here and return an HttpResponse.
-        // For example, update the user data and return the appropriate response.
-        return { content: "User updated successfully!", contentType: "text/plain", status: 200, contentEncoding: "binary" };
-    }
-
-    @DELETE("/api/user/:id")
-    async deleteUser(request: HttpRequest): Promise<HttpResponse> {
-        // Handle the HTTP request here and return an HttpResponse.
-        // For example, delete the user and return the appropriate response.
-        return { content: "User deleted successfully!", contentType: "text/plain", status: 200, contentEncoding: "binary" };
-    }
-}
-```
+Examples on how to set up and configure the Server can be found in the docs.
 
 ## Authenticators
 
