@@ -58,7 +58,7 @@
 <li><p>For integration testing, utilize the testing functionalities provided by Active-Connect, primarily using Jest. This ensures thorough testing of both WebSocket and HTTP functionalities.</p>
 </li>
 </ol>
-<p>Details on how Http or Websocket Services can be started can be found within the <a href="https://activeconnect.hiptmairit.at">documentation</a>.</p>
+<p>Details on how Http or Websocket Services can be started can be found within the <a href="https://hiptjo.github.io/active-connect">documentation</a>.</p>
 <a id="md:authenticators" class="tsd-anchor"></a><h2><a href="#md:authenticators">Authenticators</a></h2><p>Authenticators are used to verify whether a client has sufficient permissions to perform a specific action. They can be applied to routes, outbounds, or when serving files/images. For example, the <code>@Auth</code> decorator in the provided example is used to enforce authentication for the <code>user.save</code> route.</p>
 <a id="md:filters" class="tsd-anchor"></a><h2><a href="#md:filters">Filters</a></h2><p>Filters are used to associate connections and data with subscription groups. They facilitate efficient data updates by sending data only to clients matching the filter when the associated data changes. Filters are not used for data validation but rather for efficient data distribution.</p>
 <a id="md:outbounds" class="tsd-anchor"></a><h2><a href="#md:outbounds">Outbounds</a></h2><p>The <code>@Outbound(...)</code> decorator enables easy sending of data to clients. Outbounds automatically handle updates and send them to subscribing clients whenever a subscription is created.</p>
@@ -67,7 +67,7 @@
 <a id="md:usage" class="tsd-anchor"></a><h2><a href="#md:usage">Usage</a></h2><p>Active-Connect is designed for the entire communication process, and this package contains the server-side implementation. To connect an Angular application with an Active-Connect server, developers can use the <code>active-connect-ng2</code> framework available via npm.</p>
 <a id="md:contributions" class="tsd-anchor"></a><h2><a href="#md:contributions">Contributions</a></h2><p>Contributions to Active-Connect are welcome! If you have any suggestions, bug fixes, or feature implementations, please feel free to fork the repository, make your changes, and submit a pull request.</p>
 <a id="md:known-limitations" class="tsd-anchor"></a><h2><a href="#md:known-limitations">Known Limitations</a></h2><p>At present, Active-Connect requires the transmission of relatively large amounts of data between the server and clients. To address this, caching mechanisms and partial outbound updates are planned for future releases to optimize data transmission.</p>
-<a id="md:documentation" class="tsd-anchor"></a><h2><a href="#md:documentation">Documentation</a></h2><p>Comprehensive documentation for Active-Connect can be found at <a href="https://activeconnect.hiptmairit.at">activeconnect.hiptmairit.at</a>. The documentation is split into different sections:</p>
+<a id="md:documentation" class="tsd-anchor"></a><h2><a href="#md:documentation">Documentation</a></h2><p>Comprehensive documentation for Active-Connect can be found at <a href="https://hiptjo.github.io/active-connect">activeconnect.hiptmairit.at</a>. The documentation is split into different sections:</p>
 <ul>
 <li><code>http</code>: Contains details concerning HTTP connections, such as registering GET methods, etc.</li>
 <li><code>websocket</code>: Contains details about WebSocket connections, including route definitions and usage.</li>
