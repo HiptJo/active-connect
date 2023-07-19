@@ -89,7 +89,7 @@ At present, Active-Connect requires the transmission of relatively large amounts
 
 ## Documentation
 
-Comprehensive documentation for Active-Connect can be found at [activeconnect.hiptmairit.at](https://hiptjo.github.io/active-connect). The documentation is split into different sections:
+Comprehensive documentation for Active-Connect can be found at [hiptjo.github.io/active-connect](https://hiptjo.github.io/active-connect). The documentation is split into different sections:
 
 - `http`: Contains details concerning HTTP connections, such as registering GET methods, etc.
 - `websocket`: Contains details about WebSocket connections, including route definitions and usage.
