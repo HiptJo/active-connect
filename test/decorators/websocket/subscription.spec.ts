@@ -7,7 +7,7 @@ import {
   SubscribeChanges,
 } from "../../../src/active-connect";
 import { testEach } from "../../../src/jest";
-import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
+import { WebsocketConnection } from "../../../src/";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
 beforeEach(() => {

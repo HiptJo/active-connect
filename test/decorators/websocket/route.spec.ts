@@ -5,11 +5,8 @@ import {
   Subscribe,
   WebsocketRequest,
 } from "../../../src";
-import {
-  Route,
-  StandaloneRoute,
-} from "../../../src/decorators/websocket/route";
-import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
+import { Route, StandaloneRoute } from "../../../src/";
+import { WebsocketRouter } from "../../../src/";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
 it("should be possible to annotate a class", () => {

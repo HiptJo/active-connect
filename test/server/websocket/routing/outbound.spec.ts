@@ -7,10 +7,7 @@ import {
 } from "../../../../src";
 import { StubWebsocketConnection } from "../../../../src/integration-testing";
 import { testEach } from "../../../../src/jest";
-import {
-  WebsocketOutbound,
-  WebsocketOutbounds,
-} from "../../../../src/server/websocket/routing/outbound";
+import { WebsocketOutbound, WebsocketOutbounds } from "../../../../src/";
 import { WebsocketMocks } from "../../websocket-mocks";
 
 class target {

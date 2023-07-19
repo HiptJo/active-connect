@@ -1,5 +1,5 @@
 import * as test from "supertest";
-import { DELETE, HttpServer } from "../../../src/active-connect";
+import { DELETE, HttpServer } from "../../../src/";
 import { Response, Request } from "express";
 
 let server: HttpServer;

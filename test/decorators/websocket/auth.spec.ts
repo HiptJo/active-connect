@@ -7,9 +7,9 @@ import {
   StandaloneRoute,
   Subscribe,
 } from "../../../src/active-connect";
-import { WebsocketAuthenticator } from "../../../src/server/websocket/auth/authenticator";
-import { WebsocketConnection } from "../../../src/server/websocket/connection/connection";
-import { WebsocketRouter } from "../../../src/server/websocket/routing/router";
+import { WebsocketAuthenticator } from "../../../src/";
+import { WebsocketConnection } from "../../../src/";
+import { WebsocketRouter } from "../../../src/";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
 class Authenticator extends WebsocketAuthenticator {

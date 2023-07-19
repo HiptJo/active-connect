@@ -6,11 +6,8 @@ import {
   WebsocketRouter,
 } from "../../../../src";
 import { testEach } from "../../../../src/jest";
-import { WebsocketRequest } from "../../../../src/server/websocket/message/request";
-import {
-  WebsocketRoute,
-  StandaloneWebsocketRoute,
-} from "../../../../src/server/websocket/routing/route";
+import { WebsocketRequest } from "../../../../src/";
+import { WebsocketRoute, StandaloneWebsocketRoute } from "../../../../src/";
 import { WebsocketMocks } from "../../websocket-mocks";
 
 const conn = new WebsocketConnection(null as any);

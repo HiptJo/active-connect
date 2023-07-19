@@ -1,9 +1,6 @@
-import { WebsocketRequest } from "../../../../src/server/websocket/message/request";
-import {
-  StandaloneWebsocketRoute,
-  WebsocketRoute,
-} from "../../../../src/server/websocket/routing/route";
-import { WebsocketRouter } from "../../../../src/server/websocket/routing/router";
+import { WebsocketRequest } from "../../../../src/";
+import { StandaloneWebsocketRoute, WebsocketRoute } from "../../../../src/";
+import { WebsocketRouter } from "../../../../src/";
 import { WebsocketMocks } from "../../websocket-mocks";
 
 beforeEach(() => {
