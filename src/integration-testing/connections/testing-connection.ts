@@ -1,6 +1,6 @@
 import { WebsocketConnection } from "../..";
 import { JsonParser } from "../../json/json-parser";
-import { WebsocketOutbounds } from "../../server/websocket/routing/outbound";
+import { WebsocketOutbounds } from "../../websocket/server/routing/outbound";
 
 /**
  * @deprecated

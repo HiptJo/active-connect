@@ -1,4 +1,4 @@
-import { DecorableFunction } from "../../../server";
+import { DecorableFunction } from "../../../decorator-config";
 
 /**
  * The WebsocketClient has direct access to the server.

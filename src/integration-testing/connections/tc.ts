@@ -5,9 +5,9 @@ import {
   WebsocketOutbounds,
   WebsocketRequest,
 } from "../..";
-import { WebsocketRouter } from "../../server/websocket/routing/router";
 import * as randomstring from "randomstring";
 import { JsonParser } from "../../json/json-parser";
+import { WebsocketRouter } from "../../websocket/server/routing/router";
 
 /**
  * Websocket Connection wrapper, can be used to create integration-tests for applications.

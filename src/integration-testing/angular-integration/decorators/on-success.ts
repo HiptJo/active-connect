@@ -1,4 +1,4 @@
-import { DecorableFunction } from "../../../server";
+import { DecorableFunction } from "../../../decorator-config";
 import { WebsocketClient } from "../client/client";
 
 export function OnSuccess(regexp: RegExp) {
