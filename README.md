@@ -1,20 +1,28 @@
 ## Active-Connect
 
-[![Run Jest Tests](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml)
+[![Tests](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/HiptJo/active-connect-ng/actions/workflows/test.yml)
 
 Active-Connect is a powerful connection framework designed for smart web-based projects using Node.js, Angular, and WebSockets. It provides decorators and utilities to simplify the integration of Angular with a WebSocket server, making it easier to handle real-time communication between clients and the server.
 
 ## Features
 
-- Create a service that allows active connections with clients via HTTP and WebSockets.
-- Utilize decorators to define WebSocket routes, authentication, filters, and outbound methods.
-- Built-in support for authenticators to check client permissions for performing actions.
-- Filters to associate connections and data with subscription groups, enabling efficient updates to clients.
-- Send data to clients effortlessly using the `@Outbound(...)` decorator.
-- Facilitates easy unit and integration testing of WebSocket functionalities.
+- **HTTP Server with Decorators**: In addition to WebSocket support, Active-Connect allows developers to handle regular HTTP requests with ease. The framework provides decorators for various HTTP methods such as GET, POST, PUT, DELETE, making it simple to define custom routes and functionalities.
 
-## Example
-Examples on how to set up and configure the Server can be found in the docs.
+- **WebSocket Communication**: Active-Connect offers a powerful connection framework that enables real-time communication between clients and the server in smart web-based projects. When a connection accesses data for the first time, a subscription is automatically created. Any modifications to the data are then sent to all subscribing clients, ensuring efficient and automatic updates.
+
+- **Serve Images and Files via HTTP**: Active-Connect supports efficient serving of images and files via HTTP. Developers can create custom providers for serving files and images, allowing for dynamic and structured delivery to clients. For instance, developers can generate and serve auto-generated images.
+
+- **Customizable Authenticators**: Developers can easily implement their own authenticators by extending the abstract `WebsocketAuthenticator` class. Within the `authenticate` method, access to the connection and request objects allows for easy permission checking. Additionally, clients can store session tokens to facilitate secure authentication.
+
+- **Outbound Methods with Subscription Management**: Active-Connect provides outbound methods that automatically handle subscription management. Developers can easily send data to clients using the `@Outbound(...)` decorator. Subscribing clients receive updates whenever relevant data changes, optimizing data distribution and minimizing unnecessary network traffic.
+
+- **Integration Testing**: Active-Connect facilitates integration testing for both WebSocket and HTTP functionalities. Developers can thoroughly test the server-side implementation of their application's communication process, primarily using Jest and potentially other testing frameworks.
+
+- **Optimized Real-Time Updates**: Active-Connect's WebSocket-based communication reduces the need for frequent polling, resulting in more efficient API requests and real-time data updates. This optimization significantly improves the application's responsiveness and overall user experience.
+
+- **Node-Cron Integration**: Active-Connect internally uses the popular Node-Cron library for scheduling cronjobs. Developers can create cronjobs using the `@Cron` decorator, facilitating the execution of scheduled tasks at specific intervals.
+
+These features collectively empower developers to create smart and efficient web-based projects, handle real-time communication with clients, and optimize data distribution for improved user experiences.
 
 ## Authenticators
 
@@ -36,61 +44,6 @@ In addition to WebSocket support, Active-Connect allows you to handle regular HT
 
 Active-Connect supports FileProviders and ImageProviders to efficiently serve files and images to clients. These providers allow you to customize the handling of file and image requests and deliver them in a structured manner.
 
-### FileProvider Example
-
-```typescript
-class FileProviderService {
-    // This method will be triggered when the client requests a file with the given name.
-    // The decorator @ProvideFile specifies the identifier for this file provider ("document" in this example).
-    // It is accessible via GET /file/document/:id/:auth
-    @Auth(new Authenticator())
-    @ProvideFile("document")
-    public async getDocument(id: string, auth: string): Promise<ProvidedFile> {
-        try {
-            // Replace the following logic with your own file retrieval mechanism.
-            // For example, retrieve the file content from a database or generate it on the fly.
-            const { content, contentType, label } = await retrieveFileContentFromDatabase(id);
-            return new ProvidedFile(
-                id, // The id of the file
-                label, // Unique identifier for the file
-                content, // File content as a Buffer or string
-                contentType, // MIME type of the file content
-            );
-        } catch (error) {
-            // Return an appropriate response if the file is not found or an error occurs.
-            throw new HttpNotFoundError("File has not been found");
-        }
-    }
-}
-
-```
-
-### ImageProvider Example
-
-```typescript
-class ImageProviderService {
-    // This method will be triggered when the client requests an image with the given name.
-    // The decorator @ProvideImage specifies the identifier for this image provider ("ci" in this example).
-    // It is accessible via GET /image/ci/:id/:auth
-    @Auth(new Authenticator())
-    @ProvideImage("ci")
-    public async getSampleImage(id:string, auth:string): Promise<ProvidedImage> {
-        try {
-            // Replace the following logic with your own image retrieval mechanism.
-            // For example, retrieve the image data from a database or generate it on the fly.
-            const imageBuffer = await retrieveImageFromDatabase(id);
-            return ProvidedImage.getFromBuffer(
-                imageBuffer, // Image data as a Buffer
-                1, // Image quality (1 is the highest)
-                "image/png" // MIME type of the image
-            );
-        } catch (error) {
-            // Return an appropriate response if the file is not found or an error occurs.
-            throw new HttpNotFoundError("File has not been found");
-        }
-    }
-}
-```
 
 ## Usage
 
@@ -126,4 +79,4 @@ Active-Connect is currently designed to operate in a single container, and its d
 
 ## License
 
-Active-Connect is open-source software licensed under the [MIT License](https://github.com/HiptJo/active-connect-ng/blob/master/LICENSE). You are free to use, modify, and distribute it in accordance with the terms of the license.
+Active-Connect is open-source software licensed under the MIT License. You are free to use, modify, and distribute it in accordance with the terms of the license.
