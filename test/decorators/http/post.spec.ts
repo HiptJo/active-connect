@@ -1,10 +1,10 @@
 import * as test from "supertest";
-import { HttpServer, POST } from "../../../src/active-connect";
+import { HttpServer, POST } from "../../../src";
 import { Response, Request } from "express";
 
 let server: HttpServer;
-afterEach(() => {
-  server.stop();
+afterEach(async () => {
+  await server.stop();
 });
 it("should be possible to register a file provider", async () => {
   class Testing {
@@ -13,7 +13,7 @@ it("should be possible to register a file provider", async () => {
       res.send("{ some data is delivered }");
     }
   }
-  server = new HttpServer(9003, false);
+  server = new HttpServer(9009, false);
   await server.awaitStart();
   expect(Testing).toBeDefined();
   await test(server.App)

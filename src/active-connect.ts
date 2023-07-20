@@ -1,21 +1,41 @@
-"use strict";
+export class ActiveConnect {
+  /**
+   * Loads all ts/js files in the speficied directory.
+   * Can be used to load route config without importing the files.
+   * @param dirname - absolute path of directory to load.
+   *
+   * @example
+   * ```
+   * ActiveConnect.loadCurrentDirectory(__dirname);
+   * ```
+   */
+  public static loadCurrentDirectory(dirname: string) {
+    var normalizedPath = require("path").join(dirname);
+    require("fs")
+      .readdirSync(normalizedPath)
+      .forEach(function (file: string) {
+        if (
+          file.charAt(0) != "_" &&
+          (file.endsWith(".ts") || file.endsWith(".js")) &&
+          !file.endsWith(".spec.ts")
+        )
+          require(dirname + "/" + file);
+      });
+  }
 
-export { HttpServer } from "./server/http/server";
-export * from "./decorators/websocket/outbound";
-export * from "./decorators/websocket/route";
-export * from "./decorators/websocket/auth";
-export * from "./decorators/websocket/filtered-subscription";
-export * from "./decorators/websocket/subscription";
-export * from "./decorators/websocket/connection-closed";
-export * from "./decorators/websocket/shared";
-export * from "./decorators/content/provide-file";
-export * from "./decorators/content/provide-image";
-export * from "./decorators/http/get";
-export * from "./decorators/http/post";
-export * from "./decorators/cron/cron";
-export * from "./server/http/http-request";
-export * from "./server/http/http-response";
-export * from "./server/websocket/connection/connection";
-export * from "./server/websocket/auth/authenticator";
-export * from "./server/websocket/message/request";
-export * from "./server/websocket/server";
+  private static timeout = 3000;
+  /**
+   * When an expected method is not received in that amount of milliseconds, the test fails.
+   * @returns the timeout value
+   */
+  public static getTimeout() {
+    return ActiveConnect.timeout;
+  }
+  /**
+   * When an expected method is not received in that amount of milliseconds, the test fails.
+   * @returns the timeout value
+   */
+  public static setTimeout(ms: number) {
+    ActiveConnect.timeout = ms;
+  }
+}

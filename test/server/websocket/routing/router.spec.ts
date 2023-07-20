@@ -1,10 +1,6 @@
-import { WebsocketConnection } from "../../../../src/server/websocket/connection/connection";
-import { WebsocketRequest } from "../../../../src/server/websocket/message/request";
-import {
-  StandaloneWebsocketRoute,
-  WebsocketRoute,
-} from "../../../../src/server/websocket/routing/route";
-import { WebsocketRouter } from "../../../../src/server/websocket/routing/router";
+import { WebsocketRequest } from "../../../../src/";
+import { StandaloneWebsocketRoute, WebsocketRoute } from "../../../../src/";
+import { WebsocketRouter } from "../../../../src/";
 import { WebsocketMocks } from "../../websocket-mocks";
 
 beforeEach(() => {
@@ -12,116 +8,141 @@ beforeEach(() => {
   expect(WebsocketRouter.Routes).toHaveLength(0);
 });
 
-it("should be possible to register a route", (d) => {
+describe("default routes", () => {
   const original = { value: "ok" };
-  const route = new WebsocketRoute(
-    "testing",
-    (data: any, connection: WebsocketConnection) => {
+  class target {
+    f(data: { value: string }) {
       expect(data).toStrictEqual(original);
-      d();
+      return -1;
     }
-  );
-  WebsocketRouter.registerRoute(route);
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-  expect(
-    router.route(new WebsocketRequest("testing", original, conn))
-  ).toBeTruthy();
-});
-it("should throw when routing to route with func=null", async (d) => {
-  const original = { value: "ok" };
-  const route = new WebsocketRoute("testing", null);
-  WebsocketRouter.registerRoute(route);
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-  await router
-    .route(new WebsocketRequest("testing", original, conn))
-    .catch((e) => {
-      d();
-    });
-});
-it("should throw when routing to child with func=null", async (d) => {
-  const original = { value: "ok" };
-  const route = new WebsocketRoute("testing", null);
-  route.addChild(new WebsocketRoute("a", null));
-  WebsocketRouter.registerRoute(route);
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-
-  await router
-    .route(new WebsocketRequest("testing.a", original, conn))
-    .catch(() => {
-      d();
-    });
-});
-it("should be possible to route to a child", (d) => {
-  const original = { value: "ok5" };
-  const route = new WebsocketRoute("testing", null);
-  route.addChild(
-    new WebsocketRoute("c", (data: any, conn: WebsocketConnection) => {
+    c(data: { value: string }) {
       expect(data).toBe(original);
-      d();
-    })
-  );
-  WebsocketRouter.registerRoute(route);
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-  expect(
-    router.route(new WebsocketRequest("testing.c", original, conn))
-  ).toBeTruthy();
-});
-it("should be possible to get a child route by method", () => {
-  const route = new WebsocketRoute("testing", null);
-  route.addChild(new WebsocketRoute("fetch", null));
-  WebsocketRouter.registerRoute(route);
-  expect(WebsocketRouter.getRouteByMethod("testing.fetch")).toBeDefined();
-  expect(WebsocketRouter.getRouteByMethod("testing.fetch").Method).toBe(
-    "fetch"
-  );
-});
-it("should throw when a fetched child-route is not defined", (d) => {
-  const route = new WebsocketRoute("testing", null);
-  WebsocketRouter.registerRoute(route);
-  try {
-    expect(
-      WebsocketRouter.getRouteByMethod("testing.nonexisting")
-    ).toBeDefined();
-  } catch (e) {
-    d();
+      return -2;
+    }
+    increase(data: number) {
+      return data + 1;
+    }
   }
-});
-it("should throw when routing a non-existing baseroute", (d) => {
+
   const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-  router.route(new WebsocketRequest("nonexisting", {}, conn)).catch(() => {
-    d();
+  var conn = WebsocketMocks.getConnectionStub();
+  beforeEach(() => {
+    const route = new WebsocketRoute("testing", {
+      target: target.prototype,
+      propertyKey: "f",
+    });
+    const child = new WebsocketRoute("c", {
+      target: target.prototype,
+      propertyKey: "c",
+    });
+    route.addChild(child);
+    const increase = new WebsocketRoute("increase", {
+      target: target.prototype,
+      propertyKey: "increase",
+    });
+    route.addChild(increase);
+    WebsocketRouter.registerRoute(route);
+
+    conn = WebsocketMocks.getConnectionStub();
+  });
+
+  it("should have registered the required routes", () => {
+    expect(WebsocketRouter.Routes).toHaveLength(1);
+  });
+
+  it("should be possible to register a route", async () => {
+    expect(
+      router.route(new WebsocketRequest("testing", original, conn))
+    ).toBeTruthy();
+    expect(await conn.expectMethod("m.testing")).toBe(-1);
+  });
+
+  it("should be possible to route to a child", async () => {
+    expect(
+      router.route(new WebsocketRequest("testing.c", original, conn))
+    ).toBeTruthy();
+    expect(await conn.expectMethod("m.testing.c")).toBe(-2);
+  });
+
+  it("should throw when a fetched child-route is not defined", async () => {
+    await expect(async () => {
+      WebsocketRouter.getRouteByMethod("testing.nonex");
+    }).rejects.toThrow("nonex");
+  });
+
+  it("should throw when routing a non-existing baseroute", async () => {
+    await expect(
+      router.route(new WebsocketRequest("nonexisting", {}, conn))
+    ).rejects.toThrow("nonex");
+  });
+
+  it("should be possible to call a route with data", async () => {
+    expect(
+      router.route(new WebsocketRequest("testing.increase", 5, conn))
+    ).toBeTruthy();
+    expect(await conn.expectMethod("m.testing.increase")).toBe(6);
   });
 });
-
-it("should be possible to call a route without data", async (d) => {
-  const original: null = null;
-  const route = new WebsocketRoute(
-    "testing",
-    (data: any, connection: WebsocketConnection) => {
+describe("standalone routes", () => {
+  const original = { value: "ok" };
+  class target {
+    f(data: { value: string }) {
       expect(data).toStrictEqual(original);
-      d();
+      return -1;
     }
-  );
-  WebsocketRouter.registerRoute(route);
-  const router = new WebsocketRouter();
-  const conn = WebsocketMocks.getConnectionStub();
-  expect(
-    await router.route(new WebsocketRequest("testing", original, conn))
-  ).toBeTruthy();
-});
+    c(data: { value: string }) {
+      expect(data).toBe(original);
+      return -2;
+    }
+    increase(data: number) {
+      return data + 1;
+    }
+  }
 
-it("should be possible to register a standalone route", () => {
-  WebsocketRouter.registerStandaloneRoute(
-    new StandaloneWebsocketRoute(
-      "method.standalone",
-      (data: any, conn: WebsocketConnection) => {
-        return { value: "standalone" };
-      }
-    )
-  );
+  const router = new WebsocketRouter();
+  beforeAll(() => {
+    const f = new StandaloneWebsocketRoute("stand.f", {
+      target: target.prototype,
+      propertyKey: "f",
+    });
+    const c = new StandaloneWebsocketRoute("stand.c", {
+      target: target.prototype,
+      propertyKey: "c",
+    });
+    const increase = new StandaloneWebsocketRoute("stand.increase", {
+      target: target.prototype,
+      propertyKey: "increase",
+    });
+    WebsocketRouter.registerStandaloneRoute(f);
+    WebsocketRouter.registerStandaloneRoute(c);
+    WebsocketRouter.registerStandaloneRoute(increase);
+  });
+
+  it("should have registered the required routes", () => {
+    expect(WebsocketRouter.StandaloneRoutes).toHaveLength(3);
+  });
+
+  it("should be possible to register a route", async () => {
+    var conn = WebsocketMocks.getConnectionStub();
+    expect(
+      router.route(new WebsocketRequest("stand.f", original, conn))
+    ).toBeTruthy();
+    expect(await conn.expectMethod("m.stand.f")).toBe(-1);
+  });
+
+  it("should be possible to route to a child", async () => {
+    var conn = WebsocketMocks.getConnectionStub();
+    expect(
+      router.route(new WebsocketRequest("stand.c", original, conn))
+    ).toBeTruthy();
+    expect(await conn.expectMethod("m.stand.c")).toBe(-2);
+  });
+
+  it("should be possible to call a route with data", async () => {
+    var conn = WebsocketMocks.getConnectionStub();
+    expect(
+      router.route(new WebsocketRequest("stand.increase", 5, conn))
+    ).toBeTruthy();
+    expect(await conn.expectMethod("m.stand.increase")).toBe(6);
+  });
 });
