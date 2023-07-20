@@ -445,12 +445,16 @@ export class WebsocketOutbounds {
   }
 
   public static initCachingResponseEntrypoint() {
-    WebsocketRouter.registerStandaloneRoute(
-      new SimpleWebsocketRoute(
-        "___cache",
-        WebsocketOutbounds.onCacheResponseReceived.bind(WebsocketOutbounds)
-      )
-    );
+    if (
+      WebsocketRouter.StandaloneRoutes.filter((r) => r.Method == "___cache")
+        .length == 0
+    )
+      WebsocketRouter.registerStandaloneRoute(
+        new SimpleWebsocketRoute(
+          "___cache",
+          WebsocketOutbounds.onCacheResponseReceived.bind(WebsocketOutbounds)
+        )
+      );
   }
 
   private static async onCacheResponseReceived(
