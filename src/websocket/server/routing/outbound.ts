@@ -141,7 +141,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   public async sendTo(conn: WebsocketConnection) {
     try {
       const res = await this.Func(conn);
-      const gHash = await this.cacheKeyProvider.getHashCode();
+      const gHash = this.cacheKeyProvider
+        ? await this.cacheKeyProvider.getHashCode()
+        : null;
       if (
         !res ||
         (res &&
@@ -150,8 +152,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       ) {
         await this.subscribeForConnection(conn, res);
         const stringContent = JsonParser.stringify(res);
-        const hash = JsonParser.getHashCode(stringContent);
-        conn.sendWithHashInfo(this.method, stringContent, gHash, hash);
+        const hash = this.cacheKeyProvider
+          ? JsonParser.getHashCode(stringContent)
+          : null;
+        conn.send(this.method, stringContent, undefined, gHash, hash);
       }
     } catch (e) {
       if (!e?.isAuthenticationError) {
@@ -210,7 +214,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           const stringContent = JsonParser.stringify(res);
           const hash = JsonParser.getHashCode(stringContent);
           if (hash != specificHash) {
-            conn.sendWithHashInfo(this.method, stringContent, gHash, hash);
+            conn.send(this.method, stringContent, undefined, gHash, hash);
           } else {
             conn.send(this.method, "cache_restore");
           }
@@ -436,7 +440,7 @@ export class WebsocketOutbounds {
     }
   }
 
-  public static async initCachingResponseEntrypoint() {
+  public static initCachingResponseEntrypoint() {
     WebsocketRouter.registerStandaloneRoute(
       new SimpleWebsocketRoute(
         "___cache",
