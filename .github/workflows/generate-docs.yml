@@ -1,7 +1,8 @@
 name: Generate Docs
 
 on:
-  push:
+  release:
+    types: [published]
 jobs:
   Generate_Docs:
     runs-on: ubuntu-latest
