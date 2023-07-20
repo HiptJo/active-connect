@@ -50,7 +50,13 @@ export class WebsocketConnection {
    * Creates a new instance of WebsocketConnection.
    * @param connection - The WebSocket connection object.
    */
-  constructor(protected connection: WebSocket | null) {
+  constructor(
+    protected connection: WebSocket | null,
+    supportsCache?: boolean,
+    authToken?: string
+  ) {
+    if (supportsCache) this.enableCache();
+    this.token = authToken;
     this.initializeListeners();
     this.sendWelcomeMessages();
     if (connection) {

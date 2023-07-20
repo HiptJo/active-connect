@@ -306,6 +306,13 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   }
 
   /**
+   * Checks whether the connection has sufficient permission to receive this outbound.
+   */
+  public async authenticate(conn: WebsocketConnection) {
+    return await this.authenticator.authenticate(conn, null);
+  }
+
+  /**
    * Loads the decorator configuration from the bound reference.
    */
   public loadDecoratorConfig() {
@@ -435,11 +442,16 @@ export class WebsocketOutbounds {
    */
   public static async sendToConnection(conn: WebsocketConnection) {
     for (var out of WebsocketOutbounds.outbounds) {
-      // check if client supports caching
-      if (!out[1].supportsCache || !conn.supportsCaching) {
-        if (!out[1].lazyLoading) await out[1].sendTo(conn);
-      } else {
-        conn.send("___cache", out[1].method);
+      if (!out[1].lazyLoading) {
+        // check if client supports caching
+        if (!out[1].supportsCache || !conn.supportsCaching) {
+          await out[1].sendTo(conn);
+        } else {
+          // check if the user has sufficient permissions
+          if (await out[1].authenticate(conn)) {
+            conn.send("___cache", out[1].method);
+          }
+        }
       }
     }
   }

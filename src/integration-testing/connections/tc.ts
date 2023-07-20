@@ -19,14 +19,13 @@ export class StubWebsocketConnection extends WebsocketConnection {
   /**
    * Creates an instance of StubWebsocketConnection.
    */
-  constructor(supportsCache?: boolean) {
-    super(null);
+  constructor(supportsCache?: boolean, authToken?: string) {
+    StubWebsocketConnection.loadDecoratorConfig();
+    super(null, supportsCache, authToken);
     this.testingIdentifier = ++StubWebsocketConnection.maxTestingIdentifier;
-    this.loadDecoratorConfig();
-    if (supportsCache) this.enableCache();
   }
 
-  private loadDecoratorConfig() {
+  private static loadDecoratorConfig() {
     // the loading of the decorator config usually occurs on starting the ws server (in production)
     WebsocketRouter.loadDecoratorConfig();
     WebsocketOutbounds.loadDecoratorConfig();
