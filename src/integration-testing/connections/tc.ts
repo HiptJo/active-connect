@@ -19,10 +19,11 @@ export class StubWebsocketConnection extends WebsocketConnection {
   /**
    * Creates an instance of StubWebsocketConnection.
    */
-  constructor() {
+  constructor(supportsCache?: boolean) {
     super(null);
     this.testingIdentifier = ++StubWebsocketConnection.maxTestingIdentifier;
     this.loadDecoratorConfig();
+    if (supportsCache) this.enableCache();
   }
 
   private loadDecoratorConfig() {
@@ -41,6 +42,9 @@ export class StubWebsocketConnection extends WebsocketConnection {
   private stack: {
     method: string;
     func: Function;
+    hashCallback:
+      | ((globalHash: number, specificHash: number) => void)
+      | undefined;
   }[] = [];
 
   /**
@@ -70,6 +74,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
           if (entry.length > 0) {
             const el = entry[0];
             this.stack = this.stack.filter((s) => s != el);
+            if (el.hashCallback) el.hashCallback(globalHash, specificHash);
             el.func(parsedValue);
             resolve(true);
             return;
@@ -90,11 +95,16 @@ export class StubWebsocketConnection extends WebsocketConnection {
    * @param [timeout] - Timeout value in milliseconds before test fails.
    * @returns Promise, that is resolved once the provided method is received.
    */
-  async expectMethod(method: string, timeout?: number): Promise<any> {
+  async expectMethod(
+    method: string,
+    timeout?: number,
+    hashCallback?: (globalHash: number, specificHash: number) => void
+  ): Promise<any> {
     return new Promise((func, reject) => {
       const stackObject = {
         method,
         func,
+        hashCallback,
       };
       this.stack.push(stackObject);
       setTimeout(() => {
@@ -117,7 +127,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
    */
   dontExpectMethod(method: string) {
     return new Promise<void>((res, rej) => {
-      const stackObject = {
+      const stackObject: any = {
         method,
         func: () => {
           rej("ActiveConnect: did receive unexpected method " + method + "");
@@ -182,8 +192,12 @@ export class TCWrapper extends StubWebsocketConnection {
    * Creates an instance of TCWrapper.
    * @param token - The token for authentication (optional).
    */
-  public constructor(client?: WebsocketClient, token?: string | undefined) {
-    super();
+  public constructor(
+    client?: WebsocketClient,
+    token?: string | undefined,
+    supportsCache?: boolean
+  ) {
+    super(supportsCache);
     this.token = token || null;
     this.client = client || new WebsocketClient();
 
