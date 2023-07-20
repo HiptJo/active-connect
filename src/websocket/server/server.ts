@@ -37,6 +37,7 @@ export class WebsocketServer {
     this.server = new Server(this.getConfiguration());
     this.server.on("connection", this.onConnect.bind(this));
     this.initializeClientInformationExchange();
+    WebsocketOutbounds.initCachingResponseEntrypoint();
   }
 
   private loadDecoratorConfiguration() {
