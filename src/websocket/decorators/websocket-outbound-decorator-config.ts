@@ -78,4 +78,9 @@ export class WebsocketOutboundDecoratorConfig extends DecoratorConfig {
    * Defines whether the outbound should use lazy or eager loading.
    */
   public lazyLoading: boolean = false;
+
+  /**
+   * Defines whether the outbound does support caching on the client-side.
+   */
+  public supportsCache: boolean = false;
 }

@@ -70,6 +70,12 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     return this._lazyLoading;
   }
 
+  /**
+   * When enabled, data is not sent initially when the client supports caching.
+   * If the client supports caching, data is sent once the client has transmitted the cache key.
+   */
+  public supportsCache: boolean = false;
+
   private subscribesChanges: boolean = false;
   private subscribesFilteredChanges: MessageFilter[] = [];
 
@@ -251,6 +257,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         for (var filter of this.decoratorConfigReference.subscriptionsFor) {
           this.subscribeChanges(filter);
         }
+      }
+      if (this.decoratorConfigReference.supportsCache) {
+        this.supportsCache = this.decoratorConfigReference.supportsCache;
       }
     }
   }
