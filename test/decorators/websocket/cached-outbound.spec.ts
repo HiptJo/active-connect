@@ -120,3 +120,13 @@ it("should not send cache request when authentication does not match", async () 
   const conn = WebsocketMocks.getConnectionStub(true);
   conn.dontExpectMethod("___cache");
 });
+
+it("should send clear command when authentication fails for ___cache command", async () => {
+  const conn = WebsocketMocks.getConnectionStub(true);
+  conn.runRequest("___cache", {
+    method: "out.cached",
+    globalHash: 100,
+    specificHash: 100,
+  });
+  expect(await conn.expectMethod("out.cached")).toBe("cache_delete");
+});
