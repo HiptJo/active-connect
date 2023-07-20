@@ -119,7 +119,7 @@ describe("standalone routes", () => {
   });
 
   it("should have registered the required routes", () => {
-    expect(WebsocketRouter.StandaloneRoutes).toHaveLength(3);
+    expect(WebsocketRouter.StandaloneRoutes).toHaveLength(4);
   });
 
   it("should be possible to register a route", async () => {
