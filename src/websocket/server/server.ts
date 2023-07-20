@@ -143,6 +143,7 @@ export class WebsocketServer {
     const conn = new WebsocketConnection(connection);
     if (req) {
       conn.setIp(req.headers["x-forwarded-for"] || req.socket.remoteAddress);
+      if (req.headers["supports-active-connect-cache"]) conn.enableCache();
     }
     if (this.logging) conn.enableLogging();
     this.connections.push(conn);

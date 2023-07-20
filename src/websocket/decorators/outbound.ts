@@ -93,9 +93,7 @@ export function LazyLoading(target: any, propertyKey: string) {
  * }
  * ```
  */
-export function SupportsCache<T = any>(
-  provider: WebsocketOutboundCacheKeyProvider<T>
-) {
+export function SupportsCache(provider: WebsocketOutboundCacheKeyProvider) {
   return function _SupportsCache(target: any, propertyKey: string) {
     const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
     config.supportsCache = true;

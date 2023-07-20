@@ -3,12 +3,19 @@ import { JsonParser } from "../../json/json-parser";
 
 export class WebsocketClient {
   private connection: ws;
-  constructor(port: number) {
-    const opts: any = process.env.ip_override
-      ? {
-          headers: { "x-forwarded-for": process.env.ip_override },
-        }
-      : undefined;
+  private static nextId: number = 1;
+  public readonly id: number = WebsocketClient.nextId++;
+  constructor(port: number, supportCaching?: boolean) {
+    const opts: any = {
+      headers: {},
+    };
+    if (process.env.ip_override) {
+      opts.headers["x-forwarded-for"] = process.env.ip_override;
+    }
+    if (supportCaching) {
+      opts.headers["supports-active-connect-cache"] = "true";
+    }
+
     this.connection = new ws(`ws://127.0.0.1:${port || 9000}`, opts);
     this.connection.on("ping", () => {
       if (this.pingCallbacks.length > 0) {

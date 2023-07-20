@@ -71,6 +71,21 @@ export class WebsocketConnection {
     this.logging = true;
   }
 
+  private cachingEnabled = false;
+  /**
+   * States that the client supports caching of outbound data.
+   */
+  public enableCache() {
+    this.cachingEnabled = true;
+  }
+
+  /**
+   * True if outbound caching is supported by the client.
+   */
+  public get supportsCaching() {
+    return this.cachingEnabled;
+  }
+
   private initializeListeners() {
     if (this.connection) {
       this.connection.on("message", this.onMessage.bind(this));
@@ -126,6 +141,41 @@ export class WebsocketConnection {
       method: method,
       value: value,
       messageId: messageId || -1,
+    });
+    if (this.logging && method.startsWith("m.")) {
+      let messageLog = message;
+      // only log replies
+      if (messageLog.length > 200) messageLog = messageLog.slice(0, 200);
+      console.log(
+        "Sending message: " +
+          messageLog +
+          " for Client with Session-Token=" +
+          this.token?.slice(0, 10) +
+          "..."
+      );
+    }
+    if (this.connection) this.connection.send(message);
+  }
+
+  /**
+   * Sends a message through the WebSocket connection containing caching hashCode information.
+   * @param method - The method of the message.
+   * @param value - The value of the message.
+   * @param globalHash - The global hash value.
+   * @param specificHash - The specific hash value.
+   */
+  public sendWithHashInfo(
+    method: string,
+    value: any,
+    globalHash: number,
+    specificHash: number
+  ) {
+    let message = JsonParser.stringify({
+      method: method,
+      value: value,
+      messageId: -1,
+      globalHash,
+      specificHash,
     });
     if (this.logging && method.startsWith("m.")) {
       let messageLog = message;
