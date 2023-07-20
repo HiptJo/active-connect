@@ -469,7 +469,7 @@ export class WebsocketOutbounds {
     },
     conn: WebsocketConnection
   ) {
-    if (globalHash == 0 && specificHash == 0) {
+    if (!globalHash && !specificHash) {
       // data has not been cached before
       await this.getOutbound(method).sendTo(conn);
     } else {
