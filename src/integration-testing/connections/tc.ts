@@ -48,13 +48,23 @@ export class StubWebsocketConnection extends WebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param [messageId] - The ID of the message.
+   * @param globalHash - The global hash value - used by outbounds with caching enabled.
+   * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    * @returns `true` if the message is handled, `false` otherwise.
    */
-  send(method: string, value: any, messageId?: number) {
+  send(
+    method: string,
+    value: any,
+    messageId?: number,
+    globalHash?: number,
+    specificHash?: number
+  ) {
     // parsing the string provides real data situation (date parsing, ...)
     return new Promise((resolve) => {
       setTimeout(() => {
-        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+        const parsedValue = !globalHash
+          ? JsonParser.parse(JsonParser.stringify(value))
+          : JsonParser.parse(value);
         if (this.stack.length > 0) {
           const entry = this.stack.filter((s) => s.method == method);
           if (entry.length > 0) {
@@ -198,12 +208,28 @@ export class TCWrapper extends StubWebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param messageId - The ID of the message (optional).
+   * @param globalHash - The global hash value - used by outbounds with caching enabled.
+   * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    */
-  send(method: string, value: any, messageId?: number) {
+  send(
+    method: string,
+    value: any,
+    messageId?: number,
+    globalHash?: number,
+    specificHash?: number
+  ) {
     return new Promise(async (resolve) => {
-      const handled = await super.send(method, value, messageId);
+      const handled = await super.send(
+        method,
+        value,
+        messageId,
+        globalHash,
+        specificHash
+      );
       if (!handled || method != "m.error") {
-        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+        const parsedValue = !globalHash
+          ? JsonParser.parse(JsonParser.stringify(value))
+          : JsonParser.parse(value);
         this.client.messageReceived({ method, data: parsedValue, messageId });
       }
       resolve(true);
