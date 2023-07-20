@@ -1,10 +1,6 @@
 import * as assert from "assert";
 
-import {
-  HttpServer,
-  WebsocketRoute,
-  WebsocketRouter,
-} from "../../../../src/active-connect";
+import { HttpServer, WebsocketRoute, WebsocketRouter } from "../../../../src";
 import { WebsocketConnection } from "../../../../src/";
 import { WebsocketClient } from "../../../../src/integration-testing/connections/websocket-client";
 

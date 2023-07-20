@@ -9,7 +9,7 @@ import {
   ProvideFile,
   WebsocketAuthenticator,
   WebsocketConnection,
-} from "../../../src/active-connect";
+} from "../../../src/";
 import { ProvidedFile } from "../../../src/content/files/provided-file";
 
 let server: HttpServer;

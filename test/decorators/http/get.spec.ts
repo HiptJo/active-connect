@@ -4,7 +4,7 @@ import {
   HttpResponse,
   HttpServer,
   HttpUnauthorizedError,
-} from "../../../src/active-connect";
+} from "../../../src";
 import { Response, Request } from "express";
 
 let server: HttpServer;

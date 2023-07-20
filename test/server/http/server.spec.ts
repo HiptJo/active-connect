@@ -1,4 +1,4 @@
-import { HttpServer } from "../../../src/active-connect";
+import { HttpServer } from "../../../src";
 import * as assert from "assert";
 import * as test from "supertest";
 

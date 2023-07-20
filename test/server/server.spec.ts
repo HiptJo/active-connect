@@ -6,7 +6,7 @@ import {
   WebsocketConnection,
   WebsocketRouter,
   WebsocketServer,
-} from "../../src/active-connect";
+} from "../../src/";
 import { WebsocketClient } from "../../src/integration-testing/connections/websocket-client";
 import * as Randomstring from "randomstring";
 import * as test from "supertest";

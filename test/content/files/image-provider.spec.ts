@@ -10,7 +10,7 @@ import {
   ProvideImage,
   WebsocketAuthenticator,
   WebsocketConnection,
-} from "../../../src/active-connect";
+} from "../../../src/";
 import { ProvidedImage } from "../../../src/content/images/provided-image";
 
 describe("server testing", () => {

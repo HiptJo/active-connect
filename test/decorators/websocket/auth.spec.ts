@@ -6,7 +6,7 @@ import {
   Route,
   StandaloneRoute,
   Subscribe,
-} from "../../../src/active-connect";
+} from "../../../src";
 import { WebsocketAuthenticator } from "../../../src/";
 import { WebsocketConnection } from "../../../src/";
 import { WebsocketRouter } from "../../../src/";

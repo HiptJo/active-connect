@@ -8,7 +8,7 @@ import {
   SubscribeFor,
   SubscribeMatchingChanges,
   WebsocketConnection,
-} from "../../../src/active-connect";
+} from "../../../src";
 import { testEach } from "../../../src/jest";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 

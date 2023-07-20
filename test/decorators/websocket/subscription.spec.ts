@@ -5,7 +5,7 @@ import {
   StandaloneRoute,
   Subscribe,
   SubscribeChanges,
-} from "../../../src/active-connect";
+} from "../../../src";
 import { testEach } from "../../../src/jest";
 import { WebsocketConnection } from "../../../src/";
 import { WebsocketMocks } from "../../server/websocket-mocks";

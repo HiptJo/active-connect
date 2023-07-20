@@ -4,7 +4,7 @@ import {
   WebsocketOutbound,
   WebsocketOutbounds,
   WebsocketRouter,
-} from "../../../src/active-connect";
+} from "../../../src";
 import * as assert from "assert";
 import { WebsocketClient } from "../../../src/integration-testing/connections/websocket-client";
 
