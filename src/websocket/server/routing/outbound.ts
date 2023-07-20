@@ -1,10 +1,9 @@
 import { WebsocketConnection } from "../connection/connection";
 import { AuthableDecorableFunction } from "../../../decorator-config/function";
-import { SimpleWebsocketRoute, WebsocketRoute } from "./route";
+import { SimpleWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
 import { MessageFilter } from "../../auth/authenticator";
 import { WebsocketOutboundDecoratorConfig } from "../../decorators/websocket-outbound-decorator-config";
-import { StandaloneRoute } from "../../decorators/route";
 import { JsonParser } from "../../../json";
 
 /**
