@@ -1,4 +1,5 @@
 import {
+  WebsocketOutboundCacheKeyProvider,
   WebsocketOutbound,
   WebsocketOutbounds,
 } from "../server/routing/outbound";
@@ -92,7 +93,12 @@ export function LazyLoading(target: any, propertyKey: string) {
  * }
  * ```
  */
-export function SupportsCache(target: any, propertyKey: string) {
-  const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
-  config.supportsCache = true;
+export function SupportsCache<T = any>(
+  provider: WebsocketOutboundCacheKeyProvider<T>
+) {
+  return function _SupportsCache(target: any, propertyKey: string) {
+    const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+    config.supportsCache = true;
+    config.cacheKeyProvider = provider;
+  };
 }

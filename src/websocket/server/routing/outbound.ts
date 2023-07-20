@@ -75,6 +75,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * If the client supports caching, data is sent once the client has transmitted the cache key.
    */
   public supportsCache: boolean = false;
+  /**
+   * Stores the cache key provider - it is used to determine whether the outbound data might have changed.
+   */
+  public cacheKeyProvider: WebsocketOutboundCacheKeyProvider<any> | null = null;
 
   private subscribesChanges: boolean = false;
   private subscribesFilteredChanges: MessageFilter[] = [];
@@ -260,6 +264,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       }
       if (this.decoratorConfigReference.supportsCache) {
         this.supportsCache = this.decoratorConfigReference.supportsCache;
+        this.cacheKeyProvider = this.decoratorConfigReference.cacheKeyProvider;
       }
     }
   }
@@ -467,4 +472,8 @@ export class WebsocketOutbounds {
   public static removeOutboundByMethod(method: string): boolean {
     return WebsocketOutbounds.outbounds.delete(method);
   }
+}
+
+export abstract class WebsocketOutboundCacheKeyProvider<T> {
+  abstract getHashCode(data: T): Promise<number>;
 }
