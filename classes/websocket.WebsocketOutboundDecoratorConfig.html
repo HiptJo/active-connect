@@ -28,7 +28,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <ul class="tsd-hierarchy">
 <li><span class="target">WebsocketOutboundDecoratorConfig</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L8">src/websocket/decorators/websocket-outbound-decorator-config.ts:8</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L9">src/websocket/decorators/websocket-outbound-decorator-config.ts:9</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -41,10 +41,12 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="websocket.WebsocketOutboundDecoratorConfig.html#authenticator" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-1024"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)"></path></g></svg><span>authenticator</span></a>
+<a href="websocket.WebsocketOutboundDecoratorConfig.html#cacheKeyProvider" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>cache<wbr/>Key<wbr/>Provider</span></a>
 <a href="websocket.WebsocketOutboundDecoratorConfig.html#lazyLoading" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>lazy<wbr/>Loading</span></a>
 <a href="websocket.WebsocketOutboundDecoratorConfig.html#resendAfterAuthenticationChange" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>resend<wbr/>After<wbr/>Authentication<wbr/>Change</span></a>
 <a href="websocket.WebsocketOutboundDecoratorConfig.html#subscriptionEnabled" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>subscription<wbr/>Enabled</span></a>
 <a href="websocket.WebsocketOutboundDecoratorConfig.html#subscriptionsFor" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>subscriptions<wbr/>For</span></a>
+<a href="websocket.WebsocketOutboundDecoratorConfig.html#supportsCache" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>supports<wbr/>Cache</span></a>
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Methods</h3>
@@ -72,7 +74,15 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="decorator_config.DecoratorConfig.html">DecoratorConfig</a>.<a href="decorator_config.DecoratorConfig.html#authenticator">authenticator</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/decorator-config/decorator-config.ts#L10">src/decorator-config/decorator-config.ts:10</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/decorator-config/decorator-config.ts#L10">src/decorator-config/decorator-config.ts:10</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member"><a id="cacheKeyProvider" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>cache<wbr/>Key<wbr/>Provider</span><a href="#cacheKeyProvider" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">cache<wbr/>Key<wbr/>Provider</span><span class="tsd-signature-symbol">:</span> <a href="websocket.WebsocketOutboundCacheKeyProvider.html" class="tsd-signature-type tsd-kind-class">WebsocketOutboundCacheKeyProvider</a></div>
+<div class="tsd-comment tsd-typography"><p>Stores the cache key provider. It can be used to check whether the data of the outbound might have been modified.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L91">src/websocket/decorators/websocket-outbound-decorator-config.ts:91</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="lazyLoading" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>lazy<wbr/>Loading</span><a href="#lazyLoading" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">lazy<wbr/>Loading</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
@@ -80,7 +90,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L80">src/websocket/decorators/websocket-outbound-decorator-config.ts:80</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L81">src/websocket/decorators/websocket-outbound-decorator-config.ts:81</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="resendAfterAuthenticationChange" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>resend<wbr/>After<wbr/>Authentication<wbr/>Change</span><a href="#resendAfterAuthenticationChange" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">resend<wbr/>After<wbr/>Authentication<wbr/>Change</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
@@ -88,7 +98,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L75">src/websocket/decorators/websocket-outbound-decorator-config.ts:75</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L76">src/websocket/decorators/websocket-outbound-decorator-config.ts:76</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="subscriptionEnabled" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>subscription<wbr/>Enabled</span><a href="#subscriptionEnabled" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">subscription<wbr/>Enabled</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
@@ -96,7 +106,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L50">src/websocket/decorators/websocket-outbound-decorator-config.ts:50</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L51">src/websocket/decorators/websocket-outbound-decorator-config.ts:51</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="subscriptionsFor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>subscriptions<wbr/>For</span><a href="#subscriptionsFor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">subscriptions<wbr/>For</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/websocket.MessageFilter.html" class="tsd-signature-type tsd-kind-interface">MessageFilter</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
@@ -104,7 +114,15 @@ Used to store configuration for outbound. The configuration is then loaded once 
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L55">src/websocket/decorators/websocket-outbound-decorator-config.ts:55</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L56">src/websocket/decorators/websocket-outbound-decorator-config.ts:56</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member"><a id="supportsCache" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>supports<wbr/>Cache</span><a href="#supportsCache" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">supports<wbr/>Cache</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
+<div class="tsd-comment tsd-typography"><p>Defines whether the outbound does support caching on the client-side.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L86">src/websocket/decorators/websocket-outbound-decorator-config.ts:86</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="addSubscriptionFor" class="tsd-anchor"></a>
@@ -125,7 +143,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L68">src/websocket/decorators/websocket-outbound-decorator-config.ts:68</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L69">src/websocket/decorators/websocket-outbound-decorator-config.ts:69</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="enableSubscription" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>enable<wbr/>Subscription</span><a href="#enableSubscription" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -136,7 +154,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L60">src/websocket/decorators/websocket-outbound-decorator-config.ts:60</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L61">src/websocket/decorators/websocket-outbound-decorator-config.ts:61</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="get" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>get</span><a href="#get" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -161,7 +179,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L38">src/websocket/decorators/websocket-outbound-decorator-config.ts:38</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L39">src/websocket/decorators/websocket-outbound-decorator-config.ts:39</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="init" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>init</span><a href="#init" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -185,7 +203,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/decorators/websocket-outbound-decorator-config.ts#L14">src/websocket/decorators/websocket-outbound-decorator-config.ts:14</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/decorators/websocket-outbound-decorator-config.ts#L15">src/websocket/decorators/websocket-outbound-decorator-config.ts:15</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -207,10 +225,12 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <ul>
 <li><a href="#constructor" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-512"></use></svg><span>constructor</span></a></li>
 <li><a href="#authenticator" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>authenticator</span></a></li>
+<li><a href="#cacheKeyProvider" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>cache<wbr/>Key<wbr/>Provider</span></a></li>
 <li><a href="#lazyLoading" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>lazy<wbr/>Loading</span></a></li>
 <li><a href="#resendAfterAuthenticationChange" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>resend<wbr/>After<wbr/>Authentication<wbr/>Change</span></a></li>
 <li><a href="#subscriptionEnabled" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>subscription<wbr/>Enabled</span></a></li>
 <li><a href="#subscriptionsFor" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>subscriptions<wbr/>For</span></a></li>
+<li><a href="#supportsCache" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>supports<wbr/>Cache</span></a></li>
 <li><a href="#addSubscriptionFor" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>add<wbr/>Subscription<wbr/>For</span></a></li>
 <li><a href="#enableSubscription" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>enable<wbr/>Subscription</span></a></li>
 <li><a href="#get" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get</span></a></li>
@@ -236,6 +256,7 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <li><a href="websocket.WebsocketAuthenticator.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Authenticator</span></a></li>
 <li><a href="websocket.WebsocketConnection.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Connection</span></a></li>
 <li><a href="websocket.WebsocketOutbound.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbound</span></a></li>
+<li><a href="websocket.WebsocketOutboundCacheKeyProvider.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbound<wbr/>Cache<wbr/>Key<wbr/>Provider</span></a></li>
 <li><a href="websocket.WebsocketOutboundDecoratorConfig.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbound<wbr/>Decorator<wbr/>Config</span></a></li>
 <li><a href="websocket.WebsocketOutbounds.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbounds</span></a></li>
 <li><a href="websocket.WebsocketRequest.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Request</span></a></li>
@@ -260,7 +281,8 @@ Used to store configuration for outbound. The configuration is then loaded once 
 <li><a href="../functions/websocket.Subscribe.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe</span></a></li>
 <li><a href="../functions/websocket.SubscribeChanges.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>Changes</span></a></li>
 <li><a href="../functions/websocket.SubscribeFor.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>For</span></a></li>
-<li><a href="../functions/websocket.SubscribeMatchingChanges.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>Matching<wbr/>Changes</span></a></li></ul></div></details></li></ul></nav></div></div></div>
+<li><a href="../functions/websocket.SubscribeMatchingChanges.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>Matching<wbr/>Changes</span></a></li>
+<li><a href="../functions/websocket.SupportsCache.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Supports<wbr/>Cache</span></a></li></ul></div></details></li></ul></nav></div></div></div>
 <div class="tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
 <div class="overlay"></div></body></html>

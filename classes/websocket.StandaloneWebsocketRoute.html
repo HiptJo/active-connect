@@ -30,7 +30,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <ul class="tsd-hierarchy">
 <li><a href="websocket.SimpleWebsocketRoute.html" class="tsd-signature-type tsd-kind-class">SimpleWebsocketRoute</a></li></ul></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L277">src/websocket/server/routing/route.ts:277</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L277">src/websocket/server/routing/route.ts:277</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -42,7 +42,8 @@ This way, routes without parent routes can be registered and are still allowed t
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
-<div class="tsd-index-list"><a href="websocket.StandaloneWebsocketRoute.html#children" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-1024"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)"></path></g></svg><span>children</span></a>
+<div class="tsd-index-list"><a href="websocket.StandaloneWebsocketRoute.html#authenticator" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-1024"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)"></path></g></svg><span>authenticator</span></a>
+<a href="websocket.StandaloneWebsocketRoute.html#children" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>children</span></a>
 <a href="websocket.StandaloneWebsocketRoute.html#method" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>method</span></a>
 <a href="websocket.StandaloneWebsocketRoute.html#objConfig" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>obj<wbr/>Config</span></a>
 </div></section>
@@ -108,21 +109,27 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Overrides <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#constructor">constructor</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L286">src/websocket/server/routing/route.ts:286</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L286">src/websocket/server/routing/route.ts:286</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
+<section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="authenticator" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>authenticator</span><a href="#authenticator" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">authenticator</span><span class="tsd-signature-symbol">:</span> <a href="websocket.WebsocketAuthenticator.html" class="tsd-signature-type tsd-kind-class">WebsocketAuthenticator</a><span class="tsd-signature-symbol"> = null</span></div><aside class="tsd-sources">
+<p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#authenticator">authenticator</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/decorator-config/function.ts#L67">src/decorator-config/function.ts:67</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="children" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>children</span><a href="#children" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">children</span><span class="tsd-signature-symbol">:</span> <a href="websocket.WebsocketRoute.html" class="tsd-signature-type tsd-kind-class">WebsocketRoute</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#children">children</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L69">src/websocket/server/routing/route.ts:69</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L69">src/websocket/server/routing/route.ts:69</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="method" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>method</span><a href="#method" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">method</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#method">method</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L15">src/websocket/server/routing/route.ts:15</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L15">src/websocket/server/routing/route.ts:15</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="objConfig" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>obj<wbr/>Config</span><a href="#objConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">obj<wbr/>Config</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">propertyKey</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">target</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
@@ -138,7 +145,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#objConfig">objConfig</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/decorator-config/function.ts#L14">src/decorator-config/function.ts:14</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/decorator-config/function.ts#L14">src/decorator-config/function.ts:14</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="Children-1" class="tsd-anchor"></a>
@@ -155,7 +162,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from WebsocketRoute.Children</p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L75">src/websocket/server/routing/route.ts:75</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L75">src/websocket/server/routing/route.ts:75</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="Func" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>Func</span><a href="#Func" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -187,7 +194,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from WebsocketRoute.Func</p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/decorator-config/function.ts#L81">src/decorator-config/function.ts:81</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/decorator-config/function.ts#L81">src/decorator-config/function.ts:81</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="Method-1" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>Method</span><a href="#Method-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -202,7 +209,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Overrides WebsocketRoute.Method</p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L305">src/websocket/server/routing/route.ts:305</a></li></ul></aside></li>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L305">src/websocket/server/routing/route.ts:305</a></li></ul></aside></li>
 <li class="tsd-signature" id="Method-1.Method-3"><span class="tsd-signature-symbol">set</span> Method<span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Sets the method name for the route.</p>
@@ -219,7 +226,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Overrides WebsocketRoute.Method</p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L298">src/websocket/server/routing/route.ts:298</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L298">src/websocket/server/routing/route.ts:298</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="hasAuthenticator" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>has<wbr/>Authenticator</span><a href="#hasAuthenticator" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -234,7 +241,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from WebsocketRoute.hasAuthenticator</p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/decorator-config/function.ts#L104">src/decorator-config/function.ts:104</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/decorator-config/function.ts#L104">src/decorator-config/function.ts:104</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="addChild" class="tsd-anchor"></a>
@@ -257,7 +264,7 @@ This way, routes without parent routes can be registered and are still allowed t
 </div><aside class="tsd-sources">
 <p>Overrides <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#addChild">addChild</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L339">src/websocket/server/routing/route.ts:339</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L339">src/websocket/server/routing/route.ts:339</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="bindDecoratorConfig" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>bind<wbr/>Decorator<wbr/>Config</span><a href="#bindDecoratorConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -280,7 +287,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#bindDecoratorConfig">bindDecoratorConfig</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L217">src/websocket/server/routing/route.ts:217</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L217">src/websocket/server/routing/route.ts:217</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="call" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>call</span><a href="#call" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
@@ -307,7 +314,7 @@ This way, routes without parent routes can be registered and are still allowed t
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#call">call</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L161">src/websocket/server/routing/route.ts:161</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L161">src/websocket/server/routing/route.ts:161</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="checkForDuplicates" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>check<wbr/>For<wbr/>Duplicates</span><a href="#checkForDuplicates" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -327,7 +334,7 @@ This way, routes without parent routes can be registered and are still allowed t
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#checkForDuplicates">checkForDuplicates</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L254">src/websocket/server/routing/route.ts:254</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L254">src/websocket/server/routing/route.ts:254</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="loadDecoratorConfig" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>load<wbr/>Decorator<wbr/>Config</span><a href="#loadDecoratorConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -340,7 +347,7 @@ Recursively initializes loading for all child routes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#loadDecoratorConfig">loadDecoratorConfig</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L226">src/websocket/server/routing/route.ts:226</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L226">src/websocket/server/routing/route.ts:226</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="modifies" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>modifies</span><a href="#modifies" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -365,7 +372,7 @@ Recursively initializes loading for all child routes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#modifies">modifies</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L65">src/websocket/server/routing/route.ts:65</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L65">src/websocket/server/routing/route.ts:65</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="route" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>route</span><a href="#route" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -393,7 +400,7 @@ Recursively initializes loading for all child routes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Overrides <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#route">route</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L315">src/websocket/server/routing/route.ts:315</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L315">src/websocket/server/routing/route.ts:315</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="routeChildren" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>route<wbr/>Children</span><a href="#routeChildren" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
@@ -421,7 +428,7 @@ Recursively initializes loading for all child routes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#routeChildren">routeChildren</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L142">src/websocket/server/routing/route.ts:142</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L142">src/websocket/server/routing/route.ts:142</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="sendError" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>send<wbr/>Error</span><a href="#sendError" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
@@ -446,7 +453,7 @@ Recursively initializes loading for all child routes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#sendError">sendError</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/websocket/server/routing/route.ts#L206">src/websocket/server/routing/route.ts:206</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/websocket/server/routing/route.ts#L206">src/websocket/server/routing/route.ts:206</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="setAuthenticator" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Authenticator</span><a href="#setAuthenticator" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -466,7 +473,7 @@ Recursively initializes loading for all child routes.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketRoute.html">WebsocketRoute</a>.<a href="websocket.WebsocketRoute.html#setAuthenticator">setAuthenticator</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/8182ee4/src/decorator-config/function.ts#L73">src/decorator-config/function.ts:73</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/cd1b949/src/decorator-config/function.ts#L73">src/decorator-config/function.ts:73</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -487,6 +494,7 @@ Recursively initializes loading for all child routes.</p>
 <div class="tsd-accordion-details">
 <ul>
 <li><a href="#constructor" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-512"></use></svg><span>constructor</span></a></li>
+<li><a href="#authenticator" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>authenticator</span></a></li>
 <li><a href="#children" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>children</span></a></li>
 <li><a href="#method" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>method</span></a></li>
 <li><a href="#objConfig" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>obj<wbr/>Config</span></a></li>
@@ -525,6 +533,7 @@ Recursively initializes loading for all child routes.</p>
 <li><a href="websocket.WebsocketAuthenticator.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Authenticator</span></a></li>
 <li><a href="websocket.WebsocketConnection.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Connection</span></a></li>
 <li><a href="websocket.WebsocketOutbound.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbound</span></a></li>
+<li><a href="websocket.WebsocketOutboundCacheKeyProvider.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbound<wbr/>Cache<wbr/>Key<wbr/>Provider</span></a></li>
 <li><a href="websocket.WebsocketOutboundDecoratorConfig.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbound<wbr/>Decorator<wbr/>Config</span></a></li>
 <li><a href="websocket.WebsocketOutbounds.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Outbounds</span></a></li>
 <li><a href="websocket.WebsocketRequest.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Websocket<wbr/>Request</span></a></li>
@@ -549,7 +558,8 @@ Recursively initializes loading for all child routes.</p>
 <li><a href="../functions/websocket.Subscribe.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe</span></a></li>
 <li><a href="../functions/websocket.SubscribeChanges.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>Changes</span></a></li>
 <li><a href="../functions/websocket.SubscribeFor.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>For</span></a></li>
-<li><a href="../functions/websocket.SubscribeMatchingChanges.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>Matching<wbr/>Changes</span></a></li></ul></div></details></li></ul></nav></div></div></div>
+<li><a href="../functions/websocket.SubscribeMatchingChanges.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Subscribe<wbr/>Matching<wbr/>Changes</span></a></li>
+<li><a href="../functions/websocket.SupportsCache.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>Supports<wbr/>Cache</span></a></li></ul></div></details></li></ul></nav></div></div></div>
 <div class="tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
 <div class="overlay"></div></body></html>
