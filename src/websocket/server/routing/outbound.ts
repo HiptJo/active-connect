@@ -156,7 +156,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           const hash = this.cacheKeyProvider
             ? JsonParser.getHashCode(stringContent)
             : null;
-          conn.send(this.method, stringContent, undefined, gHash, hash);
+          conn.send(this.method, res, undefined, gHash, hash);
         } else {
           conn.send(this.method, res);
         }
