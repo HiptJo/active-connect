@@ -14,6 +14,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: |
           npm ci
+          cp ./package.json ./dist/package.json
+          cp ./package-lock.json ./dist/package-lock.json
           cd dist
           npm publish
         env:
