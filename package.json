@@ -9,8 +9,8 @@
     "websocket",
     "node server"
   ],
-  "main": "./dist/active-connect.js",
-  "typings": "./dist/active-connect.d.ts",
+  "main": "./index.js",
+  "typings": "./index.d.ts",
   "license": "MIT",
   "scripts": {
     "start": "tsc -w",
