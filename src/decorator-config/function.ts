@@ -64,7 +64,7 @@ export class AuthenticationError extends Error {
  * Represents the reference to an object method used for websocket routes and outbounds with support for authentication.
  */
 export abstract class AuthableDecorableFunction extends DecorableFunction {
-  private authenticator: WebsocketAuthenticator | null = null;
+  protected authenticator: WebsocketAuthenticator | null = null;
 
   /**
    * Sets the authenticator for the decorated function.

@@ -19,13 +19,13 @@ export class StubWebsocketConnection extends WebsocketConnection {
   /**
    * Creates an instance of StubWebsocketConnection.
    */
-  constructor() {
-    super(null);
+  constructor(supportsCache?: boolean, authToken?: string) {
+    StubWebsocketConnection.loadDecoratorConfig();
+    super(null, supportsCache, authToken);
     this.testingIdentifier = ++StubWebsocketConnection.maxTestingIdentifier;
-    this.loadDecoratorConfig();
   }
 
-  private loadDecoratorConfig() {
+  private static loadDecoratorConfig() {
     // the loading of the decorator config usually occurs on starting the ws server (in production)
     WebsocketRouter.loadDecoratorConfig();
     WebsocketOutbounds.loadDecoratorConfig();
@@ -41,6 +41,9 @@ export class StubWebsocketConnection extends WebsocketConnection {
   private stack: {
     method: string;
     func: Function;
+    hashCallback:
+      | ((globalHash: number, specificHash: number) => void)
+      | undefined;
   }[] = [];
 
   /**
@@ -48,18 +51,29 @@ export class StubWebsocketConnection extends WebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param [messageId] - The ID of the message.
+   * @param globalHash - The global hash value - used by outbounds with caching enabled.
+   * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    * @returns `true` if the message is handled, `false` otherwise.
    */
-  send(method: string, value: any, messageId?: number) {
+  send(
+    method: string,
+    value: any,
+    messageId?: number,
+    globalHash?: number,
+    specificHash?: number
+  ) {
     // parsing the string provides real data situation (date parsing, ...)
     return new Promise((resolve) => {
       setTimeout(() => {
-        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+        const parsedValue = !globalHash
+          ? JsonParser.parse(JsonParser.stringify(value))
+          : JsonParser.parse(value);
         if (this.stack.length > 0) {
           const entry = this.stack.filter((s) => s.method == method);
           if (entry.length > 0) {
             const el = entry[0];
             this.stack = this.stack.filter((s) => s != el);
+            if (el.hashCallback) el.hashCallback(globalHash, specificHash);
             el.func(parsedValue);
             resolve(true);
             return;
@@ -80,11 +94,16 @@ export class StubWebsocketConnection extends WebsocketConnection {
    * @param [timeout] - Timeout value in milliseconds before test fails.
    * @returns Promise, that is resolved once the provided method is received.
    */
-  async expectMethod(method: string, timeout?: number): Promise<any> {
+  async expectMethod(
+    method: string,
+    timeout?: number,
+    hashCallback?: (globalHash: number, specificHash: number) => void
+  ): Promise<any> {
     return new Promise((func, reject) => {
       const stackObject = {
         method,
         func,
+        hashCallback,
       };
       this.stack.push(stackObject);
       setTimeout(() => {
@@ -107,7 +126,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
    */
   dontExpectMethod(method: string) {
     return new Promise<void>((res, rej) => {
-      const stackObject = {
+      const stackObject: any = {
         method,
         func: () => {
           rej("ActiveConnect: did receive unexpected method " + method + "");
@@ -172,8 +191,12 @@ export class TCWrapper extends StubWebsocketConnection {
    * Creates an instance of TCWrapper.
    * @param token - The token for authentication (optional).
    */
-  public constructor(client?: WebsocketClient, token?: string | undefined) {
-    super();
+  public constructor(
+    client?: WebsocketClient,
+    token?: string | undefined,
+    supportsCache?: boolean
+  ) {
+    super(supportsCache);
     this.token = token || null;
     this.client = client || new WebsocketClient();
 
@@ -198,12 +221,28 @@ export class TCWrapper extends StubWebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param messageId - The ID of the message (optional).
+   * @param globalHash - The global hash value - used by outbounds with caching enabled.
+   * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    */
-  send(method: string, value: any, messageId?: number) {
+  send(
+    method: string,
+    value: any,
+    messageId?: number,
+    globalHash?: number,
+    specificHash?: number
+  ) {
     return new Promise(async (resolve) => {
-      const handled = await super.send(method, value, messageId);
+      const handled = await super.send(
+        method,
+        value,
+        messageId,
+        globalHash,
+        specificHash
+      );
       if (!handled || method != "m.error") {
-        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+        const parsedValue = !globalHash
+          ? JsonParser.parse(JsonParser.stringify(value))
+          : JsonParser.parse(value);
         this.client.messageReceived({ method, data: parsedValue, messageId });
       }
       resolve(true);

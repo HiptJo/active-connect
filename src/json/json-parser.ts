@@ -43,4 +43,21 @@ export class JsonParser {
     }
     return str;
   }
+
+  /**
+   * Generates a hash code for a string object.
+   * @param s - String for which the hash code should be generated
+   * @returns the hash value of the string
+   */
+  static getHashCode(s: string): number {
+    var hash = 0,
+      i,
+      chr;
+    for (i = 0; i < s.length; i++) {
+      chr = s.charCodeAt(i);
+      hash = (hash << 5) - hash + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  }
 }

@@ -1,4 +1,5 @@
 import {
+  WebsocketOutboundCacheKeyProvider,
   WebsocketOutbound,
   WebsocketOutbounds,
 } from "../server/routing/outbound";
@@ -13,6 +14,7 @@ import { WebsocketOutboundDecoratorConfig } from "./websocket-outbound-decorator
  * - `@Subscribe` and `@SubscribeFor`
  * - `@ResendAfterAuthenticationChange`
  * - `@LazyLoading`
+ * - `@SupportsCache`
  *
  * @param method - The method name for the outbound message.
  *                 Outbound method names do not append to route methods.
@@ -75,4 +77,26 @@ export function Outbound(
 export function LazyLoading(target: any, propertyKey: string) {
   const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
   config.lazyLoading = true;
+}
+
+/**
+ * Annotates that the outbound data is cached by clients.
+ *
+ * @example Method annotation for outbound:
+ * ```
+ * class Example {
+ *     @Outbound("d.example")
+ *     @SupportsCache
+ *     async getData(connection: WebsocketConnection): Promise<any> {
+ *       return [...];
+ *     }
+ * }
+ * ```
+ */
+export function SupportsCache(provider: WebsocketOutboundCacheKeyProvider) {
+  return function _SupportsCache(target: any, propertyKey: string) {
+    const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+    config.supportsCache = true;
+    config.cacheKeyProvider = provider;
+  };
 }

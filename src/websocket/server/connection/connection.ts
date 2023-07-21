@@ -50,7 +50,13 @@ export class WebsocketConnection {
    * Creates a new instance of WebsocketConnection.
    * @param connection - The WebSocket connection object.
    */
-  constructor(protected connection: WebSocket | null) {
+  constructor(
+    protected connection: WebSocket | null,
+    supportsCache?: boolean,
+    authToken?: string
+  ) {
+    if (supportsCache) this.enableCache();
+    this.token = authToken;
     this.initializeListeners();
     this.sendWelcomeMessages();
     if (connection) {
@@ -69,6 +75,21 @@ export class WebsocketConnection {
    */
   public enableLogging() {
     this.logging = true;
+  }
+
+  private cachingEnabled = false;
+  /**
+   * States that the client supports caching of outbound data.
+   */
+  public enableCache() {
+    this.cachingEnabled = true;
+  }
+
+  /**
+   * True if outbound caching is supported by the client.
+   */
+  public get supportsCaching() {
+    return this.cachingEnabled;
   }
 
   private initializeListeners() {
@@ -120,12 +141,22 @@ export class WebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param messageId - The ID of the message.
+   * @param globalHash - The global hash value - used by outbounds with caching enabled.
+   * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    */
-  public send(method: string, value: any, messageId?: number | null) {
+  public send(
+    method: string,
+    value: any,
+    messageId?: number | null,
+    globalHash?: number,
+    specificHash?: number
+  ) {
     let message = JsonParser.stringify({
       method: method,
       value: value,
       messageId: messageId || -1,
+      globalHash,
+      specificHash,
     });
     if (this.logging && method.startsWith("m.")) {
       let messageLog = message;

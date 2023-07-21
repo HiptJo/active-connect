@@ -4,6 +4,7 @@ import { SimpleWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
 import { MessageFilter } from "../../auth/authenticator";
 import { WebsocketOutboundDecoratorConfig } from "../../decorators/websocket-outbound-decorator-config";
+import { JsonParser } from "../../../json";
 
 /**
  * @deprecated
@@ -70,6 +71,16 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     return this._lazyLoading;
   }
 
+  /**
+   * When enabled, data is not sent initially when the client supports caching.
+   * If the client supports caching, data is sent once the client has transmitted the cache key.
+   */
+  public supportsCache: boolean = false;
+  /**
+   * Stores the cache key provider - it is used to determine whether the outbound data might have changed.
+   */
+  public cacheKeyProvider: WebsocketOutboundCacheKeyProvider | null = null;
+
   private subscribesChanges: boolean = false;
   private subscribesFilteredChanges: MessageFilter[] = [];
 
@@ -130,6 +141,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   public async sendTo(conn: WebsocketConnection) {
     try {
       const res = await this.Func(conn);
+      const gHash = this.cacheKeyProvider
+        ? await this.cacheKeyProvider.getHashCode()
+        : null;
       if (
         !res ||
         (res &&
@@ -137,7 +151,15 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           !res.toString().startsWith("error:auth:unauthorized"))
       ) {
         await this.subscribeForConnection(conn, res);
-        conn.send(this.method, res);
+        if (gHash) {
+          const stringContent = JsonParser.stringify(res);
+          const hash = this.cacheKeyProvider
+            ? JsonParser.getHashCode(stringContent)
+            : null;
+          conn.send(this.method, stringContent, undefined, gHash, hash);
+        } else {
+          conn.send(this.method, res);
+        }
       }
     } catch (e) {
       if (!e?.isAuthenticationError) {
@@ -156,6 +178,59 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   public async sendToIfSubscribed(conn: WebsocketConnection) {
     if (this.connectionSubscribesForChanges(conn)) {
       this.sendTo(conn);
+    }
+  }
+
+  /**
+   * Checks whether the data has been changed and sends the updated data to the client.
+   *
+   * @param conn - The WebSocket connection to send the data to.
+   * @param globalHash - The global hash value
+   * @param specificHash - The specific hash value
+   */
+  public async sendToIfContentChanged(
+    conn: WebsocketConnection,
+    globalHash: number,
+    specificHash: number
+  ) {
+    // test auth
+    if (this.hasAuthenticator) {
+      if (!(await this.authenticator.authenticate(conn, null))) {
+        // unauthorized
+        conn.send(this.method, "cache_delete");
+        return;
+      }
+    }
+    const gHash = await this.cacheKeyProvider.getHashCode();
+    if (gHash != globalHash) {
+      await this.sendTo(conn);
+    } else {
+      // check if
+      try {
+        const res = await this.Func(conn);
+        if (
+          !res ||
+          (res &&
+            !res.toString().startsWith("auth:unauthorized") &&
+            !res.toString().startsWith("error:auth:unauthorized"))
+        ) {
+          await this.subscribeForConnection(conn, res);
+          const stringContent = JsonParser.stringify(res);
+          const hash = JsonParser.getHashCode(stringContent);
+          if (hash != specificHash) {
+            conn.send(this.method, stringContent, undefined, gHash, hash);
+          } else {
+            conn.send(this.method, "cache_restore");
+          }
+        }
+      } catch (e) {
+        if (!e?.isAuthenticationError) {
+          if (!e.SILENT) console.error(e);
+          conn.send("m.error", e?.message || e);
+        } else if (this.lazyLoading || e.SILENT) {
+          conn.send("m.error", e?.message || e);
+        }
+      }
     }
   }
 
@@ -231,6 +306,13 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   }
 
   /**
+   * Checks whether the connection has sufficient permission to receive this outbound.
+   */
+  public async authenticate(conn: WebsocketConnection) {
+    return await this.authenticator.authenticate(conn, null);
+  }
+
+  /**
    * Loads the decorator configuration from the bound reference.
    */
   public loadDecoratorConfig() {
@@ -251,6 +333,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         for (var filter of this.decoratorConfigReference.subscriptionsFor) {
           this.subscribeChanges(filter);
         }
+      }
+      if (this.decoratorConfigReference.supportsCache) {
+        this.supportsCache = this.decoratorConfigReference.supportsCache;
+        this.cacheKeyProvider = this.decoratorConfigReference.cacheKeyProvider;
       }
     }
   }
@@ -356,7 +442,54 @@ export class WebsocketOutbounds {
    */
   public static async sendToConnection(conn: WebsocketConnection) {
     for (var out of WebsocketOutbounds.outbounds) {
-      if (!out[1].lazyLoading) await out[1].sendTo(conn);
+      if (!out[1].lazyLoading) {
+        // check if client supports caching
+        if (!out[1].supportsCache || !conn.supportsCaching) {
+          await out[1].sendTo(conn);
+        } else {
+          // check if the user has sufficient permissions
+          if (await out[1].authenticate(conn)) {
+            conn.send("___cache", out[1].method);
+          }
+        }
+      }
+    }
+  }
+
+  public static initCachingResponseEntrypoint() {
+    if (
+      WebsocketRouter.StandaloneRoutes.filter((r) => r.Method == "___cache")
+        .length == 0
+    )
+      WebsocketRouter.registerStandaloneRoute(
+        new SimpleWebsocketRoute(
+          "___cache",
+          WebsocketOutbounds.onCacheResponseReceived.bind(WebsocketOutbounds)
+        )
+      );
+  }
+
+  private static async onCacheResponseReceived(
+    {
+      method,
+      globalHash,
+      specificHash,
+    }: {
+      method: string;
+      globalHash: number;
+      specificHash: number;
+    },
+    conn: WebsocketConnection
+  ) {
+    if (!globalHash && !specificHash) {
+      // data has not been cached before
+      await this.getOutbound(method).sendTo(conn);
+    } else {
+      await this.getOutbound(method).sendToIfContentChanged(
+        conn,
+        globalHash,
+        specificHash
+      );
     }
   }
 
@@ -458,4 +591,8 @@ export class WebsocketOutbounds {
   public static removeOutboundByMethod(method: string): boolean {
     return WebsocketOutbounds.outbounds.delete(method);
   }
+}
+
+export abstract class WebsocketOutboundCacheKeyProvider {
+  abstract getHashCode(): Promise<number>;
 }

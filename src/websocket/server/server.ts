@@ -37,6 +37,7 @@ export class WebsocketServer {
     this.server = new Server(this.getConfiguration());
     this.server.on("connection", this.onConnect.bind(this));
     this.initializeClientInformationExchange();
+    WebsocketOutbounds.initCachingResponseEntrypoint();
   }
 
   private loadDecoratorConfiguration() {
@@ -143,6 +144,11 @@ export class WebsocketServer {
     const conn = new WebsocketConnection(connection);
     if (req) {
       conn.setIp(req.headers["x-forwarded-for"] || req.socket.remoteAddress);
+      if (
+        req.headers["supports-active-connect-cache"] ||
+        req.url?.indexOf("?cache=true") >= 0
+      )
+        conn.enableCache();
     }
     if (this.logging) conn.enableLogging();
     this.connections.push(conn);

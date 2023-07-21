@@ -184,3 +184,41 @@ it("should be possible to send an ip to the server (deprecated)", async () => {
   await client.awaitMessage("m.___ip");
   client.close();
 });
+
+describe("outbound caching", () => {
+  it("should state that caching is not enabled for regular connections", async () => {
+    const client = new WebsocketClient(9008);
+    await client.awaitConnection();
+
+    const connections = server.getWebsocketInstance().getConnections();
+    expect(
+      connections.filter((c) => c.id == client.id)[0].supportsCaching
+    ).toBeFalsy();
+
+    client.close();
+  });
+
+  it("should enable caching when the caching header is present", async () => {
+    const client = new WebsocketClient(9008, true);
+    await client.awaitConnection();
+
+    const connections = server.getWebsocketInstance().getConnections();
+    expect(
+      connections.filter((c) => c.id == client.id)[0].supportsCaching
+    ).toBeTruthy();
+
+    client.close();
+  });
+
+  it("should enable caching when the caching url is present", async () => {
+    const client = new WebsocketClient(9008, true, true);
+    await client.awaitConnection();
+
+    const connections = server.getWebsocketInstance().getConnections();
+    expect(
+      connections.filter((c) => c.id == client.id)[0].supportsCaching
+    ).toBeTruthy();
+
+    client.close();
+  });
+});
