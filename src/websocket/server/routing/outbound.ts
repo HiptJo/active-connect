@@ -448,7 +448,10 @@ export class WebsocketOutbounds {
           await out[1].sendTo(conn);
         } else {
           // check if the user has sufficient permissions
-          if (await out[1].authenticate(conn)) {
+          if (
+            !out[1].hasAuthenticator ||
+            (out[1].hasAuthenticator && (await out[1].authenticate(conn)))
+          ) {
             conn.send("___cache", out[1].method);
           }
         }
