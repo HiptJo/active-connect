@@ -209,4 +209,16 @@ describe("outbound caching", () => {
 
     client.close();
   });
+
+  it("should enable caching when the caching url is present", async () => {
+    const client = new WebsocketClient(9008, true, true);
+    await client.awaitConnection();
+
+    const connections = server.getWebsocketInstance().getConnections();
+    expect(
+      connections.filter((c) => c.id == client.id)[0].supportsCaching
+    ).toBeTruthy();
+
+    client.close();
+  });
 });

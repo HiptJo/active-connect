@@ -5,18 +5,26 @@ export class WebsocketClient {
   private connection: ws;
   private static nextId: number = 1;
   public readonly id: number = WebsocketClient.nextId++;
-  constructor(port: number, supportCaching?: boolean) {
+  constructor(
+    port: number,
+    supportCaching?: boolean,
+    enableCachingUsingParam?: boolean
+  ) {
     const opts: any = {
       headers: {},
     };
     if (process.env.ip_override) {
       opts.headers["x-forwarded-for"] = process.env.ip_override;
     }
-    if (supportCaching) {
+    if (supportCaching && !enableCachingUsingParam) {
       opts.headers["supports-active-connect-cache"] = "true";
     }
 
-    this.connection = new ws(`ws://127.0.0.1:${port || 9000}`, opts);
+    this.connection = new ws(
+      `ws://127.0.0.1:${port || 9000}` +
+        (enableCachingUsingParam ? "/?cache=true" : ""),
+      opts
+    );
     this.connection.on("ping", () => {
       if (this.pingCallbacks.length > 0) {
         this.pingCallbacks.shift()();
