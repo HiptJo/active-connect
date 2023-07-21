@@ -136,9 +136,29 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
 
   /**
    * Sends the outbound data to the provided connection.
+   * If caching is enabled, the caching hash is checked in advance.
    * @param conn - The WebSocket connection to send the data to.
    */
   public async sendTo(conn: WebsocketConnection) {
+    // check if client supports caching
+    if (!this.supportsCache || !conn.supportsCaching) {
+      await this.sendData(conn);
+    } else {
+      // check if the user has sufficient permissions
+      if (
+        !this.hasAuthenticator ||
+        (this.hasAuthenticator && (await this.authenticate(conn)))
+      ) {
+        conn.send("___cache", this.method);
+      }
+    }
+  }
+
+  /**
+   * Sends the outbound data to the provided connection.
+   * @param conn - The WebSocket connection to send the data to.
+   */
+  public async sendData(conn: WebsocketConnection) {
     try {
       const res = await this.Func(conn);
       const gHash = this.cacheKeyProvider
@@ -203,7 +223,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     }
     const gHash = await this.cacheKeyProvider.getHashCode();
     if (gHash != globalHash) {
-      await this.sendTo(conn);
+      await this.sendData(conn);
     } else {
       // check if
       try {
@@ -258,7 +278,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     if (key || this.subscribesChanges) {
       const connections = this.subscribedConnections.get(key || null);
       if (connections) {
-        await Promise.all(connections.map((conn) => this.sendTo(conn)));
+        await Promise.all(connections.map((conn) => this.sendData(conn)));
       }
     }
   }
@@ -443,18 +463,7 @@ export class WebsocketOutbounds {
   public static async sendToConnection(conn: WebsocketConnection) {
     for (var out of WebsocketOutbounds.outbounds) {
       if (!out[1].lazyLoading) {
-        // check if client supports caching
-        if (!out[1].supportsCache || !conn.supportsCaching) {
-          await out[1].sendTo(conn);
-        } else {
-          // check if the user has sufficient permissions
-          if (
-            !out[1].hasAuthenticator ||
-            (out[1].hasAuthenticator && (await out[1].authenticate(conn)))
-          ) {
-            conn.send("___cache", out[1].method);
-          }
-        }
+        await out[1].sendTo(conn);
       }
     }
   }
@@ -486,7 +495,7 @@ export class WebsocketOutbounds {
   ) {
     if (!globalHash && !specificHash) {
       // data has not been cached before
-      await this.getOutbound(method).sendTo(conn);
+      await this.getOutbound(method).sendData(conn);
     } else {
       await this.getOutbound(method).sendToIfContentChanged(
         conn,
