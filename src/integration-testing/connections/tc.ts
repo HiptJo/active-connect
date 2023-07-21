@@ -65,9 +65,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
     // parsing the string provides real data situation (date parsing, ...)
     return new Promise((resolve) => {
       setTimeout(() => {
-        const parsedValue = !globalHash
-          ? JsonParser.parse(JsonParser.stringify(value))
-          : JsonParser.parse(value);
+        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
         if (this.stack.length > 0) {
           const entry = this.stack.filter((s) => s.method == method);
           if (entry.length > 0) {
