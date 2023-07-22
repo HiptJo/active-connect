@@ -175,6 +175,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           !res.toString().startsWith("auth:unauthorized") &&
           !res.toString().startsWith("error:auth:unauthorized"))
       ) {
+        if (conn.supportsCaching && this.partialUpdates) {
+          conn.addOutboundData(this.method, res);
+        }
         await this.subscribeForConnection(conn, res);
         if (gHash) {
           const stringContent = JsonParser.stringify(res);
@@ -271,7 +274,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           const stringContent = JsonParser.stringify(res);
           const hash = JsonParser.getHashCode(stringContent);
           if (hash != specificHash) {
-            conn.send(this.method, stringContent, undefined, gHash, hash);
+            conn.addOutboundData(this.method, res);
+            conn.send(this.method, res, undefined, gHash, hash);
           } else {
             conn.send(this.method, "cache_restore");
           }
