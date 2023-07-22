@@ -7,6 +7,8 @@ import { WebsocketRouter } from "../routing/router";
 import { WebsocketServer } from "../server";
 import { DecorableFunction } from "../../../decorator-config/function";
 
+import * as _ from "lodash";
+
 /**
  * Represents a WebSocket connection.
  */
@@ -149,7 +151,10 @@ export class WebsocketConnection {
     value: any,
     messageId?: number | null,
     globalHash?: number,
-    specificHash?: number
+    specificHash?: number,
+    inserted?: any[],
+    updated?: any[],
+    deleted?: any[]
   ) {
     let message = JsonParser.stringify({
       method: method,
@@ -157,6 +162,9 @@ export class WebsocketConnection {
       messageId: messageId || -1,
       globalHash,
       specificHash,
+      inserted,
+      updated,
+      deleted,
     });
     if (this.logging && method.startsWith("m.")) {
       let messageLog = message;
@@ -171,6 +179,55 @@ export class WebsocketConnection {
       );
     }
     if (this.connection) this.connection.send(message);
+  }
+
+  private outboundCache: Map<string, any[]> = new Map();
+  private addOutboundData(method: string, data: any[]) {
+    this.outboundCache.set(
+      method,
+      JsonParser.parse(JsonParser.stringify(data))
+    );
+  }
+  public getOutboundDiffAndUpdateCache(
+    method: string,
+    data: { id: number }[]
+  ): { data: any[] | string; inserted: any[]; updated: any[]; deleted: any[] } {
+    const cache = this.outboundCache.get(method);
+    if (cache) {
+      const updated = _.differenceWith(
+        data,
+        cache,
+        (a: any, b: any) => JSON.stringify(a) == JSON.stringify(b)
+      );
+      const inserted = _.differenceWith(
+        updated,
+        cache,
+        (a: { id: number }, b: { id: number }) => a.id == b.id
+      );
+      _.pullAll(updated, inserted);
+
+      const deleted = _.differenceWith(
+        cache,
+        data,
+        (a: { id: number }, b: { id: number }) => a.id == b.id
+      );
+
+      this.addOutboundData(method, data);
+      return {
+        inserted,
+        updated,
+        deleted,
+        data: "data_diff",
+      };
+    } else {
+      this.addOutboundData(method, data);
+      return {
+        data,
+        inserted: null,
+        updated: null,
+        deleted: null,
+      };
+    }
   }
 
   private prepareClientInformation(): {

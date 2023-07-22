@@ -81,6 +81,11 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    */
   public cacheKeyProvider: WebsocketOutboundCacheKeyProvider | null = null;
 
+  /**
+   * When enabled updated data resent using subscriptions does only send differential data (inserted, updated, deleted).
+   */
+  public partialUpdates: boolean = false;
+
   private subscribesChanges: boolean = false;
   private subscribesFilteredChanges: MessageFilter[] = [];
 
@@ -176,9 +181,37 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           const hash = this.cacheKeyProvider
             ? JsonParser.getHashCode(stringContent)
             : null;
-          conn.send(this.method, res, undefined, gHash, hash);
+          if (conn.supportsCaching && this.partialUpdates) {
+            const result = conn.getOutboundDiffAndUpdateCache(this.method, res);
+            conn.send(
+              this.method,
+              result.data,
+              undefined,
+              gHash,
+              hash,
+              result.inserted,
+              result.updated,
+              result.deleted
+            );
+          } else {
+            conn.send(this.method, res, undefined, gHash, hash);
+          }
         } else {
-          conn.send(this.method, res);
+          if (conn.supportsCaching && this.partialUpdates) {
+            const result = conn.getOutboundDiffAndUpdateCache(this.method, res);
+            conn.send(
+              this.method,
+              result.data,
+              undefined,
+              gHash,
+              undefined,
+              result.inserted,
+              result.updated,
+              result.deleted
+            );
+          } else {
+            conn.send(this.method, res);
+          }
         }
       }
     } catch (e) {
@@ -357,6 +390,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       if (this.decoratorConfigReference.supportsCache) {
         this.supportsCache = this.decoratorConfigReference.supportsCache;
         this.cacheKeyProvider = this.decoratorConfigReference.cacheKeyProvider;
+      }
+      if (this.decoratorConfigReference.partialUpdates) {
+        this.partialUpdates = this.decoratorConfigReference.partialUpdates;
       }
     }
   }
