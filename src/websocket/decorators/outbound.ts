@@ -100,3 +100,22 @@ export function SupportsCache(provider: WebsocketOutboundCacheKeyProvider) {
     config.cacheKeyProvider = provider;
   };
 }
+
+/**
+ * Annotates that the outbound data is cached by clients.
+ *
+ * @example Method annotation for outbound:
+ * ```
+ * class Example {
+ *     @Outbound("d.example")
+ *     @SupportsCache
+ *     async getData(connection: WebsocketConnection): Promise<any> {
+ *       return [...];
+ *     }
+ * }
+ * ```
+ */
+export function PartialUpdates(target: any, propertyKey: string) {
+  const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+  config.partialUpdates = true;
+}

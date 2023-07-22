@@ -89,4 +89,9 @@ export class WebsocketOutboundDecoratorConfig extends DecoratorConfig {
    * Stores the cache key provider. It can be used to check whether the data of the outbound might have been modified.
    */
   public cacheKeyProvider: WebsocketOutboundCacheKeyProvider;
+
+  /**
+   * Defines whether the outbound updates should be sent partially.
+   */
+  public partialUpdates: boolean = false;
 }

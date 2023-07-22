@@ -42,7 +42,13 @@ export class StubWebsocketConnection extends WebsocketConnection {
     method: string;
     func: Function;
     hashCallback:
-      | ((globalHash: number, specificHash: number) => void)
+      | ((
+          globalHash: number,
+          specificHash: number,
+          inserted: any[],
+          updated: any[],
+          deleted: any[]
+        ) => void)
       | undefined;
     outboundMethod: string | undefined;
   }[] = [];
@@ -61,7 +67,10 @@ export class StubWebsocketConnection extends WebsocketConnection {
     value: any,
     messageId?: number,
     globalHash?: number,
-    specificHash?: number
+    specificHash?: number,
+    inserted?: any[],
+    updated?: any[],
+    deleted?: any[]
   ) {
     // parsing the string provides real data situation (date parsing, ...)
     return new Promise((resolve) => {
@@ -78,7 +87,14 @@ export class StubWebsocketConnection extends WebsocketConnection {
             this.stack = this.stack.filter(
               (s) => s != el && (!s.outboundMethod || s.outboundMethod == value)
             );
-            if (el.hashCallback) el.hashCallback(globalHash, specificHash);
+            if (el.hashCallback)
+              el.hashCallback(
+                globalHash,
+                specificHash,
+                inserted,
+                updated,
+                deleted
+              );
             el.func(parsedValue);
             resolve(true);
             return;
@@ -102,7 +118,13 @@ export class StubWebsocketConnection extends WebsocketConnection {
   async expectMethod(
     method: string,
     timeout?: number,
-    hashCallback?: (globalHash: number, specificHash: number) => void
+    hashCallback?: (
+      globalHash: number,
+      specificHash: number,
+      inserted: any[],
+      updated: any[],
+      deleted: any[]
+    ) => void
   ): Promise<any> {
     return new Promise((func, reject) => {
       const stackObject: any = {
@@ -256,7 +278,10 @@ export class TCWrapper extends StubWebsocketConnection {
     value: any,
     messageId?: number,
     globalHash?: number,
-    specificHash?: number
+    specificHash?: number,
+    inserted?: any[],
+    updated?: any[],
+    deleted?: any[]
   ) {
     return new Promise(async (resolve) => {
       const handled = await super.send(
@@ -264,7 +289,10 @@ export class TCWrapper extends StubWebsocketConnection {
         value,
         messageId,
         globalHash,
-        specificHash
+        specificHash,
+        inserted,
+        updated,
+        deleted
       );
       if (!handled || method != "m.error") {
         const parsedValue = JsonParser.parse(JsonParser.stringify(value));
