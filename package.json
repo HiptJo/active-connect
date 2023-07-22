@@ -1,6 +1,6 @@
 {
   "name": "active-connect",
-  "version": "2.0.0",
+  "version": "2.1.6",
   "description": "Connection framework built for smart web-based projects using NodeJS, Angular and Websockets.",
   "author": "Jonas Hiptmair <office@hiptmairit.at>",
   "keywords": [
@@ -9,8 +9,8 @@
     "websocket",
     "node server"
   ],
-  "main": "./dist/active-connect.js",
-  "typings": "./dist/active-connect.d.ts",
+  "main": "./index.js",
+  "typings": "./index.d.ts",
   "license": "MIT",
   "scripts": {
     "start": "tsc -w",

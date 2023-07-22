@@ -44,6 +44,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
     hashCallback:
       | ((globalHash: number, specificHash: number) => void)
       | undefined;
+    outboundMethod: string | undefined;
   }[] = [];
 
   /**
@@ -65,14 +66,18 @@ export class StubWebsocketConnection extends WebsocketConnection {
     // parsing the string provides real data situation (date parsing, ...)
     return new Promise((resolve) => {
       setTimeout(() => {
-        const parsedValue = !globalHash
-          ? JsonParser.parse(JsonParser.stringify(value))
-          : JsonParser.parse(value);
+        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
         if (this.stack.length > 0) {
-          const entry = this.stack.filter((s) => s.method == method);
+          const entry = this.stack.filter(
+            (s) =>
+              s.method == method &&
+              (!s.outboundMethod || s.outboundMethod == value)
+          );
           if (entry.length > 0) {
             const el = entry[0];
-            this.stack = this.stack.filter((s) => s != el);
+            this.stack = this.stack.filter(
+              (s) => s != el && (!s.outboundMethod || s.outboundMethod == value)
+            );
             if (el.hashCallback) el.hashCallback(globalHash, specificHash);
             el.func(parsedValue);
             resolve(true);
@@ -100,7 +105,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
     hashCallback?: (globalHash: number, specificHash: number) => void
   ): Promise<any> {
     return new Promise((func, reject) => {
-      const stackObject = {
+      const stackObject: any = {
         method,
         func,
         hashCallback,
@@ -113,6 +118,28 @@ export class StubWebsocketConnection extends WebsocketConnection {
               (timeout || ActiveConnect.getTimeout()) +
               "ms: " +
               method
+          );
+        }
+      }, timeout || ActiveConnect.getTimeout());
+    }).then();
+  }
+
+  async expectCacheRequest(outboundMethod: string, timeout?: number) {
+    return new Promise((func, reject) => {
+      const stackObject: any = {
+        method: "___cache",
+        func,
+        hashCallback: null,
+        outboundMethod,
+      };
+      this.stack.push(stackObject);
+      setTimeout(() => {
+        if (this.stack.includes(stackObject)) {
+          reject(
+            "ActiveConnect: Cache request was not received within the timeout inverval of " +
+              (timeout || ActiveConnect.getTimeout()) +
+              "ms: " +
+              outboundMethod
           );
         }
       }, timeout || ActiveConnect.getTimeout());
@@ -240,9 +267,7 @@ export class TCWrapper extends StubWebsocketConnection {
         specificHash
       );
       if (!handled || method != "m.error") {
-        const parsedValue = !globalHash
-          ? JsonParser.parse(JsonParser.stringify(value))
-          : JsonParser.parse(value);
+        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
         this.client.messageReceived({ method, data: parsedValue, messageId });
       }
       resolve(true);
