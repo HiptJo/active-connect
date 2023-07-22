@@ -267,9 +267,7 @@ export class TCWrapper extends StubWebsocketConnection {
         specificHash
       );
       if (!handled || method != "m.error") {
-        const parsedValue = !globalHash
-          ? JsonParser.parse(JsonParser.stringify(value))
-          : JsonParser.parse(value);
+        const parsedValue = JsonParser.parse(JsonParser.stringify(value));
         this.client.messageReceived({ method, data: parsedValue, messageId });
       }
       resolve(true);
