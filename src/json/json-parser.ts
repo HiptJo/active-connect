@@ -60,4 +60,62 @@ export class JsonParser {
     }
     return hash;
   }
+
+  /**
+   * Compares two objects.
+   * @returns true when the two objects are equal
+   */
+  public static deepCompare(obj1: any, obj2: any) {
+    // Check if both objects are the same type
+    if (typeof obj1 !== typeof obj2) {
+      return false;
+    }
+
+    // If both objects are primitive types or functions, compare them directly
+    if (
+      typeof obj1 === "string" ||
+      typeof obj1 === "number" ||
+      typeof obj1 === "boolean" ||
+      typeof obj1 === "function" ||
+      obj1 === null ||
+      obj2 === null
+    ) {
+      return obj1 === obj2;
+    }
+
+    // Compare arrays
+    if (Array.isArray(obj1)) {
+      if (obj1.length !== obj2.length) {
+        return false;
+      }
+      for (let i = 0; i < obj1.length; i++) {
+        if (!JsonParser.deepCompare(obj1[i], obj2[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Compare objects
+    if (typeof obj1 === "object" && typeof obj2 === "object") {
+      const keys1 = Object.keys(obj1);
+      const keys2 = Object.keys(obj2);
+
+      if (keys1.length !== keys2.length) {
+        return false;
+      }
+
+      for (let key of keys1) {
+        if (
+          !obj2.hasOwnProperty(key) ||
+          !JsonParser.deepCompare(obj1[key], obj2[key])
+        ) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return false;
+  }
 }
