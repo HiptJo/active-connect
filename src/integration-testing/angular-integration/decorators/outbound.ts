@@ -1,4 +1,8 @@
-export function Outbound(method: string, lazyLoaded?: boolean) {
+export function Outbound(
+  method: string,
+  lazyLoaded?: boolean,
+  cachedOnClient?: boolean
+) {
   return function _Outbound(target: any, propertyKey: string): any {
     // property annotation
     if (!target.___expectOutboundsCall) {
