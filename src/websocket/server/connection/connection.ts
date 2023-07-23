@@ -194,11 +194,7 @@ export class WebsocketConnection {
   ): { data: any[] | string; inserted: any[]; updated: any[]; deleted: any[] } {
     const cache = this.outboundCache.get(method);
     if (cache) {
-      const updated = _.differenceWith(
-        data,
-        cache,
-        (a: any, b: any) => JSON.stringify(a) == JSON.stringify(b)
-      );
+      const updated = _.differenceWith(data, cache, JsonParser.deepCompare);
       const inserted = _.differenceWith(
         updated,
         cache,
