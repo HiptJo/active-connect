@@ -67,7 +67,7 @@ export class JsonParser {
    * Duplicates an object
    */
   static clone(data: any) {
-    if (data.charAt) {
+    if (data && data.charAt) {
       // is string, does not need to be duplicated
       return data;
     }
