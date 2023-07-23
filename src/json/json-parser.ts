@@ -1,3 +1,5 @@
+import * as fde from "fast-deep-equal";
+
 /**
  * Parses WebSocket messages after they have been transmitted.
  * Some values, like dates, are automatically casted to type-specific objects.
@@ -62,10 +64,30 @@ export class JsonParser {
   }
 
   /**
+   * Duplicates an object
+   */
+  static clone(data: any) {
+    if (data && data.charAt) {
+      // is string, does not need to be duplicated
+      return data;
+    }
+    return JsonParser.parse(JsonParser.stringify(data));
+  }
+
+  /**
    * Compares two objects.
    * @returns true when the two objects are equal
    */
-  public static deepCompare(obj1: any, obj2: any) {
+  static deepCompare(obj1: any, obj2: any) {
+    return fde(obj1, obj2);
+  }
+
+  /**
+   * @deprecated
+   * Compares two objects.
+   * @returns true when the two objects are equal
+   */
+  public static _deepCompare(obj1: any, obj2: any) {
     // Check if both objects are the same type
     if (typeof obj1 !== typeof obj2) {
       return false;
@@ -89,7 +111,7 @@ export class JsonParser {
         return false;
       }
       for (let i = 0; i < obj1.length; i++) {
-        if (!JsonParser.deepCompare(obj1[i], obj2[i])) {
+        if (!JsonParser._deepCompare(obj1[i], obj2[i])) {
           return false;
         }
       }
@@ -108,7 +130,7 @@ export class JsonParser {
       for (let key of keys1) {
         if (
           !obj2.hasOwnProperty(key) ||
-          !JsonParser.deepCompare(obj1[key], obj2[key])
+          !JsonParser._deepCompare(obj1[key], obj2[key])
         ) {
           return false;
         }

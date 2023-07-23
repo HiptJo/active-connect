@@ -103,6 +103,8 @@ export function SupportsCache(provider: WebsocketOutboundCacheKeyProvider) {
 
 /**
  * Annotates that the outbound data is cached by clients.
+ * This must only be used for database responses and other data, that is fully re-generated.
+ * Otherwise the caching does not work, as the reference to the last version is stored - not an copy of the data.
  *
  * @example Method annotation for outbound:
  * ```
