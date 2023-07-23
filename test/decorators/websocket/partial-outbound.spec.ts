@@ -23,7 +23,7 @@ describe("eager-loaded outbound", () => {
     @PartialUpdates
     @Subscribe
     async getData() {
-      return Testing.data;
+      return JSON.parse(JSON.stringify(Testing.data));
     }
 
     @StandaloneRoute("partial1.add")

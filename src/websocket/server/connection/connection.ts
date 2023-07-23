@@ -183,10 +183,7 @@ export class WebsocketConnection {
 
   private outboundCache: Map<string, any[]> = new Map();
   public addOutboundData(method: string, data: any[]) {
-    this.outboundCache.set(
-      method,
-      JsonParser.parse(JsonParser.stringify(data))
-    );
+    this.outboundCache.set(method, data);
   }
   public getOutboundDiffAndUpdateCache(
     method: string,

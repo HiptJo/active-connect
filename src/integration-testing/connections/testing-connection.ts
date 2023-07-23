@@ -23,7 +23,7 @@ export abstract class TestingConnectionWrapper<T> extends WebsocketConnection {
 
   public send(method: string, value: T) {
     // parsing the string provides real data situation (date parsing, ...)
-    const parsedValue = JsonParser.parse(JsonParser.stringify(value));
+    const parsedValue = JsonParser.clone(value);
     this.handleReceivedMessages({ method, value: parsedValue });
     if (method == this.expectedMethod && !this.expectedMethodCalled) {
       this.callback(parsedValue);
