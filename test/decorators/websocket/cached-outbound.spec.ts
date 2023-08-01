@@ -1,5 +1,4 @@
 import {
-  WebsocketOutboundCacheKeyProvider,
   Outbound,
   Subscribe,
   SupportsCache,
@@ -27,19 +26,13 @@ class Authenticator extends WebsocketAuthenticator {
 expect(Authenticator).toBeDefined();
 
 describe("eager-loaded outbound", () => {
-  class MyProvider extends WebsocketOutboundCacheKeyProvider {
-    async getHashCode(): Promise<number> {
-      return Testing.data.length + 1;
-    }
-  }
-
   class Testing {
     public static data: number[] = [];
 
     @Auth(new Authenticator())
     @Outbound("out.cached")
     @Subscribe
-    @SupportsCache(new MyProvider())
+    @SupportsCache
     async getData() {
       return Testing.data;
     }
@@ -56,33 +49,23 @@ describe("eager-loaded outbound", () => {
     expect(method).toBe("out.cached");
     conn.runRequest("___cache", {
       method,
-      globalHash: null,
       specificHash: null,
     });
-    let _g: number = 0,
-      _s: number = 0;
+    let _s: number = 0;
     const data = await conn.expectMethod(
       "out.cached",
       undefined,
-      (globalHash, specificHash) => {
-        expect(globalHash).toBe(1);
+      (specificHash) => {
         expect(specificHash).toBeDefined();
-        _g = globalHash;
         _s = specificHash;
       }
     );
     expect(data).toHaveLength(0);
     conn.runRequest("cached.update", 7);
-    await conn.expectMethod(
-      "out.cached",
-      undefined,
-      (globalHash, specificHash) => {
-        expect(specificHash).not.toBe(_s);
-        _g = globalHash;
-        _s = specificHash;
-      }
-    );
-    expect(_g).toBe(2);
+    await conn.expectMethod("out.cached", undefined, (specificHash) => {
+      expect(specificHash).not.toBe(_s);
+      _s = specificHash;
+    });
     expect(_s).toBeDefined();
 
     // should be possible to use the cache tokens to approve it has not been changed
@@ -90,27 +73,15 @@ describe("eager-loaded outbound", () => {
     expect(await c1.expectCacheRequest("out.cached")).toBe("out.cached");
     c1.runRequest("___cache", {
       method,
-      globalHash: _g,
       specificHash: _s,
     });
     expect(await c1.expectMethod("out.cached")).toBe("cache_restore");
-
-    // should send updated data when old global identifier is used
-    const c2 = WebsocketMocks.getConnectionStub(true, "true");
-    expect(await c2.expectCacheRequest("out.cached")).toBe("out.cached");
-    c2.runRequest("___cache", {
-      method,
-      globalHash: _g - 1,
-      specificHash: _s,
-    });
-    expect(await c2.expectMethod("out.cached")).not.toBe("cache_restore");
 
     // should send updated data when old specific identifier is used
     const c3 = WebsocketMocks.getConnectionStub(true, "true");
     expect(await c3.expectCacheRequest("out.cached")).toBe("out.cached");
     c3.runRequest("___cache", {
       method,
-      globalHash: _g,
       specificHash: _s - 1,
     });
     expect(await c3.expectMethod("out.cached")).not.toBe("cache_restore");
@@ -118,12 +89,6 @@ describe("eager-loaded outbound", () => {
 });
 
 describe("lazy-loaded outbound", () => {
-  class MyProvider extends WebsocketOutboundCacheKeyProvider {
-    async getHashCode(): Promise<number> {
-      return Testing.data.length + 1;
-    }
-  }
-
   class Testing {
     public static data: number[] = [];
 
@@ -131,7 +96,7 @@ describe("lazy-loaded outbound", () => {
     @Outbound("out.cached1")
     @LazyLoading
     @Subscribe
-    @SupportsCache(new MyProvider())
+    @SupportsCache
     async getData() {
       return Testing.data;
     }
@@ -142,39 +107,30 @@ describe("lazy-loaded outbound", () => {
       Testing.data.push(value);
     }
   }
+  expect(Testing).toBeDefined();
   it("should be possible to access data as client with cache support", async () => {
     const conn = WebsocketMocks.getConnectionStub(true, "true");
     conn.runRequest("request.out.cached1", null);
     const method = await conn.expectCacheRequest("out.cached1");
     conn.runRequest("___cache", {
       method,
-      globalHash: null,
       specificHash: null,
     });
-    let _g: number = 0,
-      _s: number = 0;
+    let _s: number = 0;
     const data = await conn.expectMethod(
       "out.cached1",
       undefined,
-      (globalHash, specificHash) => {
-        expect(globalHash).toBe(1);
+      (specificHash) => {
         expect(specificHash).toBeDefined();
-        _g = globalHash;
         _s = specificHash;
       }
     );
     expect(data).toHaveLength(0);
     conn.runRequest("cached.update1", 7);
-    await conn.expectMethod(
-      "out.cached1",
-      undefined,
-      (globalHash, specificHash) => {
-        expect(specificHash).not.toBe(_s);
-        _g = globalHash;
-        _s = specificHash;
-      }
-    );
-    expect(_g).toBe(2);
+    await conn.expectMethod("out.cached1", undefined, (specificHash) => {
+      expect(specificHash).not.toBe(_s);
+      _s = specificHash;
+    });
     expect(_s).toBeDefined();
 
     // should be possible to use the cache tokens to approve it has not been changed
@@ -183,21 +139,9 @@ describe("lazy-loaded outbound", () => {
     expect(await c1.expectCacheRequest("out.cached1")).toBe("out.cached1");
     c1.runRequest("___cache", {
       method,
-      globalHash: _g,
       specificHash: _s,
     });
     expect(await c1.expectMethod("out.cached1")).toBe("cache_restore");
-
-    // should send updated data when old global identifier is used
-    const c2 = WebsocketMocks.getConnectionStub(true, "true");
-    c2.runRequest("request.out.cached1", null);
-    expect(await c2.expectCacheRequest("out.cached1")).toBe("out.cached1");
-    c2.runRequest("___cache", {
-      method,
-      globalHash: _g - 1,
-      specificHash: _s,
-    });
-    expect(await c2.expectMethod("out.cached1")).not.toBe("cache_restore");
 
     // should send updated data when old specific identifier is used
     const c3 = WebsocketMocks.getConnectionStub(true, "true");
@@ -205,7 +149,6 @@ describe("lazy-loaded outbound", () => {
     expect(await c3.expectCacheRequest("out.cached1")).toBe("out.cached1");
     c3.runRequest("___cache", {
       method,
-      globalHash: _g,
       specificHash: _s - 1,
     });
     expect(await c3.expectMethod("out.cached1")).not.toBe("cache_restore");
@@ -221,7 +164,6 @@ it("should send clear command when authentication fails for ___cache command", a
   const conn = WebsocketMocks.getConnectionStub(true);
   conn.runRequest("___cache", {
     method: "out.cached",
-    globalHash: 100,
     specificHash: 100,
   });
   expect(await conn.expectMethod("out.cached")).toBe("cache_delete");

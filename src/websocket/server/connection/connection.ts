@@ -143,14 +143,12 @@ export class WebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param messageId - The ID of the message.
-   * @param globalHash - The global hash value - used by outbounds with caching enabled.
    * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    */
   public send(
     method: string,
     value: any,
     messageId?: number | null,
-    globalHash?: number,
     specificHash?: number,
     inserted?: any[],
     updated?: any[],
@@ -160,7 +158,6 @@ export class WebsocketConnection {
       method: method,
       value: value,
       messageId: messageId || -1,
-      globalHash,
       specificHash,
       inserted,
       updated,

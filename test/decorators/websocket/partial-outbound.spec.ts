@@ -63,7 +63,7 @@ describe("eager-loaded outbound", () => {
       await conn.expectMethod(
         "out.partial1",
         1000000,
-        (globalHash, specificHash, inserted, updated, deleted) => {
+        (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
           expect(deleted).toStrictEqual([]);
           expect(inserted).toEqual([data1]);
@@ -79,7 +79,7 @@ describe("eager-loaded outbound", () => {
       await conn.expectMethod(
         "out.partial1",
         1000000,
-        (globalHash, specificHash, inserted, updated, deleted) => {
+        (specificHash, inserted, updated, deleted) => {
           expect(inserted).toStrictEqual([]);
           expect(deleted).toStrictEqual([]);
           expect(updated).toEqual([data1]);
@@ -93,7 +93,7 @@ describe("eager-loaded outbound", () => {
       await conn.expectMethod(
         "out.partial1",
         1000000,
-        (globalHash, specificHash, inserted, updated, deleted) => {
+        (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
           expect(deleted).toStrictEqual([]);
           expect(inserted).toEqual([data2]);
@@ -106,7 +106,7 @@ describe("eager-loaded outbound", () => {
       await conn.expectMethod(
         "out.partial1",
         1000000,
-        (globalHash, specificHash, inserted, updated, deleted) => {
+        (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
           expect(inserted).toStrictEqual([]);
           expect(deleted).toEqual([data2]);
@@ -121,7 +121,7 @@ describe("eager-loaded outbound", () => {
         await conn.expectMethod(
           "out.partial1",
           1000000,
-          (globalHash, specificHash, inserted, updated, deleted) => {
+          (specificHash, inserted, updated, deleted) => {
             expect(updated).toStrictEqual([]);
             expect(deleted).toStrictEqual([]);
             expect(inserted).toEqual([data3]);
@@ -135,7 +135,7 @@ describe("eager-loaded outbound", () => {
       await conn.expectMethod(
         "out.partial1",
         1000000,
-        (globalHash, specificHash, inserted, updated, deleted) => {
+        (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
           expect(inserted).toStrictEqual([]);
           expect(deleted).toStrictEqual([]);
