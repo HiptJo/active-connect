@@ -43,6 +43,7 @@ describe("eager-loaded outbound", () => {
       Testing.data.push(value);
     }
   }
+  expect(Testing).toBeDefined();
   it("should be possible to access data as client with cache support", async () => {
     const conn = WebsocketMocks.getConnectionStub(true, "true");
     const method = await conn.expectCacheRequest("out.cached");
