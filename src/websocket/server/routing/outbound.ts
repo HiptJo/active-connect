@@ -159,7 +159,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         }
       | undefined
   ) {
-    if (requestConfig) {
+    if (requestConfig?.count) {
       conn.setOutboundRequestConfig(this.method, requestConfig?.count);
     }
 
@@ -194,7 +194,19 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         ? (dataContext as PartialOutboundData<any>).data
         : (dataContext as any[]);
 
-      if (
+      if (id) {
+        conn.updateOutboundCache(this.method, res, [], []);
+        conn.send(
+          this.method,
+          "data_diff",
+          undefined,
+          undefined,
+          res,
+          undefined,
+          undefined,
+          dataContext?.length || 0
+        );
+      } else if (
         !res ||
         (res &&
           !res.toString().startsWith("auth:unauthorized") &&
@@ -218,10 +230,20 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
             hash,
             result.inserted,
             result.updated,
-            result.deleted
+            result.deleted,
+            dataContext?.length || 0
           );
         } else {
-          conn.send(this.method, res, undefined, hash);
+          conn.send(
+            this.method,
+            res,
+            undefined,
+            hash,
+            undefined,
+            undefined,
+            undefined,
+            dataContext?.length || 0
+          );
         }
       }
     } catch (e) {
@@ -297,7 +319,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
             hash,
             messageResult.inserted,
             messageResult.updated,
-            messageResult.deleted
+            messageResult.deleted,
+            dataContext?.length || 0
           );
         } else {
           if (isPartial) {
@@ -305,7 +328,16 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           } else {
             conn.addOutboundData(this.method, res);
           }
-          conn.send(this.method, "cache_restore");
+          conn.send(
+            this.method,
+            "cache_restore",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            dataContext?.length || 0
+          );
         }
       }
     } catch (e) {

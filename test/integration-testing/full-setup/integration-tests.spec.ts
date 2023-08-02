@@ -2,8 +2,11 @@ import {
   LazyLoading,
   Modifies,
   Outbound,
+  PartialOutboundData,
+  PartialUpdates,
   Route,
   Subscribe,
+  SupportsCache,
 } from "../../../src";
 import {
   WebsocketClient,
@@ -12,10 +15,21 @@ import {
   TCWrapper,
   LoadingStatus,
 } from "../../../src/integration-testing";
+import { OutboundObject } from "../../../src/integration-testing/angular-integration/objects/outbound-object";
+
+class Data {
+  public static AUTO_INCREMENT = 0;
+  public id: number;
+  constructor(public name: string) {
+    this.id = ++Data.AUTO_INCREMENT;
+  }
+}
 
 class Pool extends LoadingStatus {
   @ClientOutbound("int.data") public data: Promise<string[]>;
   @ClientOutbound("int.request", true) public requestable: Promise<number>;
+
+  public large = new OutboundObject<Data>(this, "int.large", true, false, 10);
 
   constructor() {
     super(Pool.prototype as any);
@@ -32,6 +46,9 @@ class Service {
   async update(value: any): Promise<any> {
     expect(this.value).toBe(1);
   }
+
+  @ClientRoute("int.init")
+  async init(): Promise<any> {}
 }
 class TC extends TCWrapper {
   public pool: Pool;
@@ -46,6 +63,7 @@ class TC extends TCWrapper {
 @Route("int")
 class Server {
   private data: string[] = ["1", "2"];
+  private large: Data[] = [];
 
   @Route("update")
   @Modifies("int.data")
@@ -53,10 +71,36 @@ class Server {
     this.data = data;
   }
 
+  @Route("init")
+  @Modifies("int.large")
+  init() {
+    for (var i = 1; i <= 100; i++) {
+      this.large.push(new Data("d" + i));
+    }
+  }
+
   @Outbound("int.data")
   @Subscribe
   send() {
     return this.data;
+  }
+
+  @Outbound("int.large")
+  @Subscribe
+  @PartialUpdates
+  @LazyLoading
+  @SupportsCache
+  sendLarge(conn: any, count: number, id: number | null) {
+    if (id) {
+      return new PartialOutboundData(
+        this.large.filter((l) => l.id == id),
+        this.large.length
+      );
+    }
+    return new PartialOutboundData(
+      this.large.slice(0, count),
+      this.large.length
+    );
   }
 
   @Outbound("int.request")
@@ -93,4 +137,28 @@ it("should be possible to access loading status data", () => {
 
   conn.pool.loading.set("propertyKey", true);
   expect(conn.pool.getCurrent()).toBe(1);
+});
+it("should be possible to use the outbound-object", async () => {
+  const conn = new TC();
+  expect(conn.pool.large.loading).toBeFalsy();
+  expect(conn.pool.large.loadedLength).toBe(0);
+
+  await conn.service.init();
+
+  await conn.pool.large.load();
+  expect(conn.pool.large.loadedLength).toBe(10);
+  expect(conn.pool.large.length).toBe(100);
+  expect(conn.pool.large.all).toHaveLength(10);
+
+  await conn.pool.large.load();
+  expect(conn.pool.large.loadedLength).toBe(20);
+  expect(conn.pool.large.all).toHaveLength(20);
+
+  await conn.pool.large.load(1);
+  expect(conn.pool.large.loadedLength).toBe(21);
+  expect(conn.pool.large.all).toHaveLength(21);
+
+  const obj90 = await conn.pool.large.get(90);
+  expect(obj90).toMatchObject({ id: 90, name: "d90" });
+  expect(conn.pool.large.loadedLength).toBe(22);
 });

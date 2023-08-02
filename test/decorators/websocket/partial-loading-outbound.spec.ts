@@ -86,12 +86,18 @@ describe("partial loaded data (lazy-loaded, without cache support)", () => {
     conn.runRequest("request.d.partloaded", {
       id: 25,
     });
-    const data = await conn.expectMethod("d.partloaded");
-    expect(data.length).toBe(1);
-    expect(data[0]).toMatchObject({
-      id: 25,
-      name: "obj25",
-    });
+    const data = await conn.expectMethod(
+      "d.partloaded",
+      undefined,
+      (s, inserted) => {
+        expect(inserted.length).toBe(1);
+        expect(inserted[0]).toMatchObject({
+          id: 25,
+          name: "obj25",
+        });
+      }
+    );
+    expect(data).toBe("data_diff");
   });
   it("should be possible to get changes", async () => {
     const conn = WebsocketMocks.getConnectionStub();
@@ -165,12 +171,18 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     conn.runRequest("request.d.partloaded", {
       id: 25,
     });
-    const data = await conn.expectMethod("d.partloaded");
-    expect(data.length).toBe(1);
-    expect(data[0]).toMatchObject({
-      id: 25,
-      name: "obj25",
-    });
+    const data = await conn.expectMethod(
+      "d.partloaded",
+      undefined,
+      (s, inserted) => {
+        expect(inserted.length).toBe(1);
+        expect(inserted[0]).toMatchObject({
+          id: 25,
+          name: "obj25",
+        });
+      }
+    );
+    expect(data).toBe("data_diff");
   });
   it("should be possible to get changes", async () => {
     const conn = WebsocketMocks.getConnectionStub(true);

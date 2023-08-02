@@ -110,10 +110,20 @@ export class WebsocketClient {
     method,
     data,
     messageId,
+    specificHash,
+    inserted,
+    updated,
+    deleted,
+    length,
   }: {
     method: string;
     data: any;
     messageId: number | undefined;
+    specificHash: number | null;
+    inserted: any[] | null;
+    updated: any[] | null;
+    deleted: any[] | null;
+    length: number | null;
   }) {
     let callback = this.expectedMethods.get(messageId);
     if (callback) {
@@ -128,7 +138,7 @@ export class WebsocketClient {
       } else {
         const out = this.outbounds.get(method);
         if (out) {
-          out(data);
+          out(data, specificHash, inserted, updated, deleted, length, this);
         } else {
           const handle = WebsocketClient.handles.get(method);
           if (handle) {
@@ -139,14 +149,36 @@ export class WebsocketClient {
     }
   }
 
-  private outbounds: Map<string, (data: any) => void> = new Map();
+  private outbounds: Map<
+    string,
+    (
+      data: any,
+      specificHash: number | null,
+      inserted: any[] | null,
+      updated: any[] | null,
+      deleted: any[] | null,
+      length: number | null,
+      _client: WebsocketClient
+    ) => void
+  > = new Map();
   /**
    * This allows to listen for outbound data to be received.
    *
    * @param method - method label of the outbound
    * @param callback - this is called once the data has been received
    */
-  public expectOutbound(method: string, callback: (data: any) => void) {
+  public expectOutbound(
+    method: string,
+    callback: (
+      data: any,
+      specificHash: number | null,
+      inserted: any[] | null,
+      updated: any[] | null,
+      deleted: any[] | null,
+      length: number | null,
+      _client: WebsocketClient
+    ) => void
+  ) {
     this.outbounds.set(method, callback);
   }
 

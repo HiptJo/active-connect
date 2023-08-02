@@ -1,4 +1,4 @@
-import { StubWebsocketConnection } from "../../connections/tc";
+import { WebsocketClient } from "../client/client";
 
 export interface IdObject {
   id: number;
@@ -6,7 +6,7 @@ export interface IdObject {
 
 export class OutboundObject<T extends IdObject> {
   constructor(
-    private client: StubWebsocketConnection,
+    private client: WebsocketClient,
     private method: string,
     private lazyLoaded?: boolean,
     public readonly cached?: boolean,
@@ -17,40 +17,40 @@ export class OutboundObject<T extends IdObject> {
       this.target.___expectOutboundsCall = [];
     }
     const _this = this;
-    this.target.___expectOutboundsCall.push((_client: any) => {
-      _client.expectOutbound(
-        method,
-        function setOutbound(
-          data: any,
-          specificHash: number | null,
-          inserted: any[] | null,
-          updated: any[] | null,
-          deleted: any[] | null,
-          _client: StubWebsocketConnection
-        ) {
-          if (data == "data_diff") {
-            inserted?.forEach((e) => {
-              _this.dataMap.set(e.id, e);
-            });
-            updated?.forEach((e) => {
-              _this.dataMap.set(e.id, e);
-            });
-            deleted?.forEach((e) => {
-              _this.dataMap.delete(e.id);
-            });
-            _this.data = Array.from(_this.dataMap.values());
-            _this._loading = false;
-          } else {
-            _this.setData(data);
-            _this._loading = false;
-          }
+    client.expectOutbound(
+      method,
+      function setOutbound(
+        data: any,
+        specificHash: number | null,
+        inserted: any[] | null,
+        updated: any[] | null,
+        deleted: any[] | null,
+        length: number | null,
+        _client: WebsocketClient
+      ) {
+        if (data == "data_diff") {
+          inserted?.forEach((e) => {
+            _this.dataMap.set(e.id, e);
+          });
+          updated?.forEach((e) => {
+            _this.dataMap.set(e.id, e);
+          });
+          deleted?.forEach((e) => {
+            _this.dataMap.delete(e.id);
+          });
+          _this.data = Array.from(_this.dataMap.values());
+          _this._loading = false;
+        } else {
+          _this.setData(data);
+          _this._loading = false;
         }
-      );
-    });
+        if (length) _this._length = length;
+      }
+    );
   }
 
   get target(): any {
-    return (this.client as any).prototype;
+    return (this.client as any).__proto__;
   }
 
   private dataMap: Map<number, T> = new Map();
@@ -78,6 +78,9 @@ export class OutboundObject<T extends IdObject> {
   }
 
   public get all(): T[] | null {
+    if (!this.requested && this.lazyLoaded) {
+      this.load().then();
+    }
     return this.data;
   }
 
@@ -86,7 +89,7 @@ export class OutboundObject<T extends IdObject> {
     if (this.lazyLoaded) {
       this.requested = true;
       this._loading = true;
-      this.client.send("request." + this.method, {
+      await this.client.send("request." + this.method, {
         count: this.loadedLength + (count || this.initialLoadingCount),
       });
       this._loading = false;
