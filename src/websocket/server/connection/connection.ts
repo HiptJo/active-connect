@@ -349,6 +349,7 @@ export class WebsocketConnection {
     {
       id: number | undefined;
       count: number | undefined;
+      groupId: number | undefined;
     }
   > = new Map();
   /**
@@ -359,6 +360,7 @@ export class WebsocketConnection {
   public getOutboundRequestConfig(method: string):
     | {
         id: number | undefined;
+        groupId: number | undefined;
         count: number | undefined;
       }
     | undefined {
@@ -366,6 +368,7 @@ export class WebsocketConnection {
       this.outboundRequestConfig.get(method) || {
         count: Number.MAX_SAFE_INTEGER,
         id: undefined,
+        groupId: undefined,
       }
     );
   }
@@ -374,9 +377,25 @@ export class WebsocketConnection {
    * @param method - The method of the outbound
    * @param count - The length of entries that have been requested.
    */
-  public setOutboundRequestConfig(method: string, count: number | undefined) {
-    if (count) {
-      this.outboundRequestConfig.set(method, { count, id: undefined });
+  public setOutboundRequestConfig(
+    method: string,
+    count: number | undefined,
+    groupId: number | undefined
+  ) {
+    if (!this.outboundRequestConfig.get(method)) {
+      this.outboundRequestConfig.set(method, {
+        count,
+        id: undefined,
+        groupId,
+      });
+    } else {
+      const data = this.outboundRequestConfig.get(method);
+      if (count) {
+        data.count = count;
+      }
+      if (groupId) {
+        data.groupId = groupId;
+      }
     }
   }
 }

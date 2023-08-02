@@ -22,17 +22,20 @@ export class OutboundObject<T extends IdObject> {
       function setOutbound(
         data: any,
         specificHash: number | null,
-        inserted: any[] | null,
-        updated: any[] | null,
+        insertedOrGroupData: any[] | null,
+        updatedOrGroupId: any[] | null,
         deleted: any[] | null,
         length: number | null,
         _client: WebsocketClient
       ) {
-        if (data == "data_diff") {
-          inserted?.forEach((e) => {
+        if (data == "data_group") {
+          _this.loadedGroupData = insertedOrGroupData;
+          _this.loadedGroupId = updatedOrGroupId[0];
+        } else if (data == "data_diff") {
+          insertedOrGroupData?.forEach((e) => {
             _this.dataMap.set(e.id, e);
           });
-          updated?.forEach((e) => {
+          updatedOrGroupId?.forEach((e) => {
             _this.dataMap.set(e.id, e);
           });
           deleted?.forEach((e) => {
@@ -77,6 +80,20 @@ export class OutboundObject<T extends IdObject> {
     });
   }
 
+  public getForGroup(groupId: number): Promise<T[]> {
+    return new Promise(async (resolve) => {
+      if (!this.requested && this.lazyLoaded) {
+        await this.load();
+      }
+      if (this.loadedGroupId == groupId) {
+        resolve(this.loadedGroupData);
+      } else {
+        await this.requestForGroup(groupId);
+        resolve(await this.getForGroup(groupId));
+      }
+    });
+  }
+
   public get all(): T[] | null {
     if (!this.requested && this.lazyLoaded) {
       this.load().then();
@@ -114,6 +131,12 @@ export class OutboundObject<T extends IdObject> {
 
   private requestById(id: number): Promise<T> {
     return this.client.send("request." + this.method, { id }) as Promise<T>;
+  }
+
+  private loadedGroupId: number | null = null;
+  private loadedGroupData: T[] | null = null;
+  private requestForGroup(groupId: number): Promise<T[]> {
+    return this.client.send("request." + this.method, { groupId });
   }
 
   private setData(data: T[] | { added: T[] | undefined; length: number }) {

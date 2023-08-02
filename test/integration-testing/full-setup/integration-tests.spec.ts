@@ -3,6 +3,7 @@ import {
   Modifies,
   Outbound,
   PartialOutboundData,
+  PartialOutboundDataForGroup,
   PartialUpdates,
   Route,
   Subscribe,
@@ -49,6 +50,9 @@ class Service {
 
   @ClientRoute("int.init")
   async init(): Promise<any> {}
+
+  @ClientRoute("int.reset")
+  async reset(): Promise<any> {}
 }
 class TC extends TCWrapper {
   public pool: Pool;
@@ -71,6 +75,11 @@ class Server {
     this.data = data;
   }
 
+  @Route("reset")
+  reset() {
+    this.large = [];
+  }
+
   @Route("init")
   @Modifies("int.large")
   init() {
@@ -90,7 +99,16 @@ class Server {
   @PartialUpdates
   @LazyLoading
   @SupportsCache
-  sendLarge(conn: any, count: number, id: number | null) {
+  sendLarge(
+    conn: any,
+    count: number,
+    id: number | null,
+    groupId: number | null
+  ) {
+    if (groupId) {
+      const data = this.large.filter((l) => l.id % groupId == 0);
+      return new PartialOutboundDataForGroup(data);
+    }
     if (id) {
       return new PartialOutboundData(
         this.large.filter((l) => l.id == id),
@@ -109,6 +127,11 @@ class Server {
     return -1;
   }
 }
+
+beforeEach(async () => {
+  const conn = new TC();
+  conn.service.reset();
+});
 
 it("should be possible to use the integration testing module", async () => {
   expect(Server).toBeDefined();
@@ -161,4 +184,24 @@ it("should be possible to use the outbound-object", async () => {
   const obj90 = await conn.pool.large.get(90);
   expect(obj90).toMatchObject({ id: 90, name: "d90" });
   expect(conn.pool.large.loadedLength).toBe(22);
+});
+it("should be possible to get grouped data", async () => {
+  const conn = new TC();
+  await conn.service.init();
+  const data = await conn.pool.large.getForGroup(10);
+  expect(data).toHaveLength(10);
+  data.forEach((d) => expect(d.id % 10).toBe(0));
+});
+
+it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
+  const conn = new TC();
+  await conn.service.init();
+  let data = await conn.pool.large.getForGroup(10);
+  expect(data).toHaveLength(10);
+  data.forEach((d) => expect(d.id % 10).toBe(0));
+
+  await conn.service.init();
+  data = await conn.pool.large.getForGroup(10);
+  expect(data).toHaveLength(20);
+  data.forEach((d) => expect(d.id % 10).toBe(0));
 });

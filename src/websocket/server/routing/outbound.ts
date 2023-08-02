@@ -58,6 +58,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           requestConfig:
             | {
                 id: number | undefined;
+                groupId: number | undefined;
                 count: number | undefined;
               }
             | undefined,
@@ -155,17 +156,27 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     requestConfig?:
       | {
           id: number | undefined;
+          groupId: number | undefined;
           count: number | undefined;
         }
       | undefined
   ) {
-    if (requestConfig?.count) {
-      conn.setOutboundRequestConfig(this.method, requestConfig?.count);
+    if (requestConfig) {
+      conn.setOutboundRequestConfig(
+        this.method,
+        requestConfig?.count,
+        requestConfig?.groupId
+      );
     }
 
     // check if client supports caching
-    if (!this.supportsCache || !conn.supportsCaching || requestConfig?.id) {
-      await this.sendData(conn, requestConfig?.id);
+    if (
+      !this.supportsCache ||
+      !conn.supportsCaching ||
+      requestConfig?.id ||
+      requestConfig?.groupId
+    ) {
+      await this.sendData(conn, requestConfig?.id, requestConfig?.groupId);
     } else {
       // check if the user has sufficient permissions
       if (
@@ -181,69 +192,94 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * Sends the outbound data to the provided connection.
    * @param conn - The WebSocket connection to send the data to.
    */
-  public async sendData(conn: WebsocketConnection, id?: number) {
+  public async sendData(
+    conn: WebsocketConnection,
+    id?: number,
+    groupId?: number
+  ) {
     try {
-      const dataContext: any[] | PartialOutboundData<any> = await this.Func(
+      const dataContext:
+        | any[]
+        | PartialOutboundData<any>
+        | PartialOutboundDataForGroup<any> = await this.Func(
         conn,
         conn.getOutboundRequestConfig(this.method).count,
-        id
+        id,
+        groupId
       );
-      const isPartial =
-        (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
-      const res: any[] = isPartial
-        ? (dataContext as PartialOutboundData<any>).data
-        : (dataContext as any[]);
 
-      if (id) {
-        conn.updateOutboundCache(this.method, res, [], []);
+      if (groupId) {
+        if (!(dataContext as PartialOutboundDataForGroup<any>).PARTIAL_GROUP) {
+          throw Error(
+            "Active-Connect: Expected Group Result for outbound " + this.method
+          );
+        }
         conn.send(
           this.method,
-          "data_diff",
+          "data_group",
           undefined,
           undefined,
-          res,
-          undefined,
-          undefined,
-          dataContext?.length || 0
+          (dataContext as PartialOutboundDataForGroup<any>).data,
+          [groupId]
         );
-      } else if (
-        !res ||
-        (res &&
-          !res.toString().startsWith("auth:unauthorized") &&
-          !res.toString().startsWith("error:auth:unauthorized"))
-      ) {
-        await this.subscribeForConnection(conn, res);
-        const stringContent = JsonParser.stringify(res);
-        const hash = conn.supportsCaching
-          ? JsonParser.getHashCode(stringContent)
-          : null;
-        if (conn.supportsCaching && this.partialUpdates) {
-          const result = conn.getOutboundDiffAndUpdateCache(
-            this.method,
-            res,
-            isPartial
-          );
+      } else {
+        const isPartial =
+          (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+        const res: any[] = isPartial
+          ? (dataContext as PartialOutboundData<any>).data
+          : (dataContext as any[]);
+
+        if (id) {
+          conn.updateOutboundCache(this.method, res, [], []);
           conn.send(
             this.method,
-            result.data,
+            "data_diff",
             undefined,
-            hash,
-            result.inserted,
-            result.updated,
-            result.deleted,
-            dataContext?.length || 0
-          );
-        } else {
-          conn.send(
-            this.method,
+            undefined,
             res,
-            undefined,
-            hash,
-            undefined,
             undefined,
             undefined,
             dataContext?.length || 0
           );
+        } else if (
+          !res ||
+          (res &&
+            !res.toString().startsWith("auth:unauthorized") &&
+            !res.toString().startsWith("error:auth:unauthorized"))
+        ) {
+          await this.subscribeForConnection(conn, res);
+          const stringContent = JsonParser.stringify(res);
+          const hash = conn.supportsCaching
+            ? JsonParser.getHashCode(stringContent)
+            : null;
+          if (conn.supportsCaching && this.partialUpdates) {
+            const result = conn.getOutboundDiffAndUpdateCache(
+              this.method,
+              res,
+              isPartial
+            );
+            conn.send(
+              this.method,
+              result.data,
+              undefined,
+              hash,
+              result.inserted,
+              result.updated,
+              result.deleted,
+              dataContext?.length || 0
+            );
+          } else {
+            conn.send(
+              this.method,
+              res,
+              undefined,
+              hash,
+              undefined,
+              undefined,
+              undefined,
+              dataContext?.length || 0
+            );
+          }
         }
       }
     } catch (e) {
@@ -375,6 +411,19 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       const connections = this.subscribedConnections.get(key || null);
       if (connections) {
         await Promise.all(connections.map((conn) => this.sendData(conn)));
+
+        const connectionsWithGroupSubscription = connections.filter(
+          (c) => c.getOutboundRequestConfig(this.method).groupId
+        );
+        await Promise.all(
+          connectionsWithGroupSubscription.map((conn) =>
+            this.sendData(
+              conn,
+              undefined,
+              conn.getOutboundRequestConfig(this.method).groupId
+            )
+          )
+        );
       }
     }
   }
@@ -614,6 +663,7 @@ export class WebsocketOutbounds {
       | {
           id: number | undefined;
           count: number | undefined;
+          groupId: number | undefined;
         }
       | undefined
   ) {
@@ -724,5 +774,21 @@ export class PartialOutboundData<T> {
    */
   constructor(public data: T[], length?: number) {
     this.length = length || data.length;
+  }
+}
+
+/**
+ * Is used to return parts of the data for a group filter within outbound functions.
+ * This way, subscription management still works properly and even the total length can be sent to the client.
+ */
+export class PartialOutboundDataForGroup<T> {
+  public readonly PARTIAL_GROUP = true;
+  public length;
+
+  /**
+   * @param data - data that should be sent to the client now.
+   */
+  constructor(public data: T[]) {
+    this.length = data.length;
   }
 }
