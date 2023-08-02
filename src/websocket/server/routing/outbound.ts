@@ -566,6 +566,9 @@ export class WebsocketOutbounds {
     }
   }
 
+  /**
+   * Initializes the caching response entrypoint.
+   */
   public static initCachingResponseEntrypoint() {
     if (
       WebsocketRouter.StandaloneRoutes.filter((r) => r.Method == "___cache")
@@ -602,6 +605,7 @@ export class WebsocketOutbounds {
    * The connection automatically subscribes for updates when it is enabled in the outbound config.
    * @param method - Method of the requested outbound.
    * @param connection - The WebSocket connection to send the outbound data to.
+   * @param requestConfig - Can contain addidional parameters associated with the request, like the length of data (if partially-loaded outbound)
    */
   public static async sendSingleOutboundByMethod(
     method: string,
@@ -703,9 +707,21 @@ export class WebsocketOutbounds {
   }
 }
 
+/**
+ * Is used to return parts of the data within outbound functions.
+ * This way, subscription management still works properly and even the total length can be sent to the client.
+ */
 export class PartialOutboundData<T> {
   public readonly PARTIAL_SUPPORT = true;
+  /**
+   * Total length stored on the server.
+   */
   public length: number;
+
+  /**
+   * @param data - data that should be sent to the client now.
+   * @param length - total length stored on the server
+   */
   constructor(public data: T[], length?: number) {
     this.length = length || data.length;
   }

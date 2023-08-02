@@ -51,7 +51,9 @@ export class WebsocketConnection {
 
   /**
    * Creates a new instance of WebsocketConnection.
-   * @param connection - The WebSocket connection object.
+   * @param connection - The WebSocket connection object representing the connection to the client.
+   * @param supportsCache - Determines whether the client supports caching for outbound data.
+   * @param [authToken] - An optional parameter used to store authentication credentials, such as session tokens, for the client.
    */
   constructor(
     protected connection: WebSocket | null,
@@ -182,9 +184,23 @@ export class WebsocketConnection {
   }
 
   private outboundCache: Map<string, any[] | Map<number, any>> = new Map();
+  /**
+   * Sets the cached outbound data for the associated outbound method.
+   *
+   * @param method - The method of the associated Outbound.
+   * @param data - The contents that should be cached for the method.
+   */
   public addOutboundData(method: string, data: any[]) {
     this.outboundCache.set(method, data);
   }
+  /**
+   * Updates the cached outbound data for the associated outbound method.
+   *
+   * @param method - The method of the associated Outbound.
+   * @param inserted - The contents that have been added since the last time.
+   * @param updated - The contents that have been modified since the last time.
+   * @param deleted - The contents that have been removed since the last time.
+   */
   public updateOutboundCache(
     method: string,
     inserted: any[],
@@ -209,6 +225,15 @@ export class WebsocketConnection {
       map.delete(data.id);
     });
   }
+
+  /**
+   * Calculates the modified rows of data, that have been changed since the last time data was cached.
+   *
+   * @param method - The method of the associated Outbound.
+   * @param data - The data returned from the outbound function.
+   * @param isPartial - True when a part of the data is only present
+   * @returns the data changes (inserted, updated, deleted)
+   */
   public getOutboundDiffAndUpdateCache(
     method: string,
     data: { id: number }[],
@@ -326,6 +351,11 @@ export class WebsocketConnection {
       count: number | undefined;
     }
   > = new Map();
+  /**
+   * Outbound request config is used to store the length of entries, that have been previously requested by this client for partially sent outbounds.
+   * @param method - The method of the outbound
+   * @returns the outbound request config
+   */
   public getOutboundRequestConfig(method: string):
     | {
         id: number | undefined;
@@ -339,6 +369,11 @@ export class WebsocketConnection {
       }
     );
   }
+  /**
+   * Outbound request config is used to store the length of entries, that have been previously requested by this client for partially sent outbounds.
+   * @param method - The method of the outbound
+   * @param count - The length of entries that have been requested.
+   */
   public setOutboundRequestConfig(method: string, count: number | undefined) {
     if (count) {
       this.outboundRequestConfig.set(method, { count, id: undefined });
