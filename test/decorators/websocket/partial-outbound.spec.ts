@@ -4,6 +4,7 @@ import {
   StandaloneRoute,
   Modifies,
   PartialUpdates,
+  SupportsCache,
 } from "../../../src";
 import { WebsocketMocks } from "../../server/websocket-mocks";
 
@@ -139,6 +140,70 @@ describe("eager-loaded outbound", () => {
           expect(updated).toStrictEqual([]);
           expect(inserted).toStrictEqual([]);
           expect(deleted).toStrictEqual([]);
+        }
+      )
+    ).toBe("data_diff");
+  });
+});
+
+describe("should send updated entries only when the client restores the cached value on connect", () => {
+  class Testing {
+    public static data: Data[] = [new Data("test1"), new Data("test2")];
+
+    @Outbound("out.partial2")
+    @PartialUpdates
+    @SupportsCache
+    @Subscribe
+    async getData() {
+      return JSON.parse(JSON.stringify(Testing.data));
+    }
+
+    @StandaloneRoute("partial2.add")
+    @Modifies("out.partial2")
+    add(value: Data) {
+      Testing.data.push(value);
+    }
+  }
+
+  it("should be possible to access data as client with cache support", async () => {
+    expect(Testing).toBeDefined();
+    expect(Testing.data).toHaveLength(2);
+
+    // fetch initial hash value
+    const conn = WebsocketMocks.getConnectionStub(true);
+    var hash = 0;
+    await conn.expectCacheRequest("out.partial2");
+    conn.runRequest("___cache", {
+      method: "out.partial2",
+      specificHash: null,
+    });
+    const data = await conn.expectMethod("out.partial2", 1000000, (h) => {
+      hash = h;
+    });
+    expect(data).toHaveLength(2);
+    expect(hash).not.toBe(0);
+
+    const newConn = WebsocketMocks.getConnectionStub(true);
+    await newConn.expectCacheRequest("out.partial2");
+    newConn.runRequest("___cache", {
+      method: "out.partial2",
+      specificHash: hash,
+    });
+    const command = await newConn.expectMethod("out.partial2");
+    expect(command).toBe("cache_restore");
+
+    const data1 = new Data("new");
+    newConn.runRequest("partial2.add", data1);
+    expect(
+      await newConn.expectMethod(
+        "out.partial2",
+        1000000,
+        (specificHash, inserted, updated, deleted) => {
+          expect(specificHash).toBeDefined();
+          expect(specificHash).not.toBe(hash);
+          expect(updated).toStrictEqual([]);
+          expect(deleted).toStrictEqual([]);
+          expect(inserted).toEqual([data1]);
         }
       )
     ).toBe("data_diff");

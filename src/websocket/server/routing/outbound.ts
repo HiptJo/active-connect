@@ -242,6 +242,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           conn.addOutboundData(this.method, res);
           conn.send(this.method, res, undefined, hash);
         } else {
+          conn.addOutboundData(this.method, res);
           conn.send(this.method, "cache_restore");
         }
       }
