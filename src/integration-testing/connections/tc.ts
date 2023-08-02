@@ -43,7 +43,6 @@ export class StubWebsocketConnection extends WebsocketConnection {
     func: Function;
     hashCallback:
       | ((
-          globalHash: number,
           specificHash: number,
           inserted: any[],
           updated: any[],
@@ -58,7 +57,6 @@ export class StubWebsocketConnection extends WebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param [messageId] - The ID of the message.
-   * @param globalHash - The global hash value - used by outbounds with caching enabled.
    * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    * @returns `true` if the message is handled, `false` otherwise.
    */
@@ -66,7 +64,6 @@ export class StubWebsocketConnection extends WebsocketConnection {
     method: string,
     value: any,
     messageId?: number,
-    globalHash?: number,
     specificHash?: number,
     inserted?: any[],
     updated?: any[],
@@ -88,13 +85,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
               (s) => s != el && (!s.outboundMethod || s.outboundMethod == value)
             );
             if (el.hashCallback)
-              el.hashCallback(
-                globalHash,
-                specificHash,
-                inserted,
-                updated,
-                deleted
-              );
+              el.hashCallback(specificHash, inserted, updated, deleted);
             el.func(parsedValue);
             resolve(true);
             return;
@@ -119,7 +110,6 @@ export class StubWebsocketConnection extends WebsocketConnection {
     method: string,
     timeout?: number,
     hashCallback?: (
-      globalHash: number,
       specificHash: number,
       inserted: any[],
       updated: any[],
@@ -270,14 +260,12 @@ export class TCWrapper extends StubWebsocketConnection {
    * @param method - The method of the message.
    * @param value - The value of the message.
    * @param messageId - The ID of the message (optional).
-   * @param globalHash - The global hash value - used by outbounds with caching enabled.
    * @param specificHash - The specific hash value - used by outbounds with caching enabled.
    */
   send(
     method: string,
     value: any,
     messageId?: number,
-    globalHash?: number,
     specificHash?: number,
     inserted?: any[],
     updated?: any[],
@@ -289,7 +277,6 @@ export class TCWrapper extends StubWebsocketConnection {
         method,
         parsedValue,
         messageId,
-        globalHash,
         specificHash,
         inserted,
         updated,

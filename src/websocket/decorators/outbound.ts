@@ -1,5 +1,4 @@
 import {
-  WebsocketOutboundCacheKeyProvider,
   WebsocketOutbound,
   WebsocketOutbounds,
 } from "../server/routing/outbound";
@@ -15,6 +14,7 @@ import { WebsocketOutboundDecoratorConfig } from "./websocket-outbound-decorator
  * - `@ResendAfterAuthenticationChange`
  * - `@LazyLoading`
  * - `@SupportsCache`
+ * - `@PartialUpdates`
  *
  * @param method - The method name for the outbound message.
  *                 Outbound method names do not append to route methods.
@@ -93,24 +93,21 @@ export function LazyLoading(target: any, propertyKey: string) {
  * }
  * ```
  */
-export function SupportsCache(provider: WebsocketOutboundCacheKeyProvider) {
-  return function _SupportsCache(target: any, propertyKey: string) {
-    const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
-    config.supportsCache = true;
-    config.cacheKeyProvider = provider;
-  };
+export function SupportsCache(target: any, propertyKey: string) {
+  const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
+  config.supportsCache = true;
 }
 
 /**
- * Annotates that the outbound data is cached by clients.
- * This must only be used for database responses and other data, that is fully re-generated.
- * Otherwise the caching does not work, as the reference to the last version is stored - not an copy of the data.
+ * Annotates that only changes of the outbound data should be sent to the client.
+ * This reduces the amount of data, that is sent via the WebSocket connection.
+ * However the calculation of the difference is executed on the server-side.
  *
  * @example Method annotation for outbound:
  * ```
  * class Example {
  *     @Outbound("d.example")
- *     @SupportsCache
+ *     @PartialUpdates
  *     async getData(connection: WebsocketConnection): Promise<any> {
  *       return [...];
  *     }

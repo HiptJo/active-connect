@@ -8,7 +8,6 @@ import {
   Subscribe,
   SupportsCache,
   WebsocketConnection,
-  WebsocketOutboundCacheKeyProvider,
 } from "../../../src";
 import { IdObject } from "../../../src/integration-testing/angular-integration/objects/outbound-object";
 import { WebsocketMocks } from "../../server/websocket-mocks";
@@ -29,17 +28,11 @@ class Data implements IdObject {
   }
 }
 
-class MyProvider extends WebsocketOutboundCacheKeyProvider {
-  async getHashCode(): Promise<number> {
-    return Testing.data.length + 1;
-  }
-}
-
 class Testing {
   public static data: Data[] = Data.generate();
 
   @Outbound("d.partloaded")
-  @SupportsCache(new MyProvider())
+  @SupportsCache
   @PartialUpdates
   @LazyLoading
   @Subscribe
@@ -130,8 +123,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     expect(data.length).toBeGreaterThan(99);
   });
   it("should be possible to partially load data", async () => {
-    let global = 0,
-      specific = 0;
+    let specific = 0;
     const conn = WebsocketMocks.getConnectionStub(true);
     conn.runRequest("request.d.partloaded", {
       count: 10,
@@ -145,8 +137,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     const data = await conn.expectMethod(
       "d.partloaded",
       undefined,
-      (g: number, s: number) => {
-        global = g;
+      (s: number) => {
         specific = s;
       }
     );
@@ -158,13 +149,12 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     await conn.expectCacheRequest("d.partloaded");
     conn.runRequest("___cache", {
       method: "d.partloaded",
-      globalHash: global,
       specificHash: specific,
     });
     const data1 = await conn.expectMethod(
       "d.partloaded",
       undefined,
-      (g, s, inserted, updated, deleted) => {
+      (s, inserted, updated, deleted) => {
         expect(inserted).toHaveLength(10);
       }
     );
@@ -200,7 +190,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     const updated = await conn.expectMethod(
       "d.partloaded",
       undefined,
-      (g, s, inserted, updated, deleted) => {
+      (s, inserted, updated, deleted) => {
         expect(inserted).toHaveLength(1);
         expect(inserted[0]).toMatchObject({ name: "updated" });
       }

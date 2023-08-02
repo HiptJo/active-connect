@@ -86,10 +86,6 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * If the client supports caching, data is sent once the client has transmitted the cache key.
    */
   public supportsCache: boolean = false;
-  /**
-   * Stores the cache key provider - it is used to determine whether the outbound data might have changed.
-   */
-  public cacheKeyProvider: WebsocketOutboundCacheKeyProvider | null = null;
 
   /**
    * When enabled updated data resent using subscriptions does only send differential data (inserted, updated, deleted).
@@ -198,9 +194,6 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         ? (dataContext as PartialOutboundData<any>).data
         : (dataContext as any[]);
 
-      const gHash = this.cacheKeyProvider
-        ? await this.cacheKeyProvider.getHashCode()
-        : null;
       if (
         !res ||
         (res &&
@@ -208,47 +201,27 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           !res.toString().startsWith("error:auth:unauthorized"))
       ) {
         await this.subscribeForConnection(conn, res);
-        if (gHash) {
-          const stringContent = JsonParser.stringify(res);
-          const hash = this.cacheKeyProvider
-            ? JsonParser.getHashCode(stringContent)
-            : null;
-          if (conn.supportsCaching && this.partialUpdates) {
-            const result = conn.getOutboundDiffAndUpdateCache(
-              this.method,
-              res,
-              isPartial
-            );
-            conn.send(
-              this.method,
-              result.data,
-              undefined,
-              gHash,
-              hash,
-              result.inserted,
-              result.updated,
-              result.deleted,
-              dataContext.length
-            );
-          } else {
-            conn.send(this.method, res, undefined, gHash, hash);
-          }
+        const stringContent = JsonParser.stringify(res);
+        const hash = conn.supportsCaching
+          ? JsonParser.getHashCode(stringContent)
+          : null;
+        if (conn.supportsCaching && this.partialUpdates) {
+          const result = conn.getOutboundDiffAndUpdateCache(
+            this.method,
+            res,
+            isPartial
+          );
+          conn.send(
+            this.method,
+            result.data,
+            undefined,
+            hash,
+            result.inserted,
+            result.updated,
+            result.deleted
+          );
         } else {
-          if (conn.supportsCaching && this.partialUpdates) {
-            const result = conn.getOutboundDiffAndUpdateCache(this.method, res);
-            conn.send(
-              this.method,
-              result.data,
-              undefined,
-              gHash,
-              undefined,
-              result.inserted,
-              result.updated,
-              result.deleted
-            );
-          } else {
-            conn.send(this.method, res);
-          }
+          conn.send(this.method, res, undefined, hash);
         }
       }
     } catch (e) {
@@ -275,12 +248,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * Checks whether the data has been changed and sends the updated data to the client.
    *
    * @param conn - The WebSocket connection to send the data to.
-   * @param globalHash - The global hash value
    * @param specificHash - The specific hash value
    */
   public async sendToIfContentChanged(
     conn: WebsocketConnection,
-    globalHash: number,
     specificHash: number
   ) {
     // test auth
@@ -291,59 +262,58 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         return;
       }
     }
-    const gHash = await this.cacheKeyProvider.getHashCode();
-    if (gHash != globalHash) {
-      await this.sendData(conn);
-    } else {
-      // check if
-      try {
-        const dataContext = await this.Func(
-          conn,
-          conn.getOutboundRequestConfig(this.method).count
-        );
-        const isPartial =
-          (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
-        const res: any[] = isPartial
-          ? (dataContext as PartialOutboundData<any>).data
-          : (dataContext as any[]);
+    // check if data has been changed
+    try {
+      const dataContext = await this.Func(
+        conn,
+        conn.getOutboundRequestConfig(this.method).count
+      );
+      const isPartial =
+        (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+      const res: any[] = isPartial
+        ? (dataContext as PartialOutboundData<any>).data
+        : (dataContext as any[]);
 
-        if (
-          !res ||
-          (res &&
-            !res.toString().startsWith("auth:unauthorized") &&
-            !res.toString().startsWith("error:auth:unauthorized"))
-        ) {
-          await this.subscribeForConnection(conn, res);
-          const stringContent = JsonParser.stringify(res);
-          const hash = JsonParser.getHashCode(stringContent);
-          if (hash != specificHash) {
-            const messageResult = conn.getOutboundDiffAndUpdateCache(
-              this.method,
-              res,
-              isPartial
-            );
+      if (
+        !res ||
+        (res &&
+          !res.toString().startsWith("auth:unauthorized") &&
+          !res.toString().startsWith("error:auth:unauthorized"))
+      ) {
+        await this.subscribeForConnection(conn, res);
+        const stringContent = JsonParser.stringify(res);
+        const hash = JsonParser.getHashCode(stringContent);
+        if (hash != specificHash) {
+          const messageResult = conn.getOutboundDiffAndUpdateCache(
+            this.method,
+            res,
+            isPartial
+          );
 
-            conn.send(
-              this.method,
-              messageResult.data,
-              undefined,
-              gHash,
-              hash,
-              messageResult.inserted,
-              messageResult.updated,
-              messageResult.deleted
-            );
+          conn.send(
+            this.method,
+            messageResult.data,
+            undefined,
+            hash,
+            messageResult.inserted,
+            messageResult.updated,
+            messageResult.deleted
+          );
+        } else {
+          if (isPartial) {
+            conn.updateOutboundCache(this.method, res, [], []);
           } else {
-            conn.send(this.method, "cache_restore");
+            conn.addOutboundData(this.method, res);
           }
+          conn.send(this.method, "cache_restore");
         }
-      } catch (e) {
-        if (!e?.isAuthenticationError) {
-          if (!e.SILENT) console.error(e);
-          conn.send("m.error", e?.message || e);
-        } else if (this.lazyLoading || e.SILENT) {
-          conn.send("m.error", e?.message || e);
-        }
+      }
+    } catch (e) {
+      if (!e?.isAuthenticationError) {
+        if (!e.SILENT) console.error(e);
+        conn.send("m.error", e?.message || e);
+      } else if (this.lazyLoading || e.SILENT) {
+        conn.send("m.error", e?.message || e);
       }
     }
   }
@@ -450,7 +420,6 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       }
       if (this.decoratorConfigReference.supportsCache) {
         this.supportsCache = this.decoratorConfigReference.supportsCache;
-        this.cacheKeyProvider = this.decoratorConfigReference.cacheKeyProvider;
       }
       if (this.decoratorConfigReference.partialUpdates) {
         this.partialUpdates = this.decoratorConfigReference.partialUpdates;
@@ -581,24 +550,18 @@ export class WebsocketOutbounds {
   private static async onCacheResponseReceived(
     {
       method,
-      globalHash,
       specificHash,
     }: {
       method: string;
-      globalHash: number;
       specificHash: number;
     },
     conn: WebsocketConnection
   ) {
-    if (!globalHash && !specificHash) {
+    if (!specificHash) {
       // data has not been cached before
       await this.getOutbound(method).sendData(conn);
     } else {
-      await this.getOutbound(method).sendToIfContentChanged(
-        conn,
-        globalHash,
-        specificHash
-      );
+      await this.getOutbound(method).sendToIfContentChanged(conn, specificHash);
     }
   }
 
@@ -706,10 +669,6 @@ export class WebsocketOutbounds {
   public static removeOutboundByMethod(method: string): boolean {
     return WebsocketOutbounds.outbounds.delete(method);
   }
-}
-
-export abstract class WebsocketOutboundCacheKeyProvider {
-  abstract getHashCode(): Promise<number>;
 }
 
 export class PartialOutboundData<T> {
