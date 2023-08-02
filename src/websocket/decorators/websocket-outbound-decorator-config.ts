@@ -1,6 +1,5 @@
 import { DecoratorConfig } from "../../decorator-config/decorator-config";
 import { MessageFilter } from "../auth/authenticator";
-import { WebsocketOutboundCacheKeyProvider } from "../server/routing/outbound";
 
 /**
  * Contains configuration used during the initialization phase to ensure different decorators work together.
@@ -84,11 +83,6 @@ export class WebsocketOutboundDecoratorConfig extends DecoratorConfig {
    * Defines whether the outbound does support caching on the client-side.
    */
   public supportsCache: boolean = false;
-
-  /**
-   * Stores the cache key provider. It can be used to check whether the data of the outbound might have been modified.
-   */
-  public cacheKeyProvider: WebsocketOutboundCacheKeyProvider;
 
   /**
    * Defines whether the outbound updates should be sent partially.
