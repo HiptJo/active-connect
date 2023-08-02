@@ -8,6 +8,7 @@ import { WebsocketServer } from "../server";
 import { DecorableFunction } from "../../../decorator-config/function";
 
 import * as _ from "lodash";
+import { IdObject } from "../../../integration-testing/angular-integration/objects/outbound-object";
 
 /**
  * Represents a WebSocket connection.
@@ -154,7 +155,8 @@ export class WebsocketConnection {
     specificHash?: number,
     inserted?: any[],
     updated?: any[],
-    deleted?: any[]
+    deleted?: any[],
+    length?: number
   ) {
     let message = JsonParser.stringify({
       method: method,
@@ -165,6 +167,7 @@ export class WebsocketConnection {
       inserted,
       updated,
       deleted,
+      length,
     });
     if (this.logging && method.startsWith("m.")) {
       let messageLog = message;
@@ -181,31 +184,73 @@ export class WebsocketConnection {
     if (this.connection) this.connection.send(message);
   }
 
-  private outboundCache: Map<string, any[]> = new Map();
+  private outboundCache: Map<string, any[] | Map<number, any>> = new Map();
   public addOutboundData(method: string, data: any[]) {
     this.outboundCache.set(method, data);
   }
+  public updateOutboundCache(
+    method: string,
+    inserted: any[],
+    updated: any[],
+    deleted: any[]
+  ) {
+    let map: Map<number, any> = this.outboundCache.get(method) as Map<
+      number,
+      any
+    >;
+    if (!map) {
+      map = new Map();
+      this.outboundCache.set(method, map);
+    }
+    if (map.keys) {
+      inserted?.forEach((data: IdObject) => {
+        map.set(data.id, data);
+      });
+      updated?.forEach((data: IdObject) => {
+        map.set(data.id, data);
+      });
+      deleted?.forEach((data: IdObject) => {
+        map.delete(data.id);
+      });
+    }
+  }
   public getOutboundDiffAndUpdateCache(
     method: string,
-    data: { id: number }[]
+    data: { id: number }[],
+    isPartial?: boolean
   ): { data: any[] | string; inserted: any[]; updated: any[]; deleted: any[] } {
-    const cache = this.outboundCache.get(method);
+    let cache: any[] | null = null;
+    if (isPartial) {
+      const cacheMap = this.outboundCache.get(method);
+      if (cacheMap) cache = Array.from(cacheMap.values());
+    } else {
+      cache = this.outboundCache.get(method) as any[];
+    }
+
     if (cache) {
-      const updated = _.differenceWith(data, cache, JsonParser.deepCompare);
+      const updated = _.differenceWith(
+        data,
+        cache as any[],
+        JsonParser.deepCompare
+      );
       const inserted = _.differenceWith(
         updated,
-        cache,
+        cache as any[],
         (a: { id: number }, b: { id: number }) => a.id == b.id
       );
       _.pullAll(updated, inserted);
 
       const deleted = _.differenceWith(
-        cache,
+        cache as any[],
         data,
         (a: { id: number }, b: { id: number }) => a.id == b.id
       );
 
-      this.addOutboundData(method, data);
+      if (isPartial) {
+        this.updateOutboundCache(method, inserted, updated, deleted);
+      } else {
+        this.addOutboundData(method, data);
+      }
       return {
         inserted,
         updated,
@@ -213,7 +258,11 @@ export class WebsocketConnection {
         data: "data_diff",
       };
     } else {
-      this.addOutboundData(method, data);
+      if (isPartial) {
+        this.updateOutboundCache(method, data, [], []);
+      } else {
+        this.addOutboundData(method, data);
+      }
       return {
         data,
         inserted: null,
@@ -273,5 +322,31 @@ export class WebsocketConnection {
       WebsocketConnection.lookup = require("geoip-lite").lookup;
     }
     return WebsocketConnection.lookup;
+  }
+
+  private outboundRequestConfig: Map<
+    string,
+    {
+      id: number | undefined;
+      count: number | undefined;
+    }
+  > = new Map();
+  public getOutboundRequestConfig(method: string):
+    | {
+        id: number | undefined;
+        count: number | undefined;
+      }
+    | undefined {
+    return (
+      this.outboundRequestConfig.get(method) || {
+        count: Number.MAX_SAFE_INTEGER,
+        id: undefined,
+      }
+    );
+  }
+  public setOutboundRequestConfig(method: string, count: number | undefined) {
+    if (count) {
+      this.outboundRequestConfig.set(method, { count, id: undefined });
+    }
   }
 }

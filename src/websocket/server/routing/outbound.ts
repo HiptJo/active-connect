@@ -42,6 +42,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   ) {
     super(objConfig);
     this.lazyLoading = lazyLoading;
+    this.isOutbound = true;
   }
 
   private _lazyLoading: boolean = false;
@@ -54,10 +55,19 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       const method = this.method;
       WebsocketRouter.registerStandaloneRoute(
         new SimpleWebsocketRoute(`request.${method}`, async function request(
-          data: any,
+          requestConfig:
+            | {
+                id: number | undefined;
+                count: number | undefined;
+              }
+            | undefined,
           conn: WebsocketConnection
         ) {
-          await WebsocketOutbounds.sendSingleOutboundByMethod(method, conn);
+          await WebsocketOutbounds.sendSingleOutboundByMethod(
+            method,
+            conn,
+            requestConfig
+          );
         })
       );
     }
@@ -144,10 +154,22 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * If caching is enabled, the caching hash is checked in advance.
    * @param conn - The WebSocket connection to send the data to.
    */
-  public async sendTo(conn: WebsocketConnection) {
+  public async sendTo(
+    conn: WebsocketConnection,
+    requestConfig?:
+      | {
+          id: number | undefined;
+          count: number | undefined;
+        }
+      | undefined
+  ) {
+    if (requestConfig) {
+      conn.setOutboundRequestConfig(this.method, requestConfig?.count);
+    }
+
     // check if client supports caching
-    if (!this.supportsCache || !conn.supportsCaching) {
-      await this.sendData(conn);
+    if (!this.supportsCache || !conn.supportsCaching || requestConfig?.id) {
+      await this.sendData(conn, requestConfig?.id);
     } else {
       // check if the user has sufficient permissions
       if (
@@ -163,9 +185,19 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * Sends the outbound data to the provided connection.
    * @param conn - The WebSocket connection to send the data to.
    */
-  public async sendData(conn: WebsocketConnection) {
+  public async sendData(conn: WebsocketConnection, id?: number) {
     try {
-      const res = await this.Func(conn);
+      const dataContext: any[] | PartialOutboundData<any> = await this.Func(
+        conn,
+        conn.getOutboundRequestConfig(this.method).count,
+        id
+      );
+      const isPartial =
+        (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+      const res: any[] = isPartial
+        ? (dataContext as PartialOutboundData<any>).data
+        : (dataContext as any[]);
+
       const gHash = this.cacheKeyProvider
         ? await this.cacheKeyProvider.getHashCode()
         : null;
@@ -182,7 +214,11 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
             ? JsonParser.getHashCode(stringContent)
             : null;
           if (conn.supportsCaching && this.partialUpdates) {
-            const result = conn.getOutboundDiffAndUpdateCache(this.method, res);
+            const result = conn.getOutboundDiffAndUpdateCache(
+              this.method,
+              res,
+              isPartial
+            );
             conn.send(
               this.method,
               result.data,
@@ -191,7 +227,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
               hash,
               result.inserted,
               result.updated,
-              result.deleted
+              result.deleted,
+              dataContext.length
             );
           } else {
             conn.send(this.method, res, undefined, gHash, hash);
@@ -230,7 +267,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    */
   public async sendToIfSubscribed(conn: WebsocketConnection) {
     if (this.connectionSubscribesForChanges(conn)) {
-      this.sendTo(conn);
+      this.sendTo(conn, conn.getOutboundRequestConfig(this.method));
     }
   }
 
@@ -260,7 +297,16 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     } else {
       // check if
       try {
-        const res = await this.Func(conn);
+        const dataContext = await this.Func(
+          conn,
+          conn.getOutboundRequestConfig(this.method).count
+        );
+        const isPartial =
+          (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+        const res: any[] = isPartial
+          ? (dataContext as PartialOutboundData<any>).data
+          : (dataContext as any[]);
+
         if (
           !res ||
           (res &&
@@ -271,8 +317,22 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           const stringContent = JsonParser.stringify(res);
           const hash = JsonParser.getHashCode(stringContent);
           if (hash != specificHash) {
-            conn.addOutboundData(this.method, res);
-            conn.send(this.method, res, undefined, gHash, hash);
+            const messageResult = conn.getOutboundDiffAndUpdateCache(
+              this.method,
+              res,
+              isPartial
+            );
+
+            conn.send(
+              this.method,
+              messageResult.data,
+              undefined,
+              gHash,
+              hash,
+              messageResult.inserted,
+              messageResult.updated,
+              messageResult.deleted
+            );
           } else {
             conn.send(this.method, "cache_restore");
           }
@@ -550,11 +610,17 @@ export class WebsocketOutbounds {
    */
   public static async sendSingleOutboundByMethod(
     method: string,
-    connection: WebsocketConnection
+    connection: WebsocketConnection,
+    requestConfig?:
+      | {
+          id: number | undefined;
+          count: number | undefined;
+        }
+      | undefined
   ) {
     const outbound = WebsocketOutbounds.outbounds.get(method);
     if (outbound) {
-      await outbound.sendTo(connection);
+      await outbound.sendTo(connection, requestConfig);
     } else {
       throw Error(`Websocket: Outbound ${method} has not been found.`);
     }
@@ -644,4 +710,12 @@ export class WebsocketOutbounds {
 
 export abstract class WebsocketOutboundCacheKeyProvider {
   abstract getHashCode(): Promise<number>;
+}
+
+export class PartialOutboundData<T> {
+  public readonly PARTIAL_SUPPORT = true;
+  public length: number;
+  constructor(public data: T[], length?: number) {
+    this.length = length || data.length;
+  }
 }
