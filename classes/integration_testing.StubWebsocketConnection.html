@@ -29,7 +29,7 @@
 <ul class="tsd-hierarchy">
 <li><a href="integration_testing.TCWrapper.html" class="tsd-signature-type tsd-kind-class">TCWrapper</a></li></ul></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L15">src/integration-testing/connections/tc.ts:15</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L15">src/integration-testing/connections/tc.ts:15</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -68,12 +68,15 @@
 <a href="integration_testing.StubWebsocketConnection.html#expectError" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>expect<wbr/>Error</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#expectMethod" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>expect<wbr/>Method</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#getOutboundDiffAndUpdateCache" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Outbound<wbr/>Diff<wbr/>And<wbr/>Update<wbr/>Cache</span></a>
+<a href="integration_testing.StubWebsocketConnection.html#getOutboundRequestConfig" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Outbound<wbr/>Request<wbr/>Config</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#onClose" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Close</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#onMessage" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Message</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#runRequest" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>run<wbr/>Request</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#send" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>send</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#setIp" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>set<wbr/>Ip</span></a>
+<a href="integration_testing.StubWebsocketConnection.html#setOutboundRequestConfig" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>set<wbr/>Outbound<wbr/>Request<wbr/>Config</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#timeout" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>timeout</span></a>
+<a href="integration_testing.StubWebsocketConnection.html#updateOutboundCache" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>update<wbr/>Outbound<wbr/>Cache</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#addCloseHandler" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>add<wbr/>Close<wbr/>Handler</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#getLookup" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Lookup</span></a>
 <a href="integration_testing.StubWebsocketConnection.html#loadDecoratorConfig" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>load<wbr/>Decorator<wbr/>Config</span></a>
@@ -98,7 +101,7 @@
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Overrides <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#constructor">constructor</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L22">src/integration-testing/connections/tc.ts:22</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L22">src/integration-testing/connections/tc.ts:22</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="_id" class="tsd-anchor"></a>
@@ -110,7 +113,7 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#_id">_id</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L31">src/websocket/server/connection/connection.ts:31</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L32">src/websocket/server/connection/connection.ts:32</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="clientInformation" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>client<wbr/>Information</span><a href="#clientInformation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">client<wbr/>Information</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">browser</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">ip</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">location</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
@@ -128,41 +131,39 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#clientInformation">clientInformation</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L245">src/websocket/server/connection/connection.ts:245</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L314">src/websocket/server/connection/connection.ts:314</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="connection" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>connection</span><a href="#connection" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">connection</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">WebSocket</span></div>
-<div class="tsd-comment tsd-typography"><p>The WebSocket connection object.</p>
+<div class="tsd-comment tsd-typography"><p>The WebSocket connection object representing the connection to the client.</p>
 </div>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#connection">connection</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L56">src/websocket/server/connection/connection.ts:56</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L59">src/websocket/server/connection/connection.ts:59</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="messageId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>message<wbr/>Id</span><a href="#messageId" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">message<wbr/>Id</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L211">src/integration-testing/connections/tc.ts:211</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L202">src/integration-testing/connections/tc.ts:202</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="stack" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>stack</span><a href="#stack" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">stack</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">func</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Function</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">hashCallback</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">globalHash</span>, <span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">method</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">outboundMethod</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
+<div class="tsd-signature"><span class="tsd-kind-property">stack</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">func</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Function</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">hashCallback</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">method</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">outboundMethod</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter">
 <h5><span class="tsd-kind-property">func</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Function</span></h5></li>
 <li class="tsd-parameter">
-<h5><span class="tsd-kind-property">hash<wbr/>Callback</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">globalHash</span>, <span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></h5>
+<h5><span class="tsd-kind-property">hash<wbr/>Callback</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></h5>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">globalHash</span>, <span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">globalHash</span>: <span class="tsd-signature-type">number</span></h5></li>
 <li>
 <h5><span class="tsd-kind-parameter">specificHash</span>: <span class="tsd-signature-type">number</span></h5></li>
 <li>
@@ -177,12 +178,12 @@ This incremental value is resetted once the process is restarted.</p>
 <li class="tsd-parameter">
 <h5><span class="tsd-kind-property">outbound<wbr/>Method</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L41">src/integration-testing/connections/tc.ts:41</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L41">src/integration-testing/connections/tc.ts:41</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="testingIdentifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>testing<wbr/>Identifier</span><a href="#testingIdentifier" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">testing<wbr/>Identifier</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L16">src/integration-testing/connections/tc.ts:16</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L16">src/integration-testing/connections/tc.ts:16</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="token" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>token</span><a href="#token" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">token</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = null</span></div>
@@ -191,12 +192,12 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#token">token</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L43">src/websocket/server/connection/connection.ts:43</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L44">src/websocket/server/connection/connection.ts:44</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="maxTestingIdentifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <code class="tsd-tag ts-flagPrivate">Private</code> <span>max<wbr/>Testing<wbr/>Identifier</span><a href="#maxTestingIdentifier" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">max<wbr/>Testing<wbr/>Identifier</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L17">src/integration-testing/connections/tc.ts:17</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L17">src/integration-testing/connections/tc.ts:17</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="router" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>router</span><a href="#router" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">router</span><span class="tsd-signature-symbol">:</span> <a href="websocket.WebsocketRouter.html" class="tsd-signature-type tsd-kind-class">WebsocketRouter</a><span class="tsd-signature-symbol"> = ...</span></div>
@@ -205,7 +206,7 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#router">router</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L48">src/websocket/server/connection/connection.ts:48</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L49">src/websocket/server/connection/connection.ts:49</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="id" class="tsd-anchor"></a>
@@ -219,7 +220,7 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from WebsocketConnection.id</p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L36">src/websocket/server/connection/connection.ts:36</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L37">src/websocket/server/connection/connection.ts:37</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="identifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>identifier</span><a href="#identifier" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -230,7 +231,7 @@ This incremental value is resetted once the process is restarted.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L37">src/integration-testing/connections/tc.ts:37</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L37">src/integration-testing/connections/tc.ts:37</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="supportsCaching" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>supports<wbr/>Caching</span><a href="#supportsCaching" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -242,7 +243,7 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from WebsocketConnection.supportsCaching</p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L93">src/websocket/server/connection/connection.ts:93</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L96">src/websocket/server/connection/connection.ts:96</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="addOutboundData" class="tsd-anchor"></a>
@@ -250,17 +251,26 @@ This incremental value is resetted once the process is restarted.</p>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="addOutboundData.addOutboundData-1"><span class="tsd-kind-call-signature">add<wbr/>Outbound<wbr/>Data</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span>, <span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#addOutboundData.addOutboundData-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Sets the cached outbound data for the associated outbound method.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5><span class="tsd-kind-parameter">method</span>: <span class="tsd-signature-type">string</span></h5></li>
+<h5><span class="tsd-kind-parameter">method</span>: <span class="tsd-signature-type">string</span></h5>
+<div class="tsd-comment tsd-typography"><p>The method of the associated Outbound.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
 <li>
-<h5><span class="tsd-kind-parameter">data</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
+<h5><span class="tsd-kind-parameter">data</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"><p>The contents that should be cached for the method.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#addOutboundData">addOutboundData</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L185">src/websocket/server/connection/connection.ts:185</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L193">src/websocket/server/connection/connection.ts:193</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="closeConnection" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>close<wbr/>Connection</span><a href="#closeConnection" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -268,7 +278,7 @@ This incremental value is resetted once the process is restarted.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L223">src/integration-testing/connections/tc.ts:223</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L214">src/integration-testing/connections/tc.ts:214</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="dontExpectMethod" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>dont<wbr/>Expect<wbr/>Method</span><a href="#dontExpectMethod" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -288,7 +298,7 @@ This incremental value is resetted once the process is restarted.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L176">src/integration-testing/connections/tc.ts:176</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L167">src/integration-testing/connections/tc.ts:167</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="enableCache" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>enable<wbr/>Cache</span><a href="#enableCache" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -300,7 +310,7 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#enableCache">enableCache</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L86">src/websocket/server/connection/connection.ts:86</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L89">src/websocket/server/connection/connection.ts:89</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="enableLogging" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>enable<wbr/>Logging</span><a href="#enableLogging" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -312,7 +322,7 @@ This incremental value is resetted once the process is restarted.</p>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#enableLogging">enableLogging</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L78">src/websocket/server/connection/connection.ts:78</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L81">src/websocket/server/connection/connection.ts:81</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="expectCacheRequest" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>expect<wbr/>Cache<wbr/>Request</span><a href="#expectCacheRequest" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -327,7 +337,7 @@ This incremental value is resetted once the process is restarted.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">timeout</span>: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L149">src/integration-testing/connections/tc.ts:149</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L140">src/integration-testing/connections/tc.ts:140</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="expectError" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>expect<wbr/>Error</span><a href="#expectError" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -339,7 +349,7 @@ This incremental value is resetted once the process is restarted.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L193">src/integration-testing/connections/tc.ts:193</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L184">src/integration-testing/connections/tc.ts:184</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="expectMethod" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>expect<wbr/>Method</span><a href="#expectMethod" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -363,17 +373,15 @@ All previously expected methods have to be received, before the method is expect
 </div>
 <div class="tsd-comment tsd-typography"></div></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">hashCallback</span>: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">globalHash</span>, <span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></h5>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">hashCallback</span>: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></h5>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
 <ul class="tsd-signatures">
-<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">globalHash</span>, <span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<li class="tsd-signature"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">specificHash</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">globalHash</span>: <span class="tsd-signature-type">number</span></h5></li>
 <li>
 <h5><span class="tsd-kind-parameter">specificHash</span>: <span class="tsd-signature-type">number</span></h5></li>
 <li>
@@ -387,20 +395,34 @@ All previously expected methods have to be received, before the method is expect
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L118">src/integration-testing/connections/tc.ts:118</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L110">src/integration-testing/connections/tc.ts:110</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="getOutboundDiffAndUpdateCache" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Outbound<wbr/>Diff<wbr/>And<wbr/>Update<wbr/>Cache</span><a href="#getOutboundDiffAndUpdateCache" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
-<li class="tsd-signature tsd-anchor-link" id="getOutboundDiffAndUpdateCache.getOutboundDiffAndUpdateCache-1"><span class="tsd-kind-call-signature">get<wbr/>Outbound<wbr/>Diff<wbr/>And<wbr/>Update<wbr/>Cache</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span>, <span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">data</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">deleted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">inserted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">updated</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><a href="#getOutboundDiffAndUpdateCache.getOutboundDiffAndUpdateCache-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="getOutboundDiffAndUpdateCache.getOutboundDiffAndUpdateCache-1"><span class="tsd-kind-call-signature">get<wbr/>Outbound<wbr/>Diff<wbr/>And<wbr/>Update<wbr/>Cache</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span>, <span class="tsd-kind-parameter">data</span>, <span class="tsd-kind-parameter">isPartial</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">data</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">deleted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">inserted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">updated</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><a href="#getOutboundDiffAndUpdateCache.getOutboundDiffAndUpdateCache-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Calculates the modified rows of data, that have been changed since the last time data was cached.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5><span class="tsd-kind-parameter">method</span>: <span class="tsd-signature-type">string</span></h5></li>
+<h5><span class="tsd-kind-parameter">method</span>: <span class="tsd-signature-type">string</span></h5>
+<div class="tsd-comment tsd-typography"><p>The method of the associated Outbound.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
 <li>
-<h5><span class="tsd-kind-parameter">data</span>: <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">data</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">deleted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">inserted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">updated</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></h4>
+<h5><span class="tsd-kind-parameter">data</span>: <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"><p>The data returned from the outbound function.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">isPartial</span>: <span class="tsd-signature-type">boolean</span></h5>
+<div class="tsd-comment tsd-typography"><p>True when a part of the data is only present</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">data</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">deleted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">inserted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">updated</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></h4><p>the data changes (inserted, updated, deleted)</p>
+
 <ul class="tsd-parameters">
 <li class="tsd-parameter">
 <h5><span class="tsd-kind-property">data</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li>
@@ -409,10 +431,39 @@ All previously expected methods have to be received, before the method is expect
 <li class="tsd-parameter">
 <h5><span class="tsd-kind-property">inserted</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li>
 <li class="tsd-parameter">
-<h5><span class="tsd-kind-property">updated</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li></ul><aside class="tsd-sources">
+<h5><span class="tsd-kind-property">updated</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li></ul>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#getOutboundDiffAndUpdateCache">getOutboundDiffAndUpdateCache</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L188">src/websocket/server/connection/connection.ts:188</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L237">src/websocket/server/connection/connection.ts:237</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="getOutboundRequestConfig" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Outbound<wbr/>Request<wbr/>Config</span><a href="#getOutboundRequestConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-is-inherited">
+<li class="tsd-signature tsd-anchor-link" id="getOutboundRequestConfig.getOutboundRequestConfig-1"><span class="tsd-kind-call-signature">get<wbr/>Outbound<wbr/>Request<wbr/>Config</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">count</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">groupId</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><a href="#getOutboundRequestConfig.getOutboundRequestConfig-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Outbound request config is used to store the length of entries, that have been previously requested by this client for partially sent outbounds.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">method</span>: <span class="tsd-signature-type">string</span></h5>
+<div class="tsd-comment tsd-typography"><p>The method of the outbound</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">count</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">groupId</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></h4><p>the outbound request config</p>
+
+<ul class="tsd-parameters">
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-property">count</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-property">group<wbr/>Id</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5></li></ul>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#getOutboundRequestConfig">getOutboundRequestConfig</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L360">src/websocket/server/connection/connection.ts:360</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="onClose" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>on<wbr/>Close</span><a href="#onClose" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
@@ -421,7 +472,7 @@ All previously expected methods have to be received, before the method is expect
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#onClose">onClose</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L131">src/websocket/server/connection/connection.ts:131</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L134">src/websocket/server/connection/connection.ts:134</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="onMessage" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>on<wbr/>Message</span><a href="#onMessage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
@@ -441,7 +492,7 @@ All previously expected methods have to be received, before the method is expect
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#onMessage">onMessage</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L109">src/websocket/server/connection/connection.ts:109</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L112">src/websocket/server/connection/connection.ts:112</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="runRequest" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>run<wbr/>Request</span><a href="#runRequest" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -458,11 +509,11 @@ All previously expected methods have to be received, before the method is expect
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">noMessageId</span>: <span class="tsd-signature-type">boolean</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L212">src/integration-testing/connections/tc.ts:212</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L203">src/integration-testing/connections/tc.ts:203</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="send" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>send</span><a href="#send" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="send.send-1"><span class="tsd-kind-call-signature">send</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span>, <span class="tsd-kind-parameter">value</span>, <span class="tsd-kind-parameter">messageId</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">globalHash</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">specificHash</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">inserted</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">updated</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><a href="#send.send-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="send.send-1"><span class="tsd-kind-call-signature">send</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span>, <span class="tsd-kind-parameter">value</span>, <span class="tsd-kind-parameter">messageId</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">specificHash</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">inserted</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">updated</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">length</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><a href="#send.send-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Sends a WebSocket message.</p>
 </div>
@@ -485,11 +536,6 @@ All previously expected methods have to be received, before the method is expect
 </div>
 <div class="tsd-comment tsd-typography"></div></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">globalHash</span>: <span class="tsd-signature-type">number</span></h5>
-<div class="tsd-comment tsd-typography"><p>The global hash value - used by outbounds with caching enabled.</p>
-</div>
-<div class="tsd-comment tsd-typography"></div></li>
-<li>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">specificHash</span>: <span class="tsd-signature-type">number</span></h5>
 <div class="tsd-comment tsd-typography"><p>The specific hash value - used by outbounds with caching enabled.</p>
 </div>
@@ -499,13 +545,15 @@ All previously expected methods have to be received, before the method is expect
 <li>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">updated</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">deleted</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">deleted</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li>
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">length</span>: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4><p><code>true</code> if the message is handled, <code>false</code> otherwise.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Overrides <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#send">send</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L65">src/integration-testing/connections/tc.ts:65</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L63">src/integration-testing/connections/tc.ts:63</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="setIp" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Ip</span><a href="#setIp" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -525,7 +573,36 @@ All previously expected methods have to be received, before the method is expect
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#setIp">setIp</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L255">src/websocket/server/connection/connection.ts:255</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L324">src/websocket/server/connection/connection.ts:324</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="setOutboundRequestConfig" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>set<wbr/>Outbound<wbr/>Request<wbr/>Config</span><a href="#setOutboundRequestConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-is-inherited">
+<li class="tsd-signature tsd-anchor-link" id="setOutboundRequestConfig.setOutboundRequestConfig-1"><span class="tsd-kind-call-signature">set<wbr/>Outbound<wbr/>Request<wbr/>Config</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span>, <span class="tsd-kind-parameter">count</span>, <span class="tsd-kind-parameter">groupId</span>, <span class="tsd-kind-parameter">id</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#setOutboundRequestConfig.setOutboundRequestConfig-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Outbound request config is used to store the length of entries, that have been previously requested by this client for partially sent outbounds.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">method</span>: <span class="tsd-signature-type">string</span></h5>
+<div class="tsd-comment tsd-typography"><p>The method of the outbound</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
+<li>
+<h5><span class="tsd-kind-parameter">count</span>: <span class="tsd-signature-type">number</span></h5>
+<div class="tsd-comment tsd-typography"><p>The length of entries that have been requested.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
+<li>
+<h5><span class="tsd-kind-parameter">groupId</span>: <span class="tsd-signature-type">number</span></h5></li>
+<li>
+<h5><span class="tsd-kind-parameter">id</span>: <span class="tsd-signature-type">number</span></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#setOutboundRequestConfig">setOutboundRequestConfig</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L380">src/websocket/server/connection/connection.ts:380</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="timeout" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>timeout</span><a href="#timeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -545,7 +622,42 @@ All previously expected methods have to be received, before the method is expect
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L203">src/integration-testing/connections/tc.ts:203</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L194">src/integration-testing/connections/tc.ts:194</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="updateOutboundCache" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>update<wbr/>Outbound<wbr/>Cache</span><a href="#updateOutboundCache" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-is-inherited">
+<li class="tsd-signature tsd-anchor-link" id="updateOutboundCache.updateOutboundCache-1"><span class="tsd-kind-call-signature">update<wbr/>Outbound<wbr/>Cache</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">method</span>, <span class="tsd-kind-parameter">inserted</span>, <span class="tsd-kind-parameter">updated</span>, <span class="tsd-kind-parameter">deleted</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#updateOutboundCache.updateOutboundCache-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Updates the cached outbound data for the associated outbound method.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">method</span>: <span class="tsd-signature-type">string</span></h5>
+<div class="tsd-comment tsd-typography"><p>The method of the associated Outbound.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
+<li>
+<h5><span class="tsd-kind-parameter">inserted</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"><p>The contents that have been added since the last time.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
+<li>
+<h5><span class="tsd-kind-parameter">updated</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"><p>The contents that have been modified since the last time.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
+<li>
+<h5><span class="tsd-kind-parameter">deleted</span>: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"><p>The contents that have been removed since the last time.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#updateOutboundCache">updateOutboundCache</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L204">src/websocket/server/connection/connection.ts:204</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="addCloseHandler" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>add<wbr/>Close<wbr/>Handler</span><a href="#addCloseHandler" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -565,7 +677,7 @@ All previously expected methods have to be received, before the method is expect
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#addCloseHandler">addCloseHandler</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L22">src/websocket/server/connection/connection.ts:22</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L23">src/websocket/server/connection/connection.ts:23</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited"><a id="getLookup" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <code class="tsd-tag ts-flagProtected">Protected</code> <span>get<wbr/>Lookup</span><a href="#getLookup" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
@@ -574,7 +686,7 @@ All previously expected methods have to be received, before the method is expect
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4><aside class="tsd-sources">
 <p>Inherited from <a href="websocket.WebsocketConnection.html">WebsocketConnection</a>.<a href="websocket.WebsocketConnection.html#getLookup">getLookup</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/websocket/server/connection/connection.ts#L268">src/websocket/server/connection/connection.ts:268</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/websocket/server/connection/connection.ts#L337">src/websocket/server/connection/connection.ts:337</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="loadDecoratorConfig" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <code class="tsd-tag ts-flagPrivate">Private</code> <span>load<wbr/>Decorator<wbr/>Config</span><a href="#loadDecoratorConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-private">
@@ -582,7 +694,7 @@ All previously expected methods have to be received, before the method is expect
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/3d0614b/src/integration-testing/connections/tc.ts#L28">src/integration-testing/connections/tc.ts:28</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/HiptJo/active-connect/blob/305fc49/src/integration-testing/connections/tc.ts#L28">src/integration-testing/connections/tc.ts:28</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -624,12 +736,15 @@ All previously expected methods have to be received, before the method is expect
 <li><a href="#expectError" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>expect<wbr/>Error</span></a></li>
 <li><a href="#expectMethod" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>expect<wbr/>Method</span></a></li>
 <li><a href="#getOutboundDiffAndUpdateCache" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Outbound<wbr/>Diff<wbr/>And<wbr/>Update<wbr/>Cache</span></a></li>
+<li><a href="#getOutboundRequestConfig" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Outbound<wbr/>Request<wbr/>Config</span></a></li>
 <li><a href="#onClose" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Close</span></a></li>
 <li><a href="#onMessage" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>on<wbr/>Message</span></a></li>
 <li><a href="#runRequest" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>run<wbr/>Request</span></a></li>
 <li><a href="#send" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>send</span></a></li>
 <li><a href="#setIp" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>set<wbr/>Ip</span></a></li>
+<li><a href="#setOutboundRequestConfig" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>set<wbr/>Outbound<wbr/>Request<wbr/>Config</span></a></li>
 <li><a href="#timeout" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>timeout</span></a></li>
+<li><a href="#updateOutboundCache" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>update<wbr/>Outbound<wbr/>Cache</span></a></li>
 <li><a href="#addCloseHandler" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>add<wbr/>Close<wbr/>Handler</span></a></li>
 <li><a href="#getLookup" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Lookup</span></a></li>
 <li><a href="#loadDecoratorConfig" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>load<wbr/>Decorator<wbr/>Config</span></a></li></ul></div></details></div>
