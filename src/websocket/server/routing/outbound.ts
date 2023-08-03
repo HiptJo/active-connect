@@ -482,8 +482,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           connectionsWithIdSubscription.map((conn) =>
             this.sendData(
               conn,
-              undefined,
-              conn.getOutboundRequestConfig(this.method).id
+              conn.getOutboundRequestConfig(this.method).id,
+              undefined
             )
           )
         );
