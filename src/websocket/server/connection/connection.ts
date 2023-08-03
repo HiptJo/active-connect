@@ -225,6 +225,9 @@ export class WebsocketConnection {
       map.delete(data.id);
     });
   }
+  public resetOutboundCache(method: string) {
+    this.outboundCache.delete(method);
+  }
 
   /**
    * Calculates the modified rows of data, that have been changed since the last time data was cached.

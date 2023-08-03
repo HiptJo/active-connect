@@ -196,6 +196,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         conn.send("___cache", this.method);
       } else if (sendDeleteOnAuthError) {
         conn.send(this.method, "data_delete");
+        conn.resetOutboundCache(this.method);
       }
     }
   }
@@ -328,6 +329,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         conn.send("m.error", e?.message || e);
       } else if (sendDeleteOnAuthError) {
         conn.send(this.method, "data_delete");
+        conn.resetOutboundCache(this.method);
       } else if (this.lazyLoading || e.SILENT) {
         conn.send("m.error", e?.message || e);
       }
