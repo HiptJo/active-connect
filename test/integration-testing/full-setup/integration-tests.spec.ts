@@ -1,5 +1,7 @@
 import {
   Auth,
+  ForGroup,
+  ForId,
   LazyLoading,
   Modifies,
   ModifiesAuthentication,
@@ -48,6 +50,13 @@ class Pool extends LoadingStatus {
   public authChangedData = new OutboundObject<Data>(
     this,
     "d.partloaded.1",
+    true,
+    false,
+    10
+  );
+  public largeWithDecorators = new OutboundObject<Data>(
+    this,
+    "int.largewithdecorators",
     true,
     false,
     10
@@ -105,7 +114,7 @@ class Server {
   }
 
   @Route("init")
-  @Modifies("int.large")
+  @Modifies("int.large", "int.largewithdecorators")
   init() {
     for (var i = 1; i <= 100; i++) {
       this.large.push(new Data("d" + i));
@@ -143,6 +152,32 @@ class Server {
       this.large.slice(0, count),
       this.large.length
     );
+  }
+
+  @Outbound("int.largewithdecorators")
+  @Subscribe
+  @PartialUpdates
+  @LazyLoading
+  @SupportsCache
+  sendLargeData(conn: any, count: number) {
+    return new PartialOutboundData(
+      this.large.slice(0, count),
+      this.large.length
+    );
+  }
+
+  @ForId("int.largewithdecorators")
+  sendLargeDataForId(conn: any, id: number) {
+    return new PartialOutboundData(
+      this.large.filter((l) => l.id == id),
+      this.large.length
+    );
+  }
+
+  @ForGroup("int.largewithdecorators")
+  sendLargeDataForGroup(conn: any, groupId: number) {
+    const data = this.large.filter((l) => l.id % groupId == 0);
+    return new PartialOutboundDataForGroup(data);
   }
 
   @Outbound("int.request")
@@ -199,49 +234,102 @@ it("should be possible to access loading status data", () => {
   conn.pool.loading.set("propertyKey", true);
   expect(conn.pool.getCurrent()).toBe(1);
 });
-it("should be possible to use the outbound-object", async () => {
-  const conn = new TC();
-  expect(conn.pool.large.loading).toBeFalsy();
-  expect(conn.pool.large.loadedLength).toBe(0);
+describe("outbound object without splitted decorators", () => {
+  it("should be possible to use the outbound-object", async () => {
+    const conn = new TC();
+    expect(conn.pool.large.loading).toBeFalsy();
+    expect(conn.pool.large.loadedLength).toBe(0);
 
-  await conn.service.init();
+    await conn.service.init();
 
-  await conn.pool.large.load();
-  expect(conn.pool.large.loadedLength).toBe(10);
-  expect(conn.pool.large.length).toBe(100);
-  expect(conn.pool.large.all).toHaveLength(10);
+    await conn.pool.large.load();
+    expect(conn.pool.large.loadedLength).toBe(10);
+    expect(conn.pool.large.length).toBe(100);
+    expect(conn.pool.large.all).toHaveLength(10);
 
-  await conn.pool.large.load();
-  expect(conn.pool.large.loadedLength).toBe(20);
-  expect(conn.pool.large.all).toHaveLength(20);
+    await conn.pool.large.load();
+    expect(conn.pool.large.loadedLength).toBe(20);
+    expect(conn.pool.large.all).toHaveLength(20);
 
-  await conn.pool.large.load(1);
-  expect(conn.pool.large.loadedLength).toBe(21);
-  expect(conn.pool.large.all).toHaveLength(21);
+    await conn.pool.large.load(1);
+    expect(conn.pool.large.loadedLength).toBe(21);
+    expect(conn.pool.large.all).toHaveLength(21);
 
-  const obj90 = await conn.pool.large.get(90);
-  expect(obj90).toMatchObject({ id: 90, name: "d90" });
-  expect(conn.pool.large.loadedLength).toBe(22);
+    const obj90 = await conn.pool.large.get(90);
+    expect(obj90).toMatchObject({ id: 90, name: "d90" });
+    expect(conn.pool.large.loadedLength).toBe(22);
+  });
+  it("should be possible to get grouped data", async () => {
+    const conn = new TC();
+    await conn.service.init();
+    const data = await conn.pool.large.getForGroup(10);
+    expect(data).toHaveLength(10);
+    data.forEach((d) => expect(d.id % 10).toBe(0));
+  });
+
+  it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
+    const conn = new TC();
+    await conn.service.init();
+    let data = await conn.pool.large.getForGroup(10);
+    expect(data).toHaveLength(10);
+    data.forEach((d) => expect(d.id % 10).toBe(0));
+
+    await conn.service.init();
+    data = await conn.pool.large.getForGroup(10);
+    expect(data).toHaveLength(20);
+    data.forEach((d) => expect(d.id % 10).toBe(0));
+  });
 });
-it("should be possible to get grouped data", async () => {
-  const conn = new TC();
-  await conn.service.init();
-  const data = await conn.pool.large.getForGroup(10);
-  expect(data).toHaveLength(10);
-  data.forEach((d) => expect(d.id % 10).toBe(0));
-});
 
-it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
-  const conn = new TC();
-  await conn.service.init();
-  let data = await conn.pool.large.getForGroup(10);
-  expect(data).toHaveLength(10);
-  data.forEach((d) => expect(d.id % 10).toBe(0));
+describe("outbound object using splitted decorators", () => {
+  it("should be possible to use the outbound-object", async () => {
+    jest.setTimeout(30000);
+    const conn = new TC();
+    expect(conn.pool.largeWithDecorators.loading).toBeFalsy();
+    expect(conn.pool.largeWithDecorators.loadedLength).toBe(0);
 
-  await conn.service.init();
-  data = await conn.pool.large.getForGroup(10);
-  expect(data).toHaveLength(20);
-  data.forEach((d) => expect(d.id % 10).toBe(0));
+    await conn.service.init();
+
+    await conn.pool.largeWithDecorators.load();
+    expect(conn.pool.largeWithDecorators.loadedLength).toBe(10);
+    expect(conn.pool.largeWithDecorators.length).toBe(100);
+    expect(conn.pool.largeWithDecorators.all).toHaveLength(10);
+
+    await conn.pool.largeWithDecorators.load();
+    expect(conn.pool.largeWithDecorators.loadedLength).toBe(20);
+    expect(conn.pool.largeWithDecorators.all).toHaveLength(20);
+
+    await conn.pool.largeWithDecorators.load(1);
+    expect(conn.pool.largeWithDecorators.loadedLength).toBe(21);
+    expect(conn.pool.largeWithDecorators.all).toHaveLength(21);
+  });
+  it("should be possible to get data by id", async () => {
+    const conn = new TC();
+    await conn.service.init();
+    const obj90 = await conn.pool.largeWithDecorators.get(90);
+    expect(obj90).toMatchObject({ id: 90, name: "d90" });
+    expect(conn.pool.largeWithDecorators.isEmpty).toBeTruthy();
+  });
+  it("should be possible to get grouped data", async () => {
+    const conn = new TC();
+    await conn.service.init();
+    const data = await conn.pool.largeWithDecorators.getForGroup(10);
+    expect(data).toHaveLength(10);
+    data.forEach((d) => expect(d.id % 10).toBe(0));
+  });
+
+  it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
+    const conn = new TC();
+    await conn.service.init();
+    let data = await conn.pool.largeWithDecorators.getForGroup(10);
+    expect(data).toHaveLength(10);
+    data.forEach((d) => expect(d.id % 10).toBe(0));
+
+    await conn.service.init();
+    data = await conn.pool.largeWithDecorators.getForGroup(10);
+    expect(data).toHaveLength(20);
+    data.forEach((d) => expect(d.id % 10).toBe(0));
+  });
 });
 
 it("should delete outbound data after an auth change when the client is not longer authenticated for the outbound", async () => {

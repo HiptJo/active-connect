@@ -98,6 +98,16 @@ export abstract class AuthableDecorableFunction extends DecorableFunction {
     }
   }
 
+  protected async authenticateOrThrow(
+    conn: WebsocketConnection,
+    requestData?: any
+  ) {
+    if (!(await this.authenticator.checkAuthentication(conn, requestData))) {
+      this.sendError(conn, this.authenticator.unauthenticatedMessage, true);
+      throw new AuthenticationError(this.authenticator.unauthenticatedMessage);
+    }
+  }
+
   /**
    * Checks if the decorated function has an authenticator.
    * @returns - Indicates whether the decorated function has an authenticator.

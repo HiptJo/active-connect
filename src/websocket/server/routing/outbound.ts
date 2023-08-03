@@ -1,5 +1,8 @@
 import { WebsocketConnection } from "../connection/connection";
-import { AuthableDecorableFunction } from "../../../decorator-config/function";
+import {
+  AuthableDecorableFunction,
+  DecorableFunction,
+} from "../../../decorator-config/function";
 import { SimpleWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
 import { MessageFilter } from "../../auth/authenticator";
@@ -207,15 +210,27 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     sendDeleteOnAuthError?: boolean
   ) {
     try {
-      const dataContext:
+      var dataContext:
         | any[]
         | PartialOutboundData<any>
-        | PartialOutboundDataForGroup<any> = await this.Func(
-        conn,
-        conn.getOutboundRequestConfig(this.method).count,
-        id,
-        groupId
-      );
+        | PartialOutboundDataForGroup<any> = [];
+      const forId = WebsocketOutbounds.getForId(this.method);
+      const forGroup = WebsocketOutbounds.getForGroup(this.method);
+      if (id && forId) {
+        // authenticate
+        if (this.authenticator) await this.authenticateOrThrow(conn);
+        dataContext = await forId.Func(conn, id);
+      } else if (groupId && forGroup) {
+        if (this.authenticator) await this.authenticateOrThrow(conn);
+        dataContext = await forGroup.Func(conn, groupId);
+      } else {
+        dataContext = await this.Func(
+          conn,
+          conn.getOutboundRequestConfig(this.method).count,
+          id,
+          groupId
+        );
+      }
 
       if (groupId) {
         if (!(dataContext as PartialOutboundDataForGroup<any>).PARTIAL_GROUP) {
@@ -551,6 +566,22 @@ export class WebsocketOutbounds {
       );
     }
     WebsocketOutbounds.outbounds.set(outbound.method, outbound);
+  }
+
+  private static forGroupConfigs: Map<string, DecorableFunction> = new Map();
+  public static addForGroupConfig(method: string, func: DecorableFunction) {
+    WebsocketOutbounds.forGroupConfigs.set(method, func);
+  }
+  public static getForGroup(method: string): DecorableFunction | null {
+    return WebsocketOutbounds.forGroupConfigs.get(method);
+  }
+
+  private static forIdConfigs: Map<string, DecorableFunction> = new Map();
+  public static addForIdConfig(method: string, func: DecorableFunction) {
+    WebsocketOutbounds.forIdConfigs.set(method, func);
+  }
+  public static getForId(method: string): DecorableFunction | null {
+    return WebsocketOutbounds.forIdConfigs.get(method);
   }
 
   /**

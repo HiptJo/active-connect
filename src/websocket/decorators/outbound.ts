@@ -1,3 +1,4 @@
+import { DecorableFunction } from "../../decorator-config";
 import {
   WebsocketOutbound,
   WebsocketOutbounds,
@@ -117,4 +118,26 @@ export function SupportsCache(target: any, propertyKey: string) {
 export function PartialUpdates(target: any, propertyKey: string) {
   const config = WebsocketOutboundDecoratorConfig.get(target, propertyKey);
   config.partialUpdates = true;
+}
+
+export function ForId(method: string) {
+  return function _ForId(target: any, propertyKey: string): any {
+    // method annotation
+    WebsocketOutbounds.addForIdConfig(
+      method,
+      new DecorableFunction({ target, propertyKey })
+    );
+    return target;
+  };
+}
+
+export function ForGroup(method: string) {
+  return function _ForGroup(target: any, propertyKey: string): any {
+    // method annotation
+    WebsocketOutbounds.addForGroupConfig(
+      method,
+      new DecorableFunction({ target, propertyKey })
+    );
+    return target;
+  };
 }
