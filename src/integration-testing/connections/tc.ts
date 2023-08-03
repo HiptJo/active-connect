@@ -168,8 +168,9 @@ export class StubWebsocketConnection extends WebsocketConnection {
     return new Promise<void>((res, rej) => {
       const stackObject: any = {
         method,
-        func: () => {
-          rej("ActiveConnect: did receive unexpected method " + method + "");
+        func: (data: any) => {
+          if (data != "data_delete")
+            rej("ActiveConnect: did receive unexpected method " + method + "");
         },
       };
       this.stack.push(stackObject);
