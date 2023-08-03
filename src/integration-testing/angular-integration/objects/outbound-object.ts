@@ -28,7 +28,14 @@ export class OutboundObject<T extends IdObject> {
         length: number | null,
         _client: WebsocketClient
       ) {
-        if (data == "data_group") {
+        if (data == "data_delete") {
+          _this.data = undefined;
+          _this.dataMap = new Map();
+          _this.requested = false;
+          _this.loadedGroupData = null;
+          _this.loadedGroupId = null;
+          _this._length = null;
+        } else if (data == "data_group") {
           _this.loadedGroupData = insertedOrGroupData;
           _this.loadedGroupId = updatedOrGroupId[0];
         } else if (data == "data_diff") {
@@ -57,7 +64,7 @@ export class OutboundObject<T extends IdObject> {
   }
 
   private dataMap: Map<number, T> = new Map();
-  private data: T[] | null = null;
+  private data: T[] | undefined = undefined;
 
   public get(id: number): Promise<T> {
     return new Promise(async (resolve) => {
@@ -129,6 +136,10 @@ export class OutboundObject<T extends IdObject> {
     return this._length;
   }
 
+  get isEmpty() {
+    return this.data == undefined;
+  }
+
   private requestById(id: number): Promise<T> {
     return this.client.send("request." + this.method, { id }) as Promise<T>;
   }
@@ -139,23 +150,12 @@ export class OutboundObject<T extends IdObject> {
     return this.client.send("request." + this.method, { groupId });
   }
 
-  private setData(data: T[] | { added: T[] | undefined; length: number }) {
-    if ((data as any).added) {
-      if (!this.data) {
-        this.data = [];
-      }
-      this.data.push(...(data as any).added);
-      this._length = data.length;
-      this.data.forEach((d) => {
-        this.dataMap.set(d.id, d);
-      });
-    } else {
-      this.data = data as T[];
-      this._length = data.length;
-      this.dataMap = new Map();
-      this.data.forEach((d) => {
-        this.dataMap.set(d.id, d);
-      });
-    }
+  private setData(data: T[]) {
+    this.data = data as T[];
+    this._length = data.length;
+    this.dataMap = new Map();
+    this.data.forEach((d) => {
+      this.dataMap.set(d.id, d);
+    });
   }
 }

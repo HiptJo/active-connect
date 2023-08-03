@@ -159,7 +159,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           groupId: number | undefined;
           count: number | undefined;
         }
-      | undefined
+      | undefined,
+    sendDeleteOnAuthError?: boolean
   ) {
     if (requestConfig) {
       conn.setOutboundRequestConfig(
@@ -176,7 +177,12 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       requestConfig?.id ||
       requestConfig?.groupId
     ) {
-      await this.sendData(conn, requestConfig?.id, requestConfig?.groupId);
+      await this.sendData(
+        conn,
+        requestConfig?.id,
+        requestConfig?.groupId,
+        sendDeleteOnAuthError
+      );
     } else {
       // check if the user has sufficient permissions
       if (
@@ -184,6 +190,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         (this.hasAuthenticator && (await this.authenticate(conn)))
       ) {
         conn.send("___cache", this.method);
+      } else if (sendDeleteOnAuthError) {
+        conn.send(this.method, "data_delete");
       }
     }
   }
@@ -195,7 +203,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   public async sendData(
     conn: WebsocketConnection,
     id?: number,
-    groupId?: number
+    groupId?: number,
+    sendDeleteOnAuthError?: boolean
   ) {
     try {
       const dataContext:
@@ -286,6 +295,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       if (!e?.isAuthenticationError) {
         if (!e.SILENT) console.error(e);
         conn.send("m.error", e?.message || e);
+      } else if (sendDeleteOnAuthError) {
+        conn.send(this.method, "data_delete");
       } else if (this.lazyLoading || e.SILENT) {
         conn.send("m.error", e?.message || e);
       }
@@ -296,9 +307,16 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * Sends the outbound data to the provided connection if it is subscribed to changes.
    * @param conn - The WebSocket connection to send the data to.
    */
-  public async sendToIfSubscribed(conn: WebsocketConnection) {
+  public async sendToIfSubscribed(
+    conn: WebsocketConnection,
+    sendDeleteOnAuthError?: boolean
+  ) {
     if (this.connectionSubscribesForChanges(conn)) {
-      this.sendTo(conn, conn.getOutboundRequestConfig(this.method));
+      this.sendTo(
+        conn,
+        conn.getOutboundRequestConfig(this.method),
+        sendDeleteOnAuthError
+      );
     }
   }
 
@@ -707,9 +725,9 @@ export class WebsocketOutbounds {
         if (o.lazyLoading) {
           // check if connection is subscribed
           // if it is, trigger resend - else do not resend
-          o.sendToIfSubscribed(connection);
+          o.sendToIfSubscribed(connection, true);
         } else {
-          o.sendTo(connection);
+          o.sendTo(connection, undefined, true);
         }
       }
     });

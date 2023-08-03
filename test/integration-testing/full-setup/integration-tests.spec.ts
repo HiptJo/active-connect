@@ -1,13 +1,19 @@
 import {
+  Auth,
   LazyLoading,
   Modifies,
+  ModifiesAuthentication,
   Outbound,
   PartialOutboundData,
   PartialOutboundDataForGroup,
   PartialUpdates,
+  ResendAfterAuthenticationChange,
   Route,
+  StandaloneRoute,
   Subscribe,
   SupportsCache,
+  WebsocketAuthenticator,
+  WebsocketConnection,
 } from "../../../src";
 import {
   WebsocketClient,
@@ -26,11 +32,26 @@ class Data {
   }
 }
 
+class TokenAuthenticator extends WebsocketAuthenticator {
+  public readonly label: string = "test-auth";
+  public unauthenticatedMessage: string = "error message";
+  public async authenticate(conn: WebsocketConnection): Promise<boolean> {
+    return conn.token == "true";
+  }
+}
+
 class Pool extends LoadingStatus {
   @ClientOutbound("int.data") public data: Promise<string[]>;
   @ClientOutbound("int.request", true) public requestable: Promise<number>;
 
   public large = new OutboundObject<Data>(this, "int.large", true, false, 10);
+  public authChangedData = new OutboundObject<Data>(
+    this,
+    "d.partloaded.1",
+    true,
+    false,
+    10
+  );
 
   constructor() {
     super(Pool.prototype as any);
@@ -53,6 +74,9 @@ class Service {
 
   @ClientRoute("int.reset")
   async reset(): Promise<any> {}
+
+  @ClientRoute("partloaded.token")
+  async auth(token: string): Promise<any> {}
 }
 class TC extends TCWrapper {
   public pool: Pool;
@@ -125,6 +149,20 @@ class Server {
   @LazyLoading
   requestedData() {
     return -1;
+  }
+
+  @Outbound("d.partloaded.1")
+  @Auth(new TokenAuthenticator())
+  @ResendAfterAuthenticationChange
+  @LazyLoading
+  async getData() {
+    return [{ id: 0, name: "data" }];
+  }
+
+  @StandaloneRoute("partloaded.token")
+  @ModifiesAuthentication
+  setToken(token: string, conn: WebsocketConnection) {
+    conn.token = token;
   }
 }
 
@@ -204,4 +242,22 @@ it("should be possible to get subscribe for grouped data and get updates when da
   data = await conn.pool.large.getForGroup(10);
   expect(data).toHaveLength(20);
   data.forEach((d) => expect(d.id % 10).toBe(0));
+});
+
+it("should delete outbound data after an auth change when the client is not longer authenticated for the outbound", async () => {
+  const conn = new TC();
+
+  await conn.service.auth("true");
+
+  await conn.pool.authChangedData.load();
+  expect(conn.pool.authChangedData.all).toHaveLength(1);
+  expect(conn.pool.authChangedData.isEmpty).toBeFalsy();
+
+  await conn.service.auth("false");
+  await conn.expectMethod("d.partloaded.1");
+
+  expect(conn.pool.authChangedData.isEmpty).toBeTruthy();
+  expect(conn.pool.authChangedData.all).toBeUndefined();
+  // error is expected as loading is triggered - and auth fails for loading procedure
+  await conn.expectError();
 });
