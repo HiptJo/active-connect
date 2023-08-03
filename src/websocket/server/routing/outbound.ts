@@ -169,7 +169,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       conn.setOutboundRequestConfig(
         this.method,
         requestConfig?.count,
-        requestConfig?.groupId
+        requestConfig?.groupId,
+        requestConfig?.id
       );
     }
 
@@ -213,7 +214,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       var dataContext:
         | any[]
         | PartialOutboundData<any>
-        | PartialOutboundDataForGroup<any> = [];
+        | PartialOutboundDataForGroup<any>
+        | PartialOutboundDataForId<any> = [];
       const forId = WebsocketOutbounds.getForId(this.method);
       const forGroup = WebsocketOutbounds.getForGroup(this.method);
       if (id && forId) {
@@ -245,6 +247,20 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           undefined,
           (dataContext as PartialOutboundDataForGroup<any>).data,
           [groupId]
+        );
+      } else if (id) {
+        if (!(dataContext as PartialOutboundDataForId<any>).PARTIAL_ID) {
+          throw Error(
+            "Active-Connect: Expected Id Result for outbound " + this.method
+          );
+        }
+        conn.send(
+          this.method,
+          "data_id",
+          undefined,
+          undefined,
+          (dataContext as PartialOutboundDataForGroup<any>).data,
+          [id]
         );
       } else {
         const isPartial =
@@ -457,6 +473,18 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
             )
           )
         );
+        const connectionsWithIdSubscription = connections.filter(
+          (c) => c.getOutboundRequestConfig(this.method).id
+        );
+        await Promise.all(
+          connectionsWithIdSubscription.map((conn) =>
+            this.sendData(
+              conn,
+              undefined,
+              conn.getOutboundRequestConfig(this.method).id
+            )
+          )
+        );
       }
     }
   }
@@ -539,6 +567,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         this.partialUpdates = this.decoratorConfigReference.partialUpdates;
       }
     }
+  }
+
+  public resetSubscriptions() {
+    this.subscribedConnections = new Map();
   }
 }
 
@@ -804,6 +836,13 @@ export class WebsocketOutbounds {
   public static removeOutboundByMethod(method: string): boolean {
     return WebsocketOutbounds.outbounds.delete(method);
   }
+
+  /**
+   * Resets all subscriptions
+   */
+  public static resetSubscriptions() {
+    WebsocketOutbounds.outbounds.forEach((o) => o.resetSubscriptions());
+  }
 }
 
 /**
@@ -839,5 +878,23 @@ export class PartialOutboundDataForGroup<T> {
    */
   constructor(public data: T[]) {
     this.length = data.length;
+  }
+}
+
+/**
+ * Is used to return the data for id filter within outbound functions.
+ * This way, subscription management still works properly and even the total length can be sent to the client.
+ */
+export class PartialOutboundDataForId<T> {
+  public readonly PARTIAL_ID = true;
+  public length;
+  public data: T[];
+
+  /**
+   * @param data - data that should be sent to the client now.
+   */
+  constructor(data: T) {
+    this.data = [data];
+    this.length = this.data.length;
   }
 }

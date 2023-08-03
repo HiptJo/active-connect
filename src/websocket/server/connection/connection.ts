@@ -380,12 +380,13 @@ export class WebsocketConnection {
   public setOutboundRequestConfig(
     method: string,
     count: number | undefined,
-    groupId: number | undefined
+    groupId: number | undefined,
+    id: number | undefined
   ) {
     if (!this.outboundRequestConfig.get(method)) {
       this.outboundRequestConfig.set(method, {
         count,
-        id: undefined,
+        id,
         groupId,
       });
     } else {
@@ -395,6 +396,9 @@ export class WebsocketConnection {
       }
       if (groupId) {
         data.groupId = groupId;
+      }
+      if (id) {
+        data.id = id;
       }
     }
   }

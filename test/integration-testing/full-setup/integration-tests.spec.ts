@@ -8,6 +8,7 @@ import {
   Outbound,
   PartialOutboundData,
   PartialOutboundDataForGroup,
+  PartialOutboundDataForId,
   PartialUpdates,
   ResendAfterAuthenticationChange,
   Route,
@@ -111,6 +112,7 @@ class Server {
   @Route("reset")
   reset() {
     this.large = [];
+    Data.AUTO_INCREMENT = 0;
   }
 
   @Route("init")
@@ -143,9 +145,8 @@ class Server {
       return new PartialOutboundDataForGroup(data);
     }
     if (id) {
-      return new PartialOutboundData(
-        this.large.filter((l) => l.id == id),
-        this.large.length
+      return new PartialOutboundDataForId(
+        this.large.filter((l) => l.id == id)[0]
       );
     }
     return new PartialOutboundData(
@@ -168,9 +169,8 @@ class Server {
 
   @ForId("int.largewithdecorators")
   sendLargeDataForId(conn: any, id: number) {
-    return new PartialOutboundData(
-      this.large.filter((l) => l.id == id),
-      this.large.length
+    return new PartialOutboundDataForId(
+      this.large.filter((l) => l.id == id)[0]
     );
   }
 
@@ -203,7 +203,7 @@ class Server {
 
 beforeEach(async () => {
   const conn = new TC();
-  conn.service.reset();
+  await conn.service.reset();
 });
 
 it("should be possible to use the integration testing module", async () => {
@@ -254,10 +254,12 @@ describe("outbound object without splitted decorators", () => {
     await conn.pool.large.load(1);
     expect(conn.pool.large.loadedLength).toBe(21);
     expect(conn.pool.large.all).toHaveLength(21);
-
+  });
+  it("should be possible to get data by id", async () => {
+    const conn = new TC();
+    await conn.service.init();
     const obj90 = await conn.pool.large.get(90);
     expect(obj90).toMatchObject({ id: 90, name: "d90" });
-    expect(conn.pool.large.loadedLength).toBe(22);
   });
   it("should be possible to get grouped data", async () => {
     const conn = new TC();
@@ -267,15 +269,15 @@ describe("outbound object without splitted decorators", () => {
     data.forEach((d) => expect(d.id % 10).toBe(0));
   });
 
-  it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
+  it("should be possible to get subscribe for grouped data and get updates when data is changed *_**", async () => {
     const conn = new TC();
     await conn.service.init();
     let data = await conn.pool.large.getForGroup(10);
     expect(data).toHaveLength(10);
     data.forEach((d) => expect(d.id % 10).toBe(0));
 
-    await conn.service.init();
-    data = await conn.pool.large.getForGroup(10);
+    conn.service.init().then();
+    data = await conn.pool.large.awaitGroupDataUpdate();
     expect(data).toHaveLength(20);
     data.forEach((d) => expect(d.id % 10).toBe(0));
   });
@@ -318,7 +320,7 @@ describe("outbound object using splitted decorators", () => {
     data.forEach((d) => expect(d.id % 10).toBe(0));
   });
 
-  it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
+  it("should be possible to get subscribe for grouped data and get updates when data is changed ***", async () => {
     const conn = new TC();
     await conn.service.init();
     let data = await conn.pool.largeWithDecorators.getForGroup(10);

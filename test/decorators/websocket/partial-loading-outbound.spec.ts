@@ -3,6 +3,7 @@ import {
   Modifies,
   Outbound,
   PartialOutboundData,
+  PartialOutboundDataForId,
   PartialUpdates,
   StandaloneRoute,
   Subscribe,
@@ -38,9 +39,8 @@ class Testing {
   @Subscribe
   async getData(conn: WebsocketConnection, count: number, id: number) {
     if (id) {
-      return new PartialOutboundData(
-        Testing.data.filter((d) => d.id == id),
-        Testing.data.length
+      return new PartialOutboundDataForId(
+        Testing.data.filter((d) => d.id == id)[0]
       );
     }
     if (count) {
@@ -97,7 +97,7 @@ describe("partial loaded data (lazy-loaded, without cache support)", () => {
         });
       }
     );
-    expect(data).toBe("data_diff");
+    expect(data).toBe("data_id");
   });
   it("should be possible to get changes", async () => {
     const conn = WebsocketMocks.getConnectionStub();
@@ -182,7 +182,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
         });
       }
     );
-    expect(data).toBe("data_diff");
+    expect(data).toBe("data_id");
   });
   it("should be possible to get changes", async () => {
     const conn = WebsocketMocks.getConnectionStub(true);

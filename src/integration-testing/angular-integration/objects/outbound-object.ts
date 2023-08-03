@@ -38,6 +38,18 @@ export class OutboundObject<T extends IdObject> {
         } else if (data == "data_group") {
           _this.loadedGroupData = insertedOrGroupData;
           _this.loadedGroupId = updatedOrGroupId[0];
+          if (_this.groupDataUpdate) {
+            _this.groupDataUpdate(_this.loadedGroupData);
+            _this.groupDataUpdate = null;
+          }
+        } else if (data == "data_id") {
+          _this.loadedIdData =
+            insertedOrGroupData?.length > 0 ? insertedOrGroupData[0] : null;
+          _this.loadedId = updatedOrGroupId[0];
+          if (_this.idDataUpdate) {
+            _this.idDataUpdate(_this.loadedIdData);
+            _this.idDataUpdate = null;
+          }
         } else if (data == "data_diff") {
           insertedOrGroupData?.forEach((e) => {
             _this.dataMap.set(e.id, e);
@@ -66,37 +78,49 @@ export class OutboundObject<T extends IdObject> {
   private dataMap: Map<number, T> = new Map();
   private data: T[] | undefined = undefined;
 
+  private idDataUpdate: Function = null;
+  public awaitIdDataUpdate(): Promise<T> {
+    return new Promise((resolve) => {
+      this.idDataUpdate = resolve;
+    });
+  }
   public get(id: number): Promise<T> {
     return new Promise(async (resolve) => {
-      if (!this.requested && this.lazyLoaded) {
-        await this.load();
-      }
       if (this.data) {
         const result = this.dataMap.get(id);
         if (result) {
           resolve(result);
-        } else if (this.lazyLoaded) {
-          await this.requestById(id);
-          resolve(await this.get(id));
-        } else {
-          resolve(undefined as any);
+          return;
         }
       } else {
-        resolve(undefined as any);
+        // load request is required to establish subscriptions
+        this.load().then();
+      }
+      if (this.loadedId == id) {
+        resolve(this.loadedIdData);
+      } else {
+        this.requestForId(id).then();
+        resolve(await this.awaitIdDataUpdate());
       }
     });
   }
 
+  private groupDataUpdate: Function = null;
+  public awaitGroupDataUpdate(): Promise<T[]> {
+    return new Promise((resolve) => {
+      this.groupDataUpdate = resolve;
+    });
+  }
   public getForGroup(groupId: number): Promise<T[]> {
     return new Promise(async (resolve) => {
-      if (!this.requested && this.lazyLoaded) {
-        await this.load();
-      }
+      // load request is required to establish subscriptions
+      if (!this.requested) this.load().then();
+
       if (this.loadedGroupId == groupId) {
         resolve(this.loadedGroupData);
       } else {
-        await this.requestForGroup(groupId);
-        resolve(await this.getForGroup(groupId));
+        this.requestForGroup(groupId).then();
+        resolve(await this.awaitGroupDataUpdate());
       }
     });
   }
@@ -140,7 +164,9 @@ export class OutboundObject<T extends IdObject> {
     return this.data == undefined;
   }
 
-  private requestById(id: number): Promise<T> {
+  private loadedId: number | null = null;
+  private loadedIdData: T | null = null;
+  private requestForId(id: number): Promise<T> {
     return this.client.send("request." + this.method, { id }) as Promise<T>;
   }
 
