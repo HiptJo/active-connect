@@ -1,5 +1,8 @@
 import { WebsocketConnection } from "../connection/connection";
-import { AuthableDecorableFunction } from "../../../decorator-config/function";
+import {
+  AuthableDecorableFunction,
+  DecorableFunction,
+} from "../../../decorator-config/function";
 import { SimpleWebsocketRoute } from "./route";
 import { WebsocketRouter } from "./router";
 import { MessageFilter } from "../../auth/authenticator";
@@ -42,6 +45,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   ) {
     super(objConfig);
     this.lazyLoading = lazyLoading;
+    this.isOutbound = true;
   }
 
   private _lazyLoading: boolean = false;
@@ -54,10 +58,20 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       const method = this.method;
       WebsocketRouter.registerStandaloneRoute(
         new SimpleWebsocketRoute(`request.${method}`, async function request(
-          data: any,
+          requestConfig:
+            | {
+                id: number | undefined;
+                groupId: number | undefined;
+                count: number | undefined;
+              }
+            | undefined,
           conn: WebsocketConnection
         ) {
-          await WebsocketOutbounds.sendSingleOutboundByMethod(method, conn);
+          await WebsocketOutbounds.sendSingleOutboundByMethod(
+            method,
+            conn,
+            requestConfig
+          );
         })
       );
     }
@@ -140,10 +154,39 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * If caching is enabled, the caching hash is checked in advance.
    * @param conn - The WebSocket connection to send the data to.
    */
-  public async sendTo(conn: WebsocketConnection) {
+  public async sendTo(
+    conn: WebsocketConnection,
+    requestConfig?:
+      | {
+          id: number | undefined;
+          groupId: number | undefined;
+          count: number | undefined;
+        }
+      | undefined,
+    sendDeleteOnAuthError?: boolean
+  ) {
+    if (requestConfig) {
+      conn.setOutboundRequestConfig(
+        this.method,
+        requestConfig?.count,
+        requestConfig?.groupId,
+        requestConfig?.id
+      );
+    }
+
     // check if client supports caching
-    if (!this.supportsCache || !conn.supportsCaching) {
-      await this.sendData(conn);
+    if (
+      !this.supportsCache ||
+      !conn.supportsCaching ||
+      requestConfig?.id ||
+      requestConfig?.groupId
+    ) {
+      await this.sendData(
+        conn,
+        requestConfig?.id,
+        requestConfig?.groupId,
+        sendDeleteOnAuthError
+      );
     } else {
       // check if the user has sufficient permissions
       if (
@@ -151,6 +194,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         (this.hasAuthenticator && (await this.authenticate(conn)))
       ) {
         conn.send("___cache", this.method);
+      } else if (sendDeleteOnAuthError) {
+        conn.send(this.method, "data_delete");
       }
     }
   }
@@ -159,39 +204,130 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * Sends the outbound data to the provided connection.
    * @param conn - The WebSocket connection to send the data to.
    */
-  public async sendData(conn: WebsocketConnection) {
+  public async sendData(
+    conn: WebsocketConnection,
+    id?: number,
+    groupId?: number,
+    sendDeleteOnAuthError?: boolean
+  ) {
     try {
-      const res = await this.Func(conn);
-      if (
-        !res ||
-        (res &&
-          !res.toString().startsWith("auth:unauthorized") &&
-          !res.toString().startsWith("error:auth:unauthorized"))
-      ) {
-        await this.subscribeForConnection(conn, res);
-        const stringContent = JsonParser.stringify(res);
-        const hash = conn.supportsCaching
-          ? JsonParser.getHashCode(stringContent)
-          : null;
-        if (conn.supportsCaching && this.partialUpdates) {
-          const result = conn.getOutboundDiffAndUpdateCache(this.method, res);
+      var dataContext:
+        | any[]
+        | PartialOutboundData<any>
+        | PartialOutboundDataForGroup<any>
+        | PartialOutboundDataForId<any> = [];
+      const forId = WebsocketOutbounds.getForId(this.method);
+      const forGroup = WebsocketOutbounds.getForGroup(this.method);
+      if (id && forId) {
+        // authenticate
+        if (this.authenticator) await this.authenticateOrThrow(conn);
+        dataContext = await forId.Func(conn, id);
+      } else if (groupId && forGroup) {
+        if (this.authenticator) await this.authenticateOrThrow(conn);
+        dataContext = await forGroup.Func(conn, groupId);
+      } else {
+        dataContext = await this.Func(
+          conn,
+          conn.getOutboundRequestConfig(this.method).count,
+          id,
+          groupId
+        );
+      }
+
+      if (groupId) {
+        if (!(dataContext as PartialOutboundDataForGroup<any>).PARTIAL_GROUP) {
+          throw Error(
+            "Active-Connect: Expected Group Result for outbound " + this.method
+          );
+        }
+        conn.send(
+          this.method,
+          "data_group",
+          undefined,
+          undefined,
+          (dataContext as PartialOutboundDataForGroup<any>).data,
+          [groupId]
+        );
+      } else if (id) {
+        if (!(dataContext as PartialOutboundDataForId<any>).PARTIAL_ID) {
+          throw Error(
+            "Active-Connect: Expected Id Result for outbound " + this.method
+          );
+        }
+        conn.send(
+          this.method,
+          "data_id",
+          undefined,
+          undefined,
+          (dataContext as PartialOutboundDataForGroup<any>).data,
+          [id]
+        );
+      } else {
+        const isPartial =
+          (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+        const res: any[] = isPartial
+          ? (dataContext as PartialOutboundData<any>).data
+          : (dataContext as any[]);
+
+        if (id) {
+          conn.updateOutboundCache(this.method, res, [], []);
           conn.send(
             this.method,
-            result.data,
+            "data_diff",
             undefined,
-            hash,
-            result.inserted,
-            result.updated,
-            result.deleted
+            undefined,
+            res,
+            undefined,
+            undefined,
+            dataContext?.length || 0
           );
-        } else {
-          conn.send(this.method, res, undefined, hash);
+        } else if (
+          !res ||
+          (res &&
+            !res.toString().startsWith("auth:unauthorized") &&
+            !res.toString().startsWith("error:auth:unauthorized"))
+        ) {
+          await this.subscribeForConnection(conn, res);
+          const stringContent = JsonParser.stringify(res);
+          const hash = conn.supportsCaching
+            ? JsonParser.getHashCode(stringContent)
+            : null;
+          if (conn.supportsCaching && this.partialUpdates) {
+            const result = conn.getOutboundDiffAndUpdateCache(
+              this.method,
+              res,
+              isPartial
+            );
+            conn.send(
+              this.method,
+              result.data,
+              undefined,
+              hash,
+              result.inserted,
+              result.updated,
+              result.deleted,
+              dataContext?.length || 0
+            );
+          } else {
+            conn.send(
+              this.method,
+              res,
+              undefined,
+              hash,
+              undefined,
+              undefined,
+              undefined,
+              dataContext?.length || 0
+            );
+          }
         }
       }
     } catch (e) {
       if (!e?.isAuthenticationError) {
         if (!e.SILENT) console.error(e);
         conn.send("m.error", e?.message || e);
+      } else if (sendDeleteOnAuthError) {
+        conn.send(this.method, "data_delete");
       } else if (this.lazyLoading || e.SILENT) {
         conn.send("m.error", e?.message || e);
       }
@@ -202,9 +338,16 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
    * Sends the outbound data to the provided connection if it is subscribed to changes.
    * @param conn - The WebSocket connection to send the data to.
    */
-  public async sendToIfSubscribed(conn: WebsocketConnection) {
+  public async sendToIfSubscribed(
+    conn: WebsocketConnection,
+    sendDeleteOnAuthError?: boolean
+  ) {
     if (this.connectionSubscribesForChanges(conn)) {
-      this.sendTo(conn);
+      this.sendTo(
+        conn,
+        conn.getOutboundRequestConfig(this.method),
+        sendDeleteOnAuthError
+      );
     }
   }
 
@@ -228,7 +371,16 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     }
     // check if data has been changed
     try {
-      const res = await this.Func(conn);
+      const dataContext = await this.Func(
+        conn,
+        conn.getOutboundRequestConfig(this.method).count
+      );
+      const isPartial =
+        (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+      const res: any[] = isPartial
+        ? (dataContext as PartialOutboundData<any>).data
+        : (dataContext as any[]);
+
       if (
         !res ||
         (res &&
@@ -239,11 +391,38 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         const stringContent = JsonParser.stringify(res);
         const hash = JsonParser.getHashCode(stringContent);
         if (hash != specificHash) {
-          conn.addOutboundData(this.method, res);
-          conn.send(this.method, res, undefined, hash);
+          const messageResult = conn.getOutboundDiffAndUpdateCache(
+            this.method,
+            res,
+            isPartial
+          );
+
+          conn.send(
+            this.method,
+            messageResult.data,
+            undefined,
+            hash,
+            messageResult.inserted,
+            messageResult.updated,
+            messageResult.deleted,
+            dataContext?.length || 0
+          );
         } else {
-          conn.addOutboundData(this.method, res);
-          conn.send(this.method, "cache_restore");
+          if (isPartial) {
+            conn.updateOutboundCache(this.method, res, [], []);
+          } else {
+            conn.addOutboundData(this.method, res);
+          }
+          conn.send(
+            this.method,
+            "cache_restore",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            dataContext?.length || 0
+          );
         }
       }
     } catch (e) {
@@ -281,6 +460,31 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       const connections = this.subscribedConnections.get(key || null);
       if (connections) {
         await Promise.all(connections.map((conn) => this.sendData(conn)));
+
+        const connectionsWithGroupSubscription = connections.filter(
+          (c) => c.getOutboundRequestConfig(this.method).groupId
+        );
+        await Promise.all(
+          connectionsWithGroupSubscription.map((conn) =>
+            this.sendData(
+              conn,
+              undefined,
+              conn.getOutboundRequestConfig(this.method).groupId
+            )
+          )
+        );
+        const connectionsWithIdSubscription = connections.filter(
+          (c) => c.getOutboundRequestConfig(this.method).id
+        );
+        await Promise.all(
+          connectionsWithIdSubscription.map((conn) =>
+            this.sendData(
+              conn,
+              undefined,
+              conn.getOutboundRequestConfig(this.method).id
+            )
+          )
+        );
       }
     }
   }
@@ -364,6 +568,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       }
     }
   }
+
+  public resetSubscriptions() {
+    this.subscribedConnections = new Map();
+  }
 }
 
 /**
@@ -390,6 +598,22 @@ export class WebsocketOutbounds {
       );
     }
     WebsocketOutbounds.outbounds.set(outbound.method, outbound);
+  }
+
+  private static forGroupConfigs: Map<string, DecorableFunction> = new Map();
+  public static addForGroupConfig(method: string, func: DecorableFunction) {
+    WebsocketOutbounds.forGroupConfigs.set(method, func);
+  }
+  public static getForGroup(method: string): DecorableFunction | null {
+    return WebsocketOutbounds.forGroupConfigs.get(method);
+  }
+
+  private static forIdConfigs: Map<string, DecorableFunction> = new Map();
+  public static addForIdConfig(method: string, func: DecorableFunction) {
+    WebsocketOutbounds.forIdConfigs.set(method, func);
+  }
+  public static getForId(method: string): DecorableFunction | null {
+    return WebsocketOutbounds.forIdConfigs.get(method);
   }
 
   /**
@@ -472,6 +696,9 @@ export class WebsocketOutbounds {
     }
   }
 
+  /**
+   * Initializes the caching response entrypoint.
+   */
   public static initCachingResponseEntrypoint() {
     if (
       WebsocketRouter.StandaloneRoutes.filter((r) => r.Method == "___cache")
@@ -508,14 +735,22 @@ export class WebsocketOutbounds {
    * The connection automatically subscribes for updates when it is enabled in the outbound config.
    * @param method - Method of the requested outbound.
    * @param connection - The WebSocket connection to send the outbound data to.
+   * @param requestConfig - Can contain addidional parameters associated with the request, like the length of data (if partially-loaded outbound)
    */
   public static async sendSingleOutboundByMethod(
     method: string,
-    connection: WebsocketConnection
+    connection: WebsocketConnection,
+    requestConfig?:
+      | {
+          id: number | undefined;
+          count: number | undefined;
+          groupId: number | undefined;
+        }
+      | undefined
   ) {
     const outbound = WebsocketOutbounds.outbounds.get(method);
     if (outbound) {
-      await outbound.sendTo(connection);
+      await outbound.sendTo(connection, requestConfig);
     } else {
       throw Error(`Websocket: Outbound ${method} has not been found.`);
     }
@@ -553,9 +788,9 @@ export class WebsocketOutbounds {
         if (o.lazyLoading) {
           // check if connection is subscribed
           // if it is, trigger resend - else do not resend
-          o.sendToIfSubscribed(connection);
+          o.sendToIfSubscribed(connection, true);
         } else {
-          o.sendTo(connection);
+          o.sendTo(connection, undefined, true);
         }
       }
     });
@@ -600,5 +835,66 @@ export class WebsocketOutbounds {
    */
   public static removeOutboundByMethod(method: string): boolean {
     return WebsocketOutbounds.outbounds.delete(method);
+  }
+
+  /**
+   * Resets all subscriptions
+   */
+  public static resetSubscriptions() {
+    WebsocketOutbounds.outbounds.forEach((o) => o.resetSubscriptions());
+  }
+}
+
+/**
+ * Is used to return parts of the data within outbound functions.
+ * This way, subscription management still works properly and even the total length can be sent to the client.
+ */
+export class PartialOutboundData<T> {
+  public readonly PARTIAL_SUPPORT = true;
+  /**
+   * Total length stored on the server.
+   */
+  public length: number;
+
+  /**
+   * @param data - data that should be sent to the client now.
+   * @param length - total length stored on the server
+   */
+  constructor(public data: T[], length?: number) {
+    this.length = length || data.length;
+  }
+}
+
+/**
+ * Is used to return parts of the data for a group filter within outbound functions.
+ * This way, subscription management still works properly and even the total length can be sent to the client.
+ */
+export class PartialOutboundDataForGroup<T> {
+  public readonly PARTIAL_GROUP = true;
+  public length;
+
+  /**
+   * @param data - data that should be sent to the client now.
+   */
+  constructor(public data: T[]) {
+    this.length = data.length;
+  }
+}
+
+/**
+ * Is used to return the data for id filter within outbound functions.
+ * This way, subscription management still works properly and even the total length can be sent to the client.
+ */
+export class PartialOutboundDataForId<T> {
+  public readonly PARTIAL_ID = true;
+  public length;
+  public data: T[];
+
+  /**
+   * @param data - data that should be sent to the client now.
+   */
+  constructor(data: T) {
+    this.data = [data];
+    this.length = this.data.length;
   }
 }

@@ -8,6 +8,7 @@ import { WebsocketServer } from "../server";
 import { DecorableFunction } from "../../../decorator-config/function";
 
 import * as _ from "lodash";
+import { IdObject } from "../../../integration-testing/angular-integration/objects/outbound-object";
 
 /**
  * Represents a WebSocket connection.
@@ -50,7 +51,9 @@ export class WebsocketConnection {
 
   /**
    * Creates a new instance of WebsocketConnection.
-   * @param connection - The WebSocket connection object.
+   * @param connection - The WebSocket connection object representing the connection to the client.
+   * @param supportsCache - Determines whether the client supports caching for outbound data.
+   * @param [authToken] - An optional parameter used to store authentication credentials, such as session tokens, for the client.
    */
   constructor(
     protected connection: WebSocket | null,
@@ -152,7 +155,8 @@ export class WebsocketConnection {
     specificHash?: number,
     inserted?: any[],
     updated?: any[],
-    deleted?: any[]
+    deleted?: any[],
+    length?: number
   ) {
     let message = JsonParser.stringify({
       method: method,
@@ -162,6 +166,7 @@ export class WebsocketConnection {
       inserted,
       updated,
       deleted,
+      length,
     });
     if (this.logging && method.startsWith("m.")) {
       let messageLog = message;
@@ -178,31 +183,94 @@ export class WebsocketConnection {
     if (this.connection) this.connection.send(message);
   }
 
-  private outboundCache: Map<string, any[]> = new Map();
+  private outboundCache: Map<string, any[] | Map<number, any>> = new Map();
+  /**
+   * Sets the cached outbound data for the associated outbound method.
+   *
+   * @param method - The method of the associated Outbound.
+   * @param data - The contents that should be cached for the method.
+   */
   public addOutboundData(method: string, data: any[]) {
     this.outboundCache.set(method, data);
   }
+  /**
+   * Updates the cached outbound data for the associated outbound method.
+   *
+   * @param method - The method of the associated Outbound.
+   * @param inserted - The contents that have been added since the last time.
+   * @param updated - The contents that have been modified since the last time.
+   * @param deleted - The contents that have been removed since the last time.
+   */
+  public updateOutboundCache(
+    method: string,
+    inserted: any[],
+    updated: any[],
+    deleted: any[]
+  ) {
+    let map: Map<number, any> = this.outboundCache.get(method) as Map<
+      number,
+      any
+    >;
+    if (!map) {
+      map = new Map();
+      this.outboundCache.set(method, map);
+    }
+    inserted?.forEach((data: IdObject) => {
+      map.set(data.id, data);
+    });
+    updated?.forEach((data: IdObject) => {
+      map.set(data.id, data);
+    });
+    deleted?.forEach((data: IdObject) => {
+      map.delete(data.id);
+    });
+  }
+
+  /**
+   * Calculates the modified rows of data, that have been changed since the last time data was cached.
+   *
+   * @param method - The method of the associated Outbound.
+   * @param data - The data returned from the outbound function.
+   * @param isPartial - True when a part of the data is only present
+   * @returns the data changes (inserted, updated, deleted)
+   */
   public getOutboundDiffAndUpdateCache(
     method: string,
-    data: { id: number }[]
+    data: { id: number }[],
+    isPartial?: boolean
   ): { data: any[] | string; inserted: any[]; updated: any[]; deleted: any[] } {
-    const cache = this.outboundCache.get(method);
+    let cache: any[] | null = null;
+    if (isPartial) {
+      const cacheMap = this.outboundCache.get(method);
+      if (cacheMap) cache = Array.from(cacheMap.values());
+    } else {
+      cache = this.outboundCache.get(method) as any[];
+    }
+
     if (cache) {
-      const updated = _.differenceWith(data, cache, JsonParser.deepCompare);
+      const updated = _.differenceWith(
+        data,
+        cache as any[],
+        JsonParser.deepCompare
+      );
       const inserted = _.differenceWith(
         updated,
-        cache,
+        cache as any[],
         (a: { id: number }, b: { id: number }) => a.id == b.id
       );
       _.pullAll(updated, inserted);
 
       const deleted = _.differenceWith(
-        cache,
+        cache as any[],
         data,
         (a: { id: number }, b: { id: number }) => a.id == b.id
       );
 
-      this.addOutboundData(method, data);
+      if (isPartial) {
+        this.updateOutboundCache(method, inserted, updated, deleted);
+      } else {
+        this.addOutboundData(method, data);
+      }
       return {
         inserted,
         updated,
@@ -210,7 +278,11 @@ export class WebsocketConnection {
         data: "data_diff",
       };
     } else {
-      this.addOutboundData(method, data);
+      if (isPartial) {
+        this.updateOutboundCache(method, data, [], []);
+      } else {
+        this.addOutboundData(method, data);
+      }
       return {
         data,
         inserted: null,
@@ -270,5 +342,64 @@ export class WebsocketConnection {
       WebsocketConnection.lookup = require("geoip-lite").lookup;
     }
     return WebsocketConnection.lookup;
+  }
+
+  private outboundRequestConfig: Map<
+    string,
+    {
+      id: number | undefined;
+      count: number | undefined;
+      groupId: number | undefined;
+    }
+  > = new Map();
+  /**
+   * Outbound request config is used to store the length of entries, that have been previously requested by this client for partially sent outbounds.
+   * @param method - The method of the outbound
+   * @returns the outbound request config
+   */
+  public getOutboundRequestConfig(method: string):
+    | {
+        id: number | undefined;
+        groupId: number | undefined;
+        count: number | undefined;
+      }
+    | undefined {
+    return (
+      this.outboundRequestConfig.get(method) || {
+        count: Number.MAX_SAFE_INTEGER,
+        id: undefined,
+        groupId: undefined,
+      }
+    );
+  }
+  /**
+   * Outbound request config is used to store the length of entries, that have been previously requested by this client for partially sent outbounds.
+   * @param method - The method of the outbound
+   * @param count - The length of entries that have been requested.
+   */
+  public setOutboundRequestConfig(
+    method: string,
+    count: number | undefined,
+    groupId: number | undefined,
+    id: number | undefined
+  ) {
+    if (!this.outboundRequestConfig.get(method)) {
+      this.outboundRequestConfig.set(method, {
+        count,
+        id,
+        groupId,
+      });
+    } else {
+      const data = this.outboundRequestConfig.get(method);
+      if (count) {
+        data.count = count;
+      }
+      if (groupId) {
+        data.groupId = groupId;
+      }
+      if (id) {
+        data.id = id;
+      }
+    }
   }
 }

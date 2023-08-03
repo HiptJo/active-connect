@@ -2,7 +2,9 @@ import {
   Auth,
   LazyLoading,
   Modifies,
+  ModifiesAuthentication,
   Outbound,
+  ResendAfterAuthenticationChange,
   Route,
   StandaloneRoute,
   Subscribe,
@@ -26,6 +28,42 @@ class FalseAuthenticator extends WebsocketAuthenticator {
     return false;
   }
 }
+class TokenAuthenticator extends WebsocketAuthenticator {
+  public readonly label: string = "test-auth";
+  public unauthenticatedMessage: string = "error message";
+  public async authenticate(conn: WebsocketConnection): Promise<boolean> {
+    return conn.token == "true";
+  }
+}
+
+it("should delete outbound data after an auth change when the client is not longer authenticated for the outbound", async () => {
+  class Testing {
+    @Outbound("d.authdelete")
+    @Auth(new TokenAuthenticator())
+    @ResendAfterAuthenticationChange
+    async getData() {
+      return "data";
+    }
+
+    @StandaloneRoute("standalone.route5")
+    @ModifiesAuthentication
+    async setToken(token: string, conn: WebsocketConnection) {
+      conn.token = token;
+    }
+  }
+
+  expect(Testing).toBeDefined();
+
+  const conn = WebsocketMocks.getConnectionStub();
+
+  conn.runRequest("standalone.route5", "true");
+
+  const data = await conn.expectMethod("d.authdelete");
+  expect(data).toStrictEqual("data");
+  conn.runRequest("standalone.route5", "false");
+  const command = await conn.expectMethod("d.authdelete");
+  expect(command).toBe("data_delete");
+});
 
 it("should be possible to use authenticators for methods", async () => {
   @Route("auth1")

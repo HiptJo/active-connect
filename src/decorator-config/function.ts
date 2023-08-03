@@ -64,6 +64,7 @@ export class AuthenticationError extends Error {
  * Represents the reference to an object method used for websocket routes and outbounds with support for authentication.
  */
 export abstract class AuthableDecorableFunction extends DecorableFunction {
+  protected isOutbound: boolean = false;
   protected authenticator: WebsocketAuthenticator | null = null;
 
   /**
@@ -83,7 +84,7 @@ export abstract class AuthableDecorableFunction extends DecorableFunction {
     const authenticator = this.authenticator;
     if (func && authenticator) {
       return async function checkAuthentication(...data: any[]) {
-        const conn: WebsocketConnection = data.length == 1 ? data[0] : data[1];
+        const conn: WebsocketConnection = this.isOutbound ? data[0] : data[1];
         const requestData = data.length == 2 ? data[0] : null;
         if (await authenticator.checkAuthentication(conn, requestData)) {
           return func(...data);
@@ -94,6 +95,16 @@ export abstract class AuthableDecorableFunction extends DecorableFunction {
       };
     } else {
       return func;
+    }
+  }
+
+  protected async authenticateOrThrow(
+    conn: WebsocketConnection,
+    requestData?: any
+  ) {
+    if (!(await this.authenticator.checkAuthentication(conn, requestData))) {
+      this.sendError(conn, this.authenticator.unauthenticatedMessage, true);
+      throw new AuthenticationError(this.authenticator.unauthenticatedMessage);
     }
   }
 

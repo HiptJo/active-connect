@@ -67,7 +67,8 @@ export class StubWebsocketConnection extends WebsocketConnection {
     specificHash?: number,
     inserted?: any[],
     updated?: any[],
-    deleted?: any[]
+    deleted?: any[],
+    length?: number
   ) {
     // parsing the string provides real data situation (date parsing, ...)
     return new Promise((resolve) => {
@@ -269,7 +270,8 @@ export class TCWrapper extends StubWebsocketConnection {
     specificHash?: number,
     inserted?: any[],
     updated?: any[],
-    deleted?: any[]
+    deleted?: any[],
+    length?: number
   ) {
     return new Promise(async (resolve) => {
       const parsedValue = JsonParser.clone(value);
@@ -280,10 +282,20 @@ export class TCWrapper extends StubWebsocketConnection {
         specificHash,
         inserted,
         updated,
-        deleted
+        deleted,
+        length
       );
       if (!handled || method != "m.error") {
-        this.client.messageReceived({ method, data: parsedValue, messageId });
+        this.client.messageReceived({
+          method,
+          data: parsedValue,
+          messageId,
+          specificHash,
+          inserted,
+          updated,
+          deleted,
+          length,
+        });
       }
       resolve(true);
     }).then();
