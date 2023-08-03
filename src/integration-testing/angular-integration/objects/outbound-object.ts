@@ -184,4 +184,19 @@ export class OutboundObject<T extends IdObject> {
       this.dataMap.set(d.id, d);
     });
   }
+
+  /**
+   * The contained data can be modified within the callback method
+   */
+  public update(callback: (data: T[]) => void) {
+    if (this.data) {
+      const updateLengthVariable = this.data.length == this._length;
+      const length = this.length;
+      callback(this.data);
+      this.setData(this.data);
+      if (!updateLengthVariable) {
+        this._length = length;
+      }
+    }
+  }
 }
