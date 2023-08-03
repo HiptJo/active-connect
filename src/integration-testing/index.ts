@@ -8,3 +8,4 @@ export * from "./angular-integration/decorators/route";
 export * from "./angular-integration/loading-status";
 export * from "./angular-integration/decorators/on-success";
 export * from "./angular-integration/decorators/websocket-route-service";
+export * from "./angular-integration/objects/outbound-object";
