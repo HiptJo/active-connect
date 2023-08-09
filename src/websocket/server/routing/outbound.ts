@@ -236,7 +236,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       }
 
       if (groupId) {
-        if (!(dataContext as PartialOutboundDataForGroup<any>).PARTIAL_GROUP) {
+        if (!(dataContext as PartialOutboundDataForGroup<any>)?.PARTIAL_GROUP) {
           throw Error(
             "Active-Connect: Expected Group Result for outbound " + this.method
           );
@@ -250,7 +250,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           [groupId]
         );
       } else if (id) {
-        if (!(dataContext as PartialOutboundDataForId<any>).PARTIAL_ID) {
+        if (!(dataContext as PartialOutboundDataForId<any>)?.PARTIAL_ID) {
           throw Error(
             "Active-Connect: Expected Id Result for outbound " + this.method
           );
@@ -265,7 +265,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         );
       } else {
         const isPartial =
-          (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+          (dataContext as PartialOutboundData<any>)?.PARTIAL_SUPPORT || false;
         const res: any[] = isPartial
           ? (dataContext as PartialOutboundData<any>).data
           : (dataContext as any[]);
@@ -378,7 +378,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         conn.getOutboundRequestConfig(this.method).count
       );
       const isPartial =
-        (dataContext as PartialOutboundData<any>).PARTIAL_SUPPORT || false;
+        (dataContext as PartialOutboundData<any>)?.PARTIAL_SUPPORT || false;
       const res: any[] = isPartial
         ? (dataContext as PartialOutboundData<any>).data
         : (dataContext as any[]);
