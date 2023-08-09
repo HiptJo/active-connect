@@ -1,7 +1,8 @@
 export function Outbound(
   method: string,
   lazyLoaded?: boolean,
-  cachedOnClient?: boolean
+  cachedOnClient?: boolean,
+  sortBy?: (a: any, b: any) => number
 ) {
   return function _Outbound(target: any, propertyKey: string): any {
     // property annotation
@@ -13,6 +14,7 @@ export function Outbound(
         if (!_this.___received) _this.___received = {};
         if (!_this.___data) _this.___data = {};
         if (!_this.loading) _this.loading = {};
+        if (data && sortBy) data = data.sort(sortBy);
         _this.___received[propertyKey] = true;
         _this.___data[propertyKey] = data;
         _this.loading[propertyKey] = false;
@@ -59,7 +61,7 @@ export function Outbound(
         if (!this.___data) this.___data = {};
         if (!this.loading) this.loading = {};
         this.loading[propertyKey] = false;
-
+        if (val && sortBy) val = val.sort(sortBy);
         return (this.___data[propertyKey] = val);
       },
     };

@@ -1,7 +1,7 @@
 import { WebsocketClient } from "../client/client";
 
 export interface IdObject {
-  id: number;
+  id: number | undefined | null;
 }
 
 export class OutboundObject<T extends IdObject> {
@@ -10,7 +10,8 @@ export class OutboundObject<T extends IdObject> {
     private method: string,
     private lazyLoaded?: boolean,
     public readonly cached?: boolean,
-    private initialLoadingCount?: number
+    private initialLoadingCount?: number,
+    private sortBy?: (a: T, b: T) => number
   ) {
     this.target.loading = new Map<string, boolean>();
     if (!this.target.___expectOutboundsCall) {
@@ -61,6 +62,8 @@ export class OutboundObject<T extends IdObject> {
             _this.dataMap.delete(e.id);
           });
           _this.data = Array.from(_this.dataMap.values());
+          if (_this.data && _this.sortBy)
+            _this.data = _this.data.sort(_this.sortBy);
           _this._loading = false;
         } else {
           _this.setData(data);
@@ -75,7 +78,7 @@ export class OutboundObject<T extends IdObject> {
     return (this.client as any).__proto__;
   }
 
-  private dataMap: Map<number, T> = new Map();
+  private dataMap: Map<number | undefined | null, T> = new Map();
   private data: T[] | undefined = undefined;
 
   private idDataUpdate: Function = null;
@@ -178,6 +181,7 @@ export class OutboundObject<T extends IdObject> {
 
   private setData(data: T[]) {
     this.data = data as T[];
+    if (this.data && this.sortBy) this.data = this.data.sort(this.sortBy);
     this._length = data.length;
     this.dataMap = new Map();
     this.data.forEach((d) => {
