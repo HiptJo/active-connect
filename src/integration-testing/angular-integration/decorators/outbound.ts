@@ -11,6 +11,10 @@ export function Outbound(
     }
     target.___expectOutboundsCall.push((_this: any) => {
       _this.expectOutbound(method, function setOutbound(data: any) {
+        if (!_this.___received) _this.___received = {};
+        if (!_this.___data) _this.___data = {};
+        if (!_this.loading) _this.loading = {};
+
         if (data == "data_delete") {
           if (!_this.___requested) _this.___requested = {};
           _this.___data[propertyKey] = undefined;
@@ -18,9 +22,6 @@ export function Outbound(
           _this.___received[propertyKey] = false;
           _this.___requested[propertyKey] = false;
         } else {
-          if (!_this.___received) _this.___received = {};
-          if (!_this.___data) _this.___data = {};
-          if (!_this.loading) _this.loading = {};
           if (data && sortBy) data = data.sort(sortBy);
           _this.___received[propertyKey] = true;
           _this.___data[propertyKey] = data;
