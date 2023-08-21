@@ -11,20 +11,26 @@ export function Outbound(
     }
     target.___expectOutboundsCall.push((_this: any) => {
       _this.expectOutbound(method, function setOutbound(data: any) {
-        if (!_this.___received) _this.___received = {};
-        if (!_this.___data) _this.___data = {};
-        if (!_this.loading) _this.loading = {};
-        if (data && sortBy) data = data.sort(sortBy);
-        _this.___received[propertyKey] = true;
-        _this.___data[propertyKey] = data;
-        _this.loading[propertyKey] = false;
-
-        if (_this.___resolve) {
-          if (_this.___resolve[propertyKey]) {
-            _this.___resolve[propertyKey].forEach((resolve: Function) =>
-              resolve(data)
-            );
-            _this.___resolve[propertyKey] = [];
+        if (data == "data_delete") {
+          _this.___data[propertyKey] = undefined;
+          _this.loading[propertyKey] = false;
+          _this.___received[propertyKey] = false;
+          _this.___requested[propertyKey] = false;
+        } else {
+          if (!_this.___received) _this.___received = {};
+          if (!_this.___data) _this.___data = {};
+          if (!_this.loading) _this.loading = {};
+          if (data && sortBy) data = data.sort(sortBy);
+          _this.___received[propertyKey] = true;
+          _this.___data[propertyKey] = data;
+          _this.loading[propertyKey] = false;
+          if (_this.___resolve) {
+            if (_this.___resolve[propertyKey]) {
+              _this.___resolve[propertyKey].forEach((resolve: Function) =>
+                resolve(data)
+              );
+              _this.___resolve[propertyKey] = [];
+            }
           }
         }
       });
