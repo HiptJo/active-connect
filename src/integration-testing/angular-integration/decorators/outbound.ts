@@ -12,6 +12,7 @@ export function Outbound(
     target.___expectOutboundsCall.push((_this: any) => {
       _this.expectOutbound(method, function setOutbound(data: any) {
         if (data == "data_delete") {
+          if (!this.___requested) this.___requested = {};
           _this.___data[propertyKey] = undefined;
           _this.loading[propertyKey] = false;
           _this.___received[propertyKey] = false;
