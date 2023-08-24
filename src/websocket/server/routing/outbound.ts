@@ -150,6 +150,13 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   }
 
   /**
+   * Removes all subscriptions for this outbound
+   */
+  public clearSubscriptions(): void {
+    this.subscribedConnections = new Map();
+  }
+
+  /**
    * Sends the outbound data to the provided connection.
    * If caching is enabled, the caching hash is checked in advance.
    * @param conn - The WebSocket connection to send the data to.
@@ -818,6 +825,15 @@ export class WebsocketOutbounds {
    */
   public static clear() {
     this.outbounds.clear();
+  }
+
+  /**
+   * Removes all subscriptions from all registered outbounds
+   */
+  public static clearSubscritions() {
+    for (var outbound of this.outbounds) {
+      outbound[1].clearSubscriptions();
+    }
   }
 
   /**
