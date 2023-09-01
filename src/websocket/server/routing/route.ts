@@ -188,13 +188,21 @@ export class WebsocketRoute extends AuthableDecorableFunction {
     responseData: any,
     requestConn: WebsocketConnection
   ) {
+    const promises: Promise<any>[] = [];
     for await (var config of this.modifiesOutbounds) {
-      const filter = config.filter
-        ? await config.filter.filter(responseData, requestConn)
-        : undefined;
-      if (config.outboundRoutes && config.outboundRoutes.length > 0)
-        await WebsocketOutbounds.sendUpdates(config.outboundRoutes, filter);
+      if (config.outboundRoutes && config.outboundRoutes.length > 0) {
+        promises.push(
+          new Promise<void>(async (resolve) => {
+            const filter = config.filter
+              ? await config.filter.filter(responseData, requestConn)
+              : undefined;
+            await WebsocketOutbounds.sendUpdates(config.outboundRoutes, filter);
+            resolve();
+          })
+        );
+      }
     }
+    await Promise.all(promises);
   }
 
   /**
