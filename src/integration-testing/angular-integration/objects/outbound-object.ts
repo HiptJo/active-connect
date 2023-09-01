@@ -37,19 +37,23 @@ export class OutboundObject<T extends IdObject> {
           _this.loadedGroupId = null;
           _this._length = null;
         } else if (data == "data_group") {
-          _this.loadedGroupData = insertedOrGroupData;
-          _this.loadedGroupId = updatedOrGroupId[0];
-          if (_this.groupDataUpdate) {
-            _this.groupDataUpdate(_this.loadedGroupData);
-            _this.groupDataUpdate = null;
+          if (_this.requestedGroupId == updatedOrGroupId[0]) {
+            _this.loadedGroupData = insertedOrGroupData;
+            _this.loadedGroupId = updatedOrGroupId[0];
+            if (_this.groupDataUpdate) {
+              _this.groupDataUpdate(_this.loadedGroupData);
+              _this.groupDataUpdate = null;
+            }
           }
         } else if (data == "data_id") {
-          _this.loadedIdData =
-            insertedOrGroupData?.length > 0 ? insertedOrGroupData[0] : null;
-          _this.loadedId = updatedOrGroupId[0];
-          if (_this.idDataUpdate) {
-            _this.idDataUpdate(_this.loadedIdData);
-            _this.idDataUpdate = null;
+          if (_this.requestedId == updatedOrGroupId[0]) {
+            _this.loadedIdData =
+              insertedOrGroupData?.length > 0 ? insertedOrGroupData[0] : null;
+            _this.loadedId = updatedOrGroupId[0];
+            if (_this.idDataUpdate) {
+              _this.idDataUpdate(_this.loadedIdData);
+              _this.idDataUpdate = null;
+            }
           }
         } else if (data == "data_diff") {
           insertedOrGroupData?.forEach((e) => {
@@ -167,15 +171,19 @@ export class OutboundObject<T extends IdObject> {
     return this.data == undefined;
   }
 
+  private requestedId: number | null = null;
   private loadedId: number | null = null;
   private loadedIdData: T | null = null;
   private requestForId(id: number): Promise<T> {
+    this.requestedId = id;
     return this.client.send("request." + this.method, { id }) as Promise<T>;
   }
 
+  private requestedGroupId: number | null = null;
   private loadedGroupId: number | null = null;
   private loadedGroupData: T[] | null = null;
   private requestForGroup(groupId: number): Promise<T[]> {
+    this.requestedGroupId = groupId;
     return this.client.send("request." + this.method, { groupId });
   }
 
