@@ -269,7 +269,7 @@ describe("outbound object without splitted decorators", () => {
     data.forEach((d) => expect(d.id % 10).toBe(0));
   });
 
-  it("should be possible to get subscribe for grouped data and get updates when data is changed *_**", async () => {
+  it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
     const conn = new TC();
     await conn.service.init();
     let data = await conn.pool.large.getForGroup(10);
@@ -320,14 +320,21 @@ describe("outbound object using splitted decorators", () => {
     data.forEach((d) => expect(d.id % 10).toBe(0));
   });
 
-  it("should be possible to get subscribe for grouped data and get updates when data is changed ***", async () => {
+  it("should be possible to get subscribe for grouped data and get updates when data is changed", async () => {
     const conn = new TC();
     await conn.service.init();
     let data = await conn.pool.largeWithDecorators.getForGroup(10);
+    let idData = await conn.pool.largeWithDecorators.get(91);
     expect(data).toHaveLength(10);
+    expect(idData).toBeDefined();
     data.forEach((d) => expect(d.id % 10).toBe(0));
 
-    await conn.service.init();
+    await Promise.all([
+      conn.service.init(),
+      conn.expectGroupDataUpdate("int.largewithdecorators"),
+      conn.expectIdDataUpdate("int.largewithdecorators"),
+    ]);
+
     data = await conn.pool.largeWithDecorators.getForGroup(10);
     expect(data).toHaveLength(20);
     data.forEach((d) => expect(d.id % 10).toBe(0));

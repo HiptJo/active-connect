@@ -48,6 +48,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
           updated: any[],
           deleted: any[]
         ) => void)
+      | string
       | undefined;
     outboundMethod: string | undefined;
   }[] = [];
@@ -81,15 +82,44 @@ export class StubWebsocketConnection extends WebsocketConnection {
               (!s.outboundMethod || s.outboundMethod == value)
           );
           if (entry.length > 0) {
-            const el = entry[0];
-            this.stack = this.stack.filter(
-              (s) => s != el && (!s.outboundMethod || s.outboundMethod == value)
-            );
-            if (el.hashCallback)
-              el.hashCallback(specificHash, inserted, updated, deleted);
-            el.func(parsedValue);
-            resolve(true);
-            return;
+            let el = entry[0];
+            if (value && value == "data_group") {
+              const filter = entry.filter((e) => e.hashCallback == "GROUP");
+              if (filter.length > 0) {
+                el = filter[0];
+              }
+            } else if (value && value == "data_id") {
+              const filter = entry.filter((e) => e.hashCallback == "ID");
+              if (filter.length > 0) {
+                el = filter[0];
+              }
+            } else {
+              const filter = entry.filter(
+                (e) => e.hashCallback != "ID" && e.hashCallback != "GROUP"
+              );
+              if (filter.length > 0) {
+                el = filter[0];
+              } else {
+                el = null;
+              }
+            }
+
+            if (el) {
+              this.stack = this.stack.filter(
+                (s) =>
+                  s != el && (!s.outboundMethod || s.outboundMethod == value)
+              );
+              if (typeof el.hashCallback === "function")
+                (el.hashCallback as Function)(
+                  specificHash,
+                  inserted,
+                  updated,
+                  deleted
+                );
+              el.func(parsedValue);
+              resolve(true);
+              return;
+            }
           }
         }
         if (method == "m.error") throw new Error(parsedValue);
@@ -128,6 +158,48 @@ export class StubWebsocketConnection extends WebsocketConnection {
         if (this.stack.includes(stackObject)) {
           reject(
             "ActiveConnect: Message was not received within the timeout inverval of " +
+              (timeout || ActiveConnect.getTimeout()) +
+              "ms: " +
+              method
+          );
+        }
+      }, timeout || ActiveConnect.getTimeout());
+    }).then();
+  }
+
+  async expectGroupDataUpdate(method: string, timeout?: number) {
+    return new Promise((func, reject) => {
+      const stackObject: any = {
+        method,
+        func,
+        hashCallback: "GROUP",
+      };
+      this.stack.push(stackObject);
+      setTimeout(() => {
+        if (this.stack.includes(stackObject)) {
+          reject(
+            "ActiveConnect: Group Data Update was not received within the timeout inverval of " +
+              (timeout || ActiveConnect.getTimeout()) +
+              "ms: " +
+              method
+          );
+        }
+      }, timeout || ActiveConnect.getTimeout());
+    }).then();
+  }
+
+  async expectIdDataUpdate(method: string, timeout?: number) {
+    return new Promise((func, reject) => {
+      const stackObject: any = {
+        method,
+        func,
+        hashCallback: "ID",
+      };
+      this.stack.push(stackObject);
+      setTimeout(() => {
+        if (this.stack.includes(stackObject)) {
+          reject(
+            "ActiveConnect: Group Data Update was not received within the timeout inverval of " +
               (timeout || ActiveConnect.getTimeout()) +
               "ms: " +
               method

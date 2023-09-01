@@ -481,32 +481,33 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     if (key || this.subscribesChanges) {
       const connections = this.subscribedConnections.get(key || null);
       if (connections) {
-        await Promise.all(connections.map((conn) => this.sendData(conn)));
-
+        const connectionsWithIdSubscription = connections.filter(
+          (c) => c.getOutboundRequestConfig(this.method).id
+        );
         const connectionsWithGroupSubscription = connections.filter(
           (c) => c.getOutboundRequestConfig(this.method).groupId
         );
-        await Promise.all(
-          connectionsWithGroupSubscription.map((conn) =>
+
+        const tasks = connectionsWithGroupSubscription
+          .map((conn) =>
             this.sendData(
               conn,
               undefined,
               conn.getOutboundRequestConfig(this.method).groupId
             )
           )
-        );
-        const connectionsWithIdSubscription = connections.filter(
-          (c) => c.getOutboundRequestConfig(this.method).id
-        );
-        await Promise.all(
-          connectionsWithIdSubscription.map((conn) =>
-            this.sendData(
-              conn,
-              conn.getOutboundRequestConfig(this.method).id,
-              undefined
+          .concat(
+            connectionsWithIdSubscription.map((conn) =>
+              this.sendData(
+                conn,
+                conn.getOutboundRequestConfig(this.method).id,
+                undefined
+              )
             )
           )
-        );
+          .concat(connections.map((conn) => this.sendData(conn)));
+
+        await Promise.all(tasks);
       }
     }
   }
