@@ -1,3 +1,5 @@
+import { WebsocketOutbounds } from "./websocket";
+
 export class ActiveConnect {
   /**
    * Loads all ts/js files in the speficied directory.
@@ -37,5 +39,13 @@ export class ActiveConnect {
    */
   public static setTimeout(ms: number) {
     ActiveConnect.timeout = ms;
+  }
+
+  /**
+   * Closes all Websocket Connections
+   * Only suitable for test runs.
+   */
+  public static closeAllConnections() {
+    WebsocketOutbounds.closeAllConnections();
   }
 }

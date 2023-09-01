@@ -8,6 +8,7 @@ import { WebsocketRouter } from "./router";
 import { MessageFilter } from "../../auth/authenticator";
 import { WebsocketOutboundDecoratorConfig } from "../../decorators/websocket-outbound-decorator-config";
 import { JsonParser } from "../../../json";
+import { StubWebsocketConnection } from "../../../integration-testing";
 
 /**
  * @deprecated
@@ -131,7 +132,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   private addSubscriptionForKey(key: number | null, conn: WebsocketConnection) {
     const result = this.subscribedConnections.get(key || null);
     if (!result) {
-      this.subscribedConnections.set(key, [conn]);
+      this.subscribedConnections.set(key || null, [conn]);
     } else {
       // Check if connection is not already inside the map
       if (!result.includes(conn)) {
@@ -172,6 +173,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       | undefined,
     sendDeleteOnAuthError?: boolean
   ) {
+    if (conn.isClosed) {
+      return;
+    }
+
     if (requestConfig) {
       conn.setOutboundRequestConfig(
         this.method,
@@ -351,6 +356,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     conn: WebsocketConnection,
     sendDeleteOnAuthError?: boolean
   ) {
+    if (conn.isClosed) {
+      return;
+    }
+
     if (this.connectionSubscribesForChanges(conn)) {
       this.sendTo(
         conn,
@@ -370,6 +379,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     conn: WebsocketConnection,
     specificHash: number
   ) {
+    if (conn.isClosed) {
+      return;
+    }
+
     // test auth
     if (this.hasAuthenticator) {
       if (!(await this.authenticator.authenticate(conn, null))) {
@@ -692,17 +705,22 @@ export class WebsocketOutbounds {
     WebsocketOutbounds.outbounds.forEach((o) => o.unsubscribeConnection(conn));
   }
 
+  private static connections: WebsocketConnection[] = [];
+
   /**
    * Sends all outbound data to a client. This is triggered once the client opens a new connection.
    * The connection automatically subscribes for updates when it is enabled in the outbound config.
    * @param conn - Data is sent to this connection.
    */
   public static async sendToConnection(conn: WebsocketConnection) {
+    WebsocketOutbounds.connections.push(conn);
+    var promises: Promise<any>[] = [];
     for (var out of WebsocketOutbounds.outbounds) {
       if (!out[1].lazyLoading) {
-        await out[1].sendTo(conn);
+        promises.push(out[1].sendTo(conn));
       }
     }
+    await Promise.all(promises);
   }
 
   /**
@@ -860,6 +878,18 @@ export class WebsocketOutbounds {
    */
   public static resetSubscriptions() {
     WebsocketOutbounds.outbounds.forEach((o) => o.resetSubscriptions());
+  }
+
+  /**
+   * Closes all Websocket connections
+   * Only suitable for test runs.
+   */
+  public static closeAllConnections() {
+    for (var connection of this.connections) {
+      if ((connection as StubWebsocketConnection).closeConnection) {
+        (connection as StubWebsocketConnection).closeConnection();
+      }
+    }
   }
 }
 

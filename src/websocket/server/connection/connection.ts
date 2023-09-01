@@ -47,7 +47,7 @@ export class WebsocketConnection {
    * Refers to a websocket router instance.
    */
   public static router: WebsocketRouter = new WebsocketRouter();
-  private interval;
+  private pingInterval;
 
   /**
    * Creates a new instance of WebsocketConnection.
@@ -65,7 +65,7 @@ export class WebsocketConnection {
     this.initializeListeners();
     this.sendWelcomeMessages();
     if (connection) {
-      this.interval = setInterval(function pingConnection() {
+      this.pingInterval = setInterval(function pingConnection() {
         connection.ping();
       }, 45000);
     }
@@ -131,10 +131,20 @@ export class WebsocketConnection {
     throw Error(message);
   }
 
+  private closed: boolean = false;
+  /**
+   * True if the connection has been closed
+   */
+  get isClosed() {
+    return this.closed;
+  }
+
   protected onClose() {
-    clearInterval(this.interval);
+    this.closed = true;
+    clearInterval(this.pingInterval);
     WebsocketOutbounds.unsubscribeConnection(this);
     WebsocketConnection.closeHandlers.forEach((c) => c.Func(this));
+    this.outboundCache = new Map();
   }
 
   private async sendWelcomeMessages() {
