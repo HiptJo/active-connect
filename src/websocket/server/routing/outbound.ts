@@ -672,7 +672,7 @@ export class WebsocketOutbounds {
     // send updates for others in the background
     Promise.all(
       methods.map((m) => WebsocketOutbounds.sendUpdatesForMethod(m, key))
-    );
+    ).then();
   }
 
   /**
