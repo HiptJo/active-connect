@@ -332,7 +332,13 @@ export class HttpServer {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
       });
-      res.end(data.data, "base64");
+      if (data.data.startsWith) {
+        if (data.data.startsWith("data:")) {
+          res.end(data.data.replace(/data:.+\/.+;base64,/g, ""), "base64");
+          return;
+        }
+      }
+      res.send(data.data);
     } catch (e) {
       if (e?.isAuthenticationError) {
         res.sendStatus(401);
