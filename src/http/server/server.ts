@@ -328,22 +328,27 @@ export class HttpServer {
   ) {
     try {
       const data: ProvidedFile = await provider.Func(id, auth);
+
+      if (data.data && data.data.startsWith) {
+        if (data.data.startsWith("data:")) {
+          const d = data.data.replace(/data:.+\/.+;base64,/g, "");
+          res.writeHead(200, {
+            "Content-Type": data.contentType,
+            "Cache-Control": "must-revalidate",
+          });
+          res.end(d, "base64");
+          return;
+        }
+      }
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
       });
-      if (data.data.startsWith) {
-        if (data.data.startsWith("data:")) {
-          res.end(data.data.replace(/data:.+\/.+;base64,/g, ""), "base64");
-          return;
-        }
-      }
-      res.send(data.data);
+      res.end(data.data);
     } catch (e) {
       if (e?.isAuthenticationError) {
         res.sendStatus(401);
       } else {
-        console.error(e);
         res.sendStatus(this.getErrorCode(e));
       }
     }
