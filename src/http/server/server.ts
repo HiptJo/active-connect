@@ -331,12 +331,18 @@ export class HttpServer {
 
       if (data.data && data.data.startsWith) {
         if (data.data.startsWith("data:")) {
-          const d = data.data.replace(/data:.+\/.+;base64,/g, "");
-          res.writeHead(200, {
-            "Content-Type": data.contentType,
-            "Cache-Control": "must-revalidate",
-          });
-          res.end(d, "base64");
+          try {
+            const d = data.data.split("base64,")[1];
+            res.writeHead(200, {
+              "Content-Type": data.contentType,
+              "Cache-Control": "must-revalidate",
+            });
+            res.end(d, "base64");
+          } catch (e) {
+            console.error(
+              'Please ensure that a propper base64 string is returned when starting with "data:"'
+            );
+          }
           return;
         }
       }
