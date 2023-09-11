@@ -107,7 +107,7 @@ export class HttpServer {
           res.status(status);
           res.end("");
           if (status == 500) {
-            throw Error(err);
+            console.error(err);
           }
         });
     };
@@ -346,11 +346,11 @@ export class HttpServer {
       });
       res.end(data.data);
     } catch (e) {
+      console.error(e);
       if (e?.isAuthenticationError) {
         res.sendStatus(401);
       } else {
         res.sendStatus(this.getErrorCode(e));
-        throw e;
       }
     }
   }
@@ -369,11 +369,11 @@ export class HttpServer {
       });
       res.end(data.data, "base64");
     } catch (e) {
+      console.error(e);
       if (e?.isAuthenticationError) {
         res.sendStatus(401);
       } else {
         res.sendStatus(this.getErrorCode(e));
-        throw e;
       }
     }
   }
