@@ -350,6 +350,7 @@ export class HttpServer {
         res.sendStatus(401);
       } else {
         res.sendStatus(this.getErrorCode(e));
+        throw e;
       }
     }
   }
@@ -371,8 +372,8 @@ export class HttpServer {
       if (e?.isAuthenticationError) {
         res.sendStatus(401);
       } else {
-        console.error(e);
         res.sendStatus(this.getErrorCode(e));
+        throw e;
       }
     }
   }
