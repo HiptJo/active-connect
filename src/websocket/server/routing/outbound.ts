@@ -813,6 +813,8 @@ export class WebsocketOutbounds {
   public static async resendDataAfterAuth(connection: WebsocketConnection) {
     WebsocketOutbounds.outbounds.forEach(async function sendOutbound(o) {
       if (o.resendAfterAuthenticationChange) {
+        connection.resetOutboundCache(o.method);
+
         if (o.lazyLoading) {
           // check if connection is subscribed
           // if it is, trigger resend - else do not resend
