@@ -155,7 +155,7 @@ describe("error handling", () => {
     await expect(
       WebsocketOutbounds.sendUpdates(["unknown.method"])
     ).rejects.toThrow(
-      'Websocket: Can not send updates to outbound "unknown.method" as it does not exist.'
+      'Websocket: Can not send updates to outbound "unknown.method". Please ensure, that the method exists and subscriptions are enabled.'
     );
   });
 });
