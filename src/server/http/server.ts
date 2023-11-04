@@ -237,9 +237,19 @@ export class HttpServer {
   ) {
     try {
       const data: ProvidedFile = await provider.callback(id, auth);
+
+      let cacheControl = "must-revalidate";
+      if (data.cacheDuration != undefined) {
+        if (data.cacheDuration > 0) {
+          cacheControl = "public, max-age=" + data.cacheDuration;
+        }
+      } else if (provider.defaultCacheDuration > 0) {
+        cacheControl = "public, max-age=" + provider.defaultCacheDuration;
+      }
+
       res.writeHead(200, {
         "Content-Type": data.contentType,
-        "Cache-Control": "must-revalidate",
+        "Cache-Control": cacheControl,
       });
       res.end(data.data);
     } catch (e) {
@@ -253,10 +263,20 @@ export class HttpServer {
     auth?: string
   ) {
     try {
-      const data: ProvidedFile = await provider.callback(id, auth);
+      const data: ProvidedImage = await provider.callback(id, auth);
+
+      let cacheControl = "must-revalidate";
+      if (data.cacheDuration != undefined) {
+        if (data.cacheDuration > 0) {
+          cacheControl = "public, max-age=" + data.cacheDuration;
+        }
+      } else if (provider.defaultCacheDuration > 0) {
+        cacheControl = "public, max-age=" + provider.defaultCacheDuration;
+      }
+
       res.writeHead(200, {
         "Content-Type": data.contentType,
-        "Cache-Control": "must-revalidate",
+        "Cache-Control": cacheControl,
       });
       res.end(data.data, "base64");
     } catch (e) {
@@ -281,9 +301,12 @@ export class HttpServer {
   private static fileProvider: Array<FileProvider> = new Array();
   public static registerFileProvider(
     label: string,
-    callback: (id: string, auth: string) => Promise<ProvidedFile>
+    callback: (id: string, auth: string) => Promise<ProvidedFile>,
+    defaultCacheDuration: number = 0
   ) {
-    HttpServer.fileProvider.push(new FileProvider(label, callback));
+    HttpServer.fileProvider.push(
+      new FileProvider(label, callback, defaultCacheDuration)
+    );
   }
 
   private static imageProvider: Array<ImageProvider> = new Array();

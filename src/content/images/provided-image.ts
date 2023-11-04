@@ -4,7 +4,8 @@ export class ProvidedImage extends ProvidedFile {
   public static getFromDataURL(
     dataUrl: string,
     id: number,
-    label: string
+    label: string,
+    cacheDuration?: number
   ): ProvidedImage {
     var matches: any = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
 
@@ -12,6 +13,6 @@ export class ProvidedImage extends ProvidedFile {
       throw Error("Could not get ProvidedImage from DataURL");
     }
 
-    return new ProvidedImage(id, label, matches[2], matches[1]);
+    return new ProvidedImage(id, label, matches[2], matches[1], cacheDuration);
   }
 }
