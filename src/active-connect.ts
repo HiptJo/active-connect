@@ -12,6 +12,8 @@ export * from "./decorators/content/provide-file";
 export * from "./decorators/content/provide-image";
 export * from "./decorators/http/get";
 export * from "./decorators/http/post";
+export * from "./decorators/http/put";
+export * from "./decorators/http/delete";
 export * from "./decorators/cron/cron";
 export * from "./server/http/http-request";
 export * from "./server/http/http-response";
