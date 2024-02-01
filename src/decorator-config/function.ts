@@ -85,7 +85,7 @@ export abstract class AuthableDecorableFunction extends DecorableFunction {
     if (func && authenticator) {
       return async function checkAuthentication(...data: any[]) {
         const conn: WebsocketConnection = this.isOutbound ? data[0] : data[1];
-        const requestData = data.length == 2 ? data[0] : null;
+        const requestData = this.isOutbound ? null : data[0];
         if (await authenticator.checkAuthentication(conn, requestData)) {
           return func(...data);
         } else {
