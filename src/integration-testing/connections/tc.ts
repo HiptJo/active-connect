@@ -52,6 +52,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
       | undefined;
     outboundMethod: string | undefined;
   }[] = [];
+  private rejects: Map<number, Function> = new Map();
 
   /**
    * Sends a WebSocket message.
@@ -122,7 +123,14 @@ export class StubWebsocketConnection extends WebsocketConnection {
             }
           }
         }
-        if (method == "m.error") throw new Error(parsedValue);
+        if (method == "m.error") {
+          const reject = this.rejects.get(messageId);
+          if (reject) {
+            reject(parsedValue);
+            resolve(true);
+            return;
+          }
+        }
         resolve(false);
       }, 100); // timeout 100ms
     }).then();
@@ -139,6 +147,7 @@ export class StubWebsocketConnection extends WebsocketConnection {
    */
   async expectMethod(
     method: string,
+    messageId?: number,
     timeout?: number,
     hashCallback?: (
       specificHash: number,
@@ -152,8 +161,10 @@ export class StubWebsocketConnection extends WebsocketConnection {
         method,
         func,
         hashCallback,
+        messageId,
       };
       this.stack.push(stackObject);
+      if (messageId) this.rejects.set(messageId, reject);
       setTimeout(() => {
         if (this.stack.includes(stackObject)) {
           reject(

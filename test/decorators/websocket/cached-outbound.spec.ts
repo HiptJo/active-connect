@@ -56,6 +56,7 @@ describe("eager-loaded outbound", () => {
     const data = await conn.expectMethod(
       "out.cached",
       undefined,
+      undefined,
       (specificHash) => {
         expect(specificHash).toBeDefined();
         _s = specificHash;
@@ -63,10 +64,15 @@ describe("eager-loaded outbound", () => {
     );
     expect(data).toHaveLength(0);
     conn.runRequest("cached.update", 7);
-    await conn.expectMethod("out.cached", undefined, (specificHash) => {
-      expect(specificHash).not.toBe(_s);
-      _s = specificHash;
-    });
+    await conn.expectMethod(
+      "out.cached",
+      undefined,
+      undefined,
+      (specificHash) => {
+        expect(specificHash).not.toBe(_s);
+        _s = specificHash;
+      }
+    );
     expect(_s).toBeDefined();
 
     // should be possible to use the cache tokens to approve it has not been changed
@@ -121,6 +127,7 @@ describe("lazy-loaded outbound", () => {
     const data = await conn.expectMethod(
       "out.cached1",
       undefined,
+      undefined,
       (specificHash) => {
         expect(specificHash).toBeDefined();
         _s = specificHash;
@@ -128,10 +135,15 @@ describe("lazy-loaded outbound", () => {
     );
     expect(data).toHaveLength(0);
     conn.runRequest("cached.update1", 7);
-    await conn.expectMethod("out.cached1", undefined, (specificHash) => {
-      expect(specificHash).not.toBe(_s);
-      _s = specificHash;
-    });
+    await conn.expectMethod(
+      "out.cached1",
+      undefined,
+      undefined,
+      (specificHash) => {
+        expect(specificHash).not.toBe(_s);
+        _s = specificHash;
+      }
+    );
     expect(_s).toBeDefined();
 
     // should be possible to use the cache tokens to approve it has not been changed

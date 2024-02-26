@@ -63,6 +63,7 @@ describe("eager-loaded outbound", () => {
     expect(
       await conn.expectMethod(
         "out.partial1",
+        undefined,
         1000000,
         (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
@@ -79,6 +80,7 @@ describe("eager-loaded outbound", () => {
     expect(
       await conn.expectMethod(
         "out.partial1",
+        undefined,
         1000000,
         (specificHash, inserted, updated, deleted) => {
           expect(inserted).toStrictEqual([]);
@@ -93,6 +95,7 @@ describe("eager-loaded outbound", () => {
     expect(
       await conn.expectMethod(
         "out.partial1",
+        undefined,
         1000000,
         (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
@@ -106,6 +109,7 @@ describe("eager-loaded outbound", () => {
     expect(
       await conn.expectMethod(
         "out.partial1",
+        undefined,
         1000000,
         (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
@@ -121,6 +125,7 @@ describe("eager-loaded outbound", () => {
       expect(
         await conn.expectMethod(
           "out.partial1",
+          undefined,
           1000000,
           (specificHash, inserted, updated, deleted) => {
             expect(updated).toStrictEqual([]);
@@ -135,6 +140,7 @@ describe("eager-loaded outbound", () => {
     expect(
       await conn.expectMethod(
         "out.partial1",
+        undefined,
         1000000,
         (specificHash, inserted, updated, deleted) => {
           expect(updated).toStrictEqual([]);
@@ -177,9 +183,14 @@ describe("should send updated entries only when the client restores the cached v
       method: "out.partial2",
       specificHash: null,
     });
-    const data = await conn.expectMethod("out.partial2", 1000000, (h) => {
-      hash = h;
-    });
+    const data = await conn.expectMethod(
+      "out.partial2",
+      undefined,
+      1000000,
+      (h) => {
+        hash = h;
+      }
+    );
     expect(data).toHaveLength(2);
     expect(hash).not.toBe(0);
 
@@ -197,6 +208,7 @@ describe("should send updated entries only when the client restores the cached v
     expect(
       await newConn.expectMethod(
         "out.partial2",
+        undefined,
         1000000,
         (specificHash, inserted, updated, deleted) => {
           expect(specificHash).toBeDefined();

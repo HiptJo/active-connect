@@ -87,6 +87,7 @@ export class WebsocketClient {
   }
 
   private expectedMethods: Map<string | number, Function> = new Map();
+  private expectedMethodsRejectionCallback: Map<number, Function> = new Map();
 
   /**
    * Can be used to wait for specific message responses
@@ -95,8 +96,10 @@ export class WebsocketClient {
    * @param [messageId] - ID of the expected message
    */
   private expectMethod(method: string, messageId?: number) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.expectedMethods.set(messageId || method, resolve);
+      if (this.messageId)
+        this.expectedMethodsRejectionCallback.set(messageId, reject);
     });
   }
 
@@ -125,28 +128,41 @@ export class WebsocketClient {
     deleted: any[] | null;
     length: number | null;
   }) {
-    let callback = this.expectedMethods.get(messageId);
-    if (callback) {
-      this.expectedMethods.delete(messageId);
-      callback(data);
-      this.invokeSuccessHandlers(method);
-    } else {
-      callback = this.expectedMethods.get(method);
-      if (callback) {
-        this.expectedMethods.delete(method);
-        callback(data);
-      } else {
-        const out = this.outbounds.get(method);
-        if (out) {
-          out(data, specificHash, inserted, updated, deleted, length, this);
-        } else {
-          const handle = WebsocketClient.handles.get(method);
-          if (handle) {
-            handle.Func(data);
-          } else if (method == "m.error") throw data;
+    setTimeout(() => {
+      if (method == "m.error" && messageId) {
+        const rejectMethod =
+          this.expectedMethodsRejectionCallback.get(messageId);
+        if (rejectMethod) {
+          rejectMethod(data);
+          return;
         }
       }
-    }
+
+      let callback = this.expectedMethods.get(messageId);
+      if (callback) {
+        this.expectedMethods.delete(messageId);
+        callback(data);
+        this.invokeSuccessHandlers(method);
+      } else {
+        callback = this.expectedMethods.get(method);
+        if (callback) {
+          this.expectedMethods.delete(method);
+          callback(data);
+        } else {
+          const out = this.outbounds.get(method);
+          if (out) {
+            out(data, specificHash, inserted, updated, deleted, length, this);
+          } else {
+            const handle = WebsocketClient.handles.get(method);
+            if (handle) {
+              handle.Func(data);
+            } else if (method == "m.error") {
+              throw data;
+            }
+          }
+        }
+      }
+    }, 100);
   }
 
   private outbounds: Map<

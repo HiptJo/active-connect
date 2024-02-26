@@ -89,6 +89,7 @@ describe("partial loaded data (lazy-loaded, without cache support)", () => {
     const data = await conn.expectMethod(
       "d.partloaded",
       undefined,
+      undefined,
       (s, inserted) => {
         expect(inserted.length).toBe(1);
         expect(inserted[0]).toMatchObject({
@@ -143,6 +144,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     const data = await conn.expectMethod(
       "d.partloaded",
       undefined,
+      undefined,
       (s: number) => {
         specific = s;
       }
@@ -160,6 +162,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     const data1 = await conn.expectMethod(
       "d.partloaded",
       undefined,
+      undefined,
       (s, inserted, updated, deleted) => {
         expect(inserted).toHaveLength(10);
       }
@@ -173,6 +176,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     });
     const data = await conn.expectMethod(
       "d.partloaded",
+      undefined,
       undefined,
       (s, inserted) => {
         expect(inserted.length).toBe(1);
@@ -201,6 +205,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
     conn.runRequest("partloaded.add", new Data("updated"));
     const updated = await conn.expectMethod(
       "d.partloaded",
+      undefined,
       undefined,
       (s, inserted, updated, deleted) => {
         expect(inserted).toHaveLength(1);

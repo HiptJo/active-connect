@@ -85,6 +85,9 @@ class Service {
   @ClientRoute("int.reset")
   async reset(): Promise<any> {}
 
+  @ClientRoute("int.error")
+  async triggerError(): Promise<any> {}
+
   @ClientRoute("partloaded.token")
   async auth(token: string): Promise<any> {}
 }
@@ -113,6 +116,11 @@ class Server {
   reset() {
     this.large = [];
     Data.AUTO_INCREMENT = 0;
+  }
+
+  @Route("error")
+  async triggerError() {
+    throw new Error("TRIGGER-ERROR");
   }
 
   @Route("init")
@@ -351,10 +359,17 @@ it("should delete outbound data after an auth change when the client is not long
   expect(conn.pool.authChangedData.isEmpty).toBeFalsy();
 
   await conn.service.auth("false");
-  await conn.expectMethod("d.partloaded.1");
+  await conn.timeout(200);
 
-  expect(conn.pool.authChangedData.isEmpty).toBeTruthy();
   expect(conn.pool.authChangedData.all).toBeUndefined();
+  expect(conn.pool.authChangedData.isEmpty).toBeTruthy();
+
   // error is expected as loading is triggered - and auth fails for loading procedure
   await conn.expectError();
+});
+
+it("should reject the method call if the call raises an exception", async () => {
+  const conn = new TC();
+  await conn.service.auth("true");
+  await expect(conn.service.triggerError()).rejects.toBe("TRIGGER-ERROR");
 });
