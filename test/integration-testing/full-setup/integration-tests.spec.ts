@@ -358,8 +358,8 @@ it("should delete outbound data after an auth change when the client is not long
   expect(conn.pool.authChangedData.all).toHaveLength(1);
   expect(conn.pool.authChangedData.isEmpty).toBeFalsy();
 
-  await conn.service.auth("false");
-  await conn.timeout(200);
+  conn.service.auth("false");
+  await conn.expectMethod("d.partloaded.1");
 
   expect(conn.pool.authChangedData.all).toBeUndefined();
   expect(conn.pool.authChangedData.isEmpty).toBeTruthy();

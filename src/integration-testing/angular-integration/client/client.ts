@@ -128,6 +128,16 @@ export class WebsocketClient {
     deleted: any[] | null;
     length: number | null;
   }) {
+    const out = this.outbounds.get(method);
+    if (out) {
+      out(data, specificHash, inserted, updated, deleted, length, this);
+    } else {
+      const handle = WebsocketClient.handles.get(method);
+      if (handle) {
+        handle.Func(data);
+      }
+    }
+
     setTimeout(() => {
       if (method == "m.error" && messageId) {
         const rejectMethod =
@@ -148,18 +158,8 @@ export class WebsocketClient {
         if (callback) {
           this.expectedMethods.delete(method);
           callback(data);
-        } else {
-          const out = this.outbounds.get(method);
-          if (out) {
-            out(data, specificHash, inserted, updated, deleted, length, this);
-          } else {
-            const handle = WebsocketClient.handles.get(method);
-            if (handle) {
-              handle.Func(data);
-            } else if (method == "m.error") {
-              throw data;
-            }
-          }
+        } else if (method == "m.error") {
+          throw data;
         }
       }
     }, 100);
