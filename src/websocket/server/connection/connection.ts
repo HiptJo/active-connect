@@ -44,6 +44,11 @@ export class WebsocketConnection {
   public token: string | null = null;
 
   /**
+   * Describes the clients auth state
+   */
+  public description: string = "PUBLIC";
+
+  /**
    * Refers to a websocket router instance.
    */
   public static router: WebsocketRouter = new WebsocketRouter();

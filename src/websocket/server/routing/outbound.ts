@@ -9,6 +9,7 @@ import { MessageFilter } from "../../auth/authenticator";
 import { WebsocketOutboundDecoratorConfig } from "../../decorators/websocket-outbound-decorator-config";
 import { JsonParser } from "../../../json";
 import { StubWebsocketConnection } from "../../../integration-testing";
+import { StackTrace } from "../../../error/stack-trace";
 
 /**
  * @deprecated
@@ -336,15 +337,29 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         }
       }
     } catch (e) {
-      if (!e?.isAuthenticationError) {
-        if (!e.SILENT) console.error(e);
-        conn.send("m.error", e?.message || e);
-      } else if (sendDeleteOnAuthError) {
-        conn.send(this.method, "data_delete");
-        conn.resetOutboundCache(this.method);
-      } else if (this.lazyLoading || e.SILENT) {
-        conn.send("m.error", e?.message || e);
-      }
+      this.handleError(e, conn, sendDeleteOnAuthError);
+    }
+  }
+
+  private handleError(
+    e: any,
+    conn: WebsocketConnection,
+    sendDeleteOnAuthError = false
+  ) {
+    const error = StackTrace.setTrace(
+      e,
+      "outbound:" + this.method,
+      "client:" + conn.description
+    );
+
+    if (!e?.isAuthenticationError) {
+      if (!e?.SILENT) console.error(error);
+      conn.send("m.error", error.message);
+    } else if (sendDeleteOnAuthError) {
+      conn.send(this.method, "data_delete");
+      conn.resetOutboundCache(this.method);
+    } else if (this.lazyLoading || e?.SILENT) {
+      conn.send("m.error", error.message);
     }
   }
 
@@ -448,12 +463,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         }
       }
     } catch (e) {
-      if (!e?.isAuthenticationError) {
-        if (!e.SILENT) console.error(e);
-        conn.send("m.error", e?.message || e);
-      } else if (this.lazyLoading || e.SILENT) {
-        conn.send("m.error", e?.message || e);
-      }
+      this.handleError(e, conn);
     }
   }
 

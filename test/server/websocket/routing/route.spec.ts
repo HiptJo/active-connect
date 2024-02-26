@@ -543,7 +543,6 @@ describe("authentication", () => {
     });
   });
 });
-
 it("should not trigger the sendUpdates action if the route modifies something and authentication fails", async () => {
   class target2 {
     data = "";

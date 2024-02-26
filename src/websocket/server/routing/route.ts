@@ -5,6 +5,7 @@ import { WebsocketOutbounds } from "./outbound";
 import { WebsocketRouter } from "./router";
 import { MessageFilter } from "../../auth/authenticator";
 import { WebsocketRouteDecoratorConfig } from "../../decorators/websocket-route-decorator-config";
+import { StackTrace } from "../../../error/stack-trace";
 
 const ERROR = "__active-connect_error__";
 
@@ -167,14 +168,27 @@ export class WebsocketRoute extends AuthableDecorableFunction {
           WebsocketOutbounds.resendDataAfterAuth(request.connection).then();
         return data;
       } catch (e) {
-        if (!e?.isAuthenticationError) {
-          if (!e.SILENT) console.error(e);
-          request.connection.send("m.error", e?.message || e);
-        }
+        this.handleError(e, request);
         return ERROR;
       }
     } else {
       throw Error(`Websocket: Function not defined for route "${this.method}"`);
+    }
+  }
+
+  private handleError(e: any, req: WebsocketRequest) {
+    const error = StackTrace.setTrace(
+      e,
+      "route:" + this.method,
+      "client:" + req.connection.description
+    );
+
+    if (!e?.isAuthenticationError) {
+      req.connection.send("m.error", error.message, req.messageId);
+
+      if (!e?.SILENT) {
+        console.error(error);
+      }
     }
   }
 
