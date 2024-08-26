@@ -1,4 +1,5 @@
 import { Response } from "express";
+import { OutgoingHttpHeaders } from "http";
 
 /**
  * Represents an HTTP response.
@@ -25,6 +26,10 @@ export class HttpResponse {
    * @type {"binary" | "base64" | null | undefined}
    */
   contentEncoding: "binary" | "base64" | null | undefined;
+  /**
+   * Headers of the http response
+   */
+  headers: OutgoingHttpHeaders;
 
   static redirect(url: string): HttpResponse {
     const response = new HttpResponse();

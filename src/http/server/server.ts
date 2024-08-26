@@ -88,15 +88,26 @@ export class HttpServer {
         .Func(req, res)
         .then(function requestCompleted(response: HttpResponse) {
           if (response) {
+            if (response.headers && response.contentType) {
+              response.headers.contentType = response.contentType;
+            }
             if (response.contentType == "REDIRECT" && response.status == 0) {
               res.redirect(response.content);
             } else {
               if (response.contentType) {
-                res.writeHead(response.status || 500, {
-                  "Content-Type": response.contentType,
-                });
+                res.writeHead(
+                  response.status || 500,
+                  response.headers || {
+                    "Content-Type": response.contentType,
+                  }
+                );
               } else {
-                res.writeHead(response.status || 500);
+                res.writeHead(
+                  response.status || 500,
+                  response.headers || {
+                    "Content-Type": response.contentType,
+                  }
+                );
               }
               res.end(response.content, response.contentEncoding);
             }
