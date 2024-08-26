@@ -29,7 +29,7 @@ export class HttpResponse {
   /**
    * Headers of the http response
    */
-  headers: OutgoingHttpHeaders;
+  headers?: OutgoingHttpHeaders | undefined;
 
   static redirect(url: string): HttpResponse {
     const response = new HttpResponse();
