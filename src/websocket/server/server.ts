@@ -162,6 +162,7 @@ export class WebsocketServer {
    * @returns A callback function that removes the closed connection from the list of established connections.
    */
   private onClose(connection: WebsocketConnection) {
+    WebsocketOutbounds.unsubscribeConnection(connection);
     return () => {
       this.connections = this.connections.filter((c) => c.id !== connection.id);
     };
