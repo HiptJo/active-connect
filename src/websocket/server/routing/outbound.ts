@@ -674,14 +674,14 @@ export class WebsocketOutbounds {
    * @param [key] - Optional key for filtering the connections to update.
    */
   public static async sendUpdates(methods: Array<string>, key?: any) {
-    var methods = [...methods];
+    var methodsCopy = [...methods];
 
     // send updates for first route instantly
-    await WebsocketOutbounds.sendUpdatesForMethod(methods.shift(), key);
+    await WebsocketOutbounds.sendUpdatesForMethod(methodsCopy.shift(), key);
 
     // send updates for others in the background
     Promise.all(
-      methods.map((m) => WebsocketOutbounds.sendUpdatesForMethod(m, key))
+      methodsCopy.map((m) => WebsocketOutbounds.sendUpdatesForMethod(m, key))
     ).then();
   }
 
