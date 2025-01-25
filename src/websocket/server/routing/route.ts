@@ -210,7 +210,12 @@ export class WebsocketRoute extends AuthableDecorableFunction {
             const filter = config.filter
               ? await config.filter.filter(responseData, requestConn)
               : undefined;
-            await WebsocketOutbounds.sendUpdates(config.outboundRoutes, filter);
+            if (config.outboundRoutes && config.outboundRoutes.length > 0) {
+              await WebsocketOutbounds.sendUpdates(
+                config.outboundRoutes,
+                filter
+              );
+            }
             resolve();
           })
         );
