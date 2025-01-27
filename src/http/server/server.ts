@@ -18,6 +18,7 @@ export class HttpServer {
   private app: express.Application;
   private server: http.Server;
   private websocket: WebsocketServer;
+  private cookieName: string | null = null;
 
   /**
    * Creates a new instance of the `HttpServer` class.
@@ -80,6 +81,25 @@ export class HttpServer {
     HttpServer.deleteMethods.forEach(function registerDeleteMethod(del) {
       t.app.delete(del.method, t.handleRequest(del));
     });
+  }
+
+  /**
+   * Defines the name property for the auth cookie. This cookie is used for FileProvider/ImageProvider Authentication.
+   *
+   * @param name the name of the cookie used for authentication.
+   */
+  public setCookieName(name: string) {
+    this.cookieName = name;
+  }
+
+  /**
+   * Returns the name property for the auth cookie. This cookie is used for FileProvider/ImageProvider Authentication.
+   * Returns null if cookie authentication is disabled.
+   *
+   * @returns The the name of the cookie used for authentication or null if cookies are disabled for authentication.
+   */
+  public getCookieName() {
+    return this.cookieName;
   }
 
   private handleRequest(method: HttpMethod): express.RequestHandler {
@@ -257,7 +277,7 @@ export class HttpServer {
         ) {
           const id = +req.params.id || req.params.id;
           const auth = req.params.auth;
-          await sendFile(res, provider, id, auth);
+          await sendFile(req, res, provider, id, auth);
         }
       );
       t.app.get(
@@ -268,7 +288,7 @@ export class HttpServer {
         ) {
           const id = +req.params.id || req.params.id;
           const auth = req.params.auth;
-          await sendFile(res, provider, id, auth);
+          await sendFile(req, res, provider, id, auth);
         }
       );
       t.app.get(
@@ -278,7 +298,7 @@ export class HttpServer {
           res: express.Response
         ) {
           const id = +req.params.id || req.params.id;
-          await sendFile(res, provider, id);
+          await sendFile(req, res, provider, id);
         }
       );
       t.app.get(
@@ -287,7 +307,7 @@ export class HttpServer {
           req: express.Request,
           res: express.Response
         ) {
-          await sendFile(res, provider);
+          await sendFile(req, res, provider);
         }
       );
     });
@@ -306,7 +326,7 @@ export class HttpServer {
         ) {
           const id = +req.params.id || req.params.id;
           const auth = req.params.auth;
-          await sendImage(res, provider, id, auth);
+          await sendImage(req, res, provider, id, auth);
         }
       );
       t.app.get(
@@ -316,7 +336,7 @@ export class HttpServer {
           res: express.Response
         ) {
           const id = +req.params.id || req.params.id;
-          await sendImage(res, provider, id);
+          await sendImage(req, res, provider, id);
         }
       );
       t.app.get(
@@ -325,20 +345,24 @@ export class HttpServer {
           req: express.Request,
           res: express.Response
         ) {
-          await sendImage(res, provider);
+          await sendImage(req, res, provider);
         }
       );
     });
   }
 
   private async sendFile(
+    req: express.Request,
     res: express.Response,
     provider: FileProvider,
     id?: string,
     auth?: string
   ) {
     try {
-      const data: ProvidedFile = await provider.Func(id, auth);
+      const authToken =
+        auth ||
+        this.parseCookies(req).find((c) => c.name == this.cookieName)?.value;
+      const data: ProvidedFile = await provider.Func(id, authToken);
 
       if (data.data && data.data.startsWith) {
         if (data.data.startsWith("data:")) {
@@ -373,13 +397,18 @@ export class HttpServer {
   }
 
   private async sendImage(
+    req: express.Request,
     res: express.Response,
     provider: ImageProvider,
     id?: string,
     auth?: string
   ) {
     try {
-      const data: ProvidedImage = await provider.Func(id, auth);
+      const authToken =
+        auth ||
+        this.parseCookies(req).find((c) => c.name == this.cookieName)?.value;
+
+      const data: ProvidedImage = await provider.Func(id, authToken);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
@@ -393,6 +422,17 @@ export class HttpServer {
         res.sendStatus(this.getErrorCode(e));
       }
     }
+  }
+
+  private parseCookies(
+    req: express.Request
+  ): { name: string; value: string }[] {
+    return (
+      req.headers.cookie?.split(";").map((c: string) => {
+        const r = c.split("=");
+        return { name: r[0], value: r[1] };
+      }) || []
+    );
   }
 
   private serverStartedResolves: Array<Function> = [];
