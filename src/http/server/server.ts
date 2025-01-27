@@ -360,8 +360,8 @@ export class HttpServer {
   ) {
     try {
       const authToken =
-        auth ||
-        this.parseCookies(req).find((c) => c.name == this.cookieName)?.value;
+        this.parseCookies(req).find((c) => c.name == this.cookieName)?.value ||
+        auth;
       const data: ProvidedFile = await provider.Func(id, authToken);
 
       if (data.data && data.data.startsWith) {
@@ -405,8 +405,8 @@ export class HttpServer {
   ) {
     try {
       const authToken =
-        auth ||
-        this.parseCookies(req).find((c) => c.name == this.cookieName)?.value;
+        this.parseCookies(req).find((c) => c.name == this.cookieName)?.value ||
+        auth;
 
       const data: ProvidedImage = await provider.Func(id, authToken);
       res.writeHead(200, {
