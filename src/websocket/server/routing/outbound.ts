@@ -306,7 +306,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           const hash = conn.supportsCaching
             ? JsonParser.getHashCode(stringContent)
             : null;
-          if (conn.supportsCaching && this.partialUpdates) {
+          if (this.partialUpdates) {
             const result = conn.getOutboundDiffAndUpdateCache(
               this.method,
               res,
