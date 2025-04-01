@@ -10,32 +10,66 @@ export function Outbound(
       target.___expectOutboundsCall = [];
     }
     target.___expectOutboundsCall.push((_this: any) => {
-      _this.expectOutbound(method, function setOutbound(data: any) {
-        if (!_this.___received) _this.___received = {};
-        if (!_this.___data) _this.___data = {};
-        if (!_this.loading) _this.loading = {};
+      _this.expectOutbound(
+        method,
+        function setOutbound(
+          data: any,
+          specificHash: number | null,
+          inserted: any[] | null,
+          updated: any[] | null,
+          deleted: any[] | null,
+          length: number | null
+        ) {
+          if (!_this.___received) _this.___received = {};
+          if (!_this.___data) _this.___data = {};
+          if (!_this.loading) _this.loading = {};
 
-        if (data == "data_delete") {
-          if (!_this.___requested) _this.___requested = {};
-          _this.___data[propertyKey] = undefined;
-          _this.loading[propertyKey] = false;
-          _this.___received[propertyKey] = false;
-          _this.___requested[propertyKey] = false;
-        } else {
-          if (data && sortBy) data = data.sort(sortBy);
-          _this.___received[propertyKey] = true;
-          _this.___data[propertyKey] = data;
-          _this.loading[propertyKey] = false;
-          if (_this.___resolve) {
-            if (_this.___resolve[propertyKey]) {
-              _this.___resolve[propertyKey].forEach((resolve: Function) =>
-                resolve(data)
-              );
-              _this.___resolve[propertyKey] = [];
+          if (data == "data_delete") {
+            if (!_this.___requested) _this.___requested = {};
+            _this.___data[propertyKey] = undefined;
+            _this.loading[propertyKey] = false;
+            _this.___received[propertyKey] = false;
+            _this.___requested[propertyKey] = false;
+          } else if (data == "data_diff") {
+            var data = target.___data[propertyKey] || [];
+            inserted?.forEach((e) => {
+              const matching = data.filter((d: any) => d.id == e.id);
+              if (matching.length > 0) {
+                data[data.indexOf(matching[0])] = e;
+              } else {
+                data.push(e);
+              }
+            });
+            updated?.forEach((e) => {
+              const matching = data.filter((d: any) => d.id == e.id);
+              if (matching.length > 0) {
+                data[data.indexOf(matching[0])] = e;
+              } else {
+                data.push(e);
+              }
+            });
+            deleted?.forEach((e) => {
+              data = data.filter((d: any) => d.id != e.id);
+            });
+            if (sortBy && data) data = data.sort(sortBy);
+            target.___data[propertyKey] = data;
+            target.loading.set(propertyKey, false);
+          } else {
+            if (data && sortBy) data = data.sort(sortBy);
+            _this.___received[propertyKey] = true;
+            _this.___data[propertyKey] = data;
+            _this.loading[propertyKey] = false;
+            if (_this.___resolve) {
+              if (_this.___resolve[propertyKey]) {
+                _this.___resolve[propertyKey].forEach((resolve: Function) =>
+                  resolve(data)
+                );
+                _this.___resolve[propertyKey] = [];
+              }
             }
           }
         }
-      });
+      );
     });
 
     return {
