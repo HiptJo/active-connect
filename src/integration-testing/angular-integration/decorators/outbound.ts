@@ -31,7 +31,7 @@ export function Outbound(
             _this.___received[propertyKey] = false;
             _this.___requested[propertyKey] = false;
           } else if (data == "data_diff") {
-            var data = target.___data[propertyKey] || [];
+            var data = _this.___data[propertyKey] || [];
             inserted?.forEach((e) => {
               const matching = data.filter((d: any) => d.id == e.id);
               if (matching.length > 0) {
@@ -52,8 +52,8 @@ export function Outbound(
               data = data.filter((d: any) => d.id != e.id);
             });
             if (sortBy && data) data = data.sort(sortBy);
-            target.___data[propertyKey] = data;
-            target.loading.set(propertyKey, false);
+            _this.___data[propertyKey] = data;
+            _this.loading.set(propertyKey, false);
           } else {
             if (data && sortBy) data = data.sort(sortBy);
             _this.___received[propertyKey] = true;
