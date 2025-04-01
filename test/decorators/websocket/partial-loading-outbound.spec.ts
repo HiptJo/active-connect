@@ -59,6 +59,11 @@ class Testing {
   }
 }
 
+beforeEach(() => {
+  Data.AUTO_INCREMENT = 0;
+  Testing.data = Data.generate();
+});
+
 describe("partial loaded data (lazy-loaded, without cache support)", () => {
   it("should be possible to access data using an regular request (without length)", async () => {
     expect(Testing).toBeDefined();
@@ -73,13 +78,20 @@ describe("partial loaded data (lazy-loaded, without cache support)", () => {
       count: 10,
     });
     const data = await conn.expectMethod("d.partloaded");
-    expect(data.length).toBe(10);
+    expect(data).toHaveLength(10);
 
     conn.runRequest("request.d.partloaded", {
       count: 20,
     });
-    const data1 = await conn.expectMethod("d.partloaded");
-    expect(data1.length).toBe(20);
+    const data1 = await conn.expectMethod(
+      "d.partloaded",
+      undefined,
+      undefined,
+      (h, ins, upd, del) => {
+        expect(ins).toHaveLength(10);
+      }
+    );
+    expect(data1).toBe("data_diff");
   });
   it("should be possible to access entry by id", async () => {
     const conn = WebsocketMocks.getConnectionStub();
@@ -91,7 +103,7 @@ describe("partial loaded data (lazy-loaded, without cache support)", () => {
       undefined,
       undefined,
       (s, inserted) => {
-        expect(inserted.length).toBe(1);
+        expect(inserted).toHaveLength(1);
         expect(inserted[0]).toMatchObject({
           id: 25,
           name: "obj25",
@@ -106,12 +118,19 @@ describe("partial loaded data (lazy-loaded, without cache support)", () => {
       count: 10,
     });
     const data = await conn.expectMethod("d.partloaded");
-    expect(data.length).toBe(10);
+    expect(data).toHaveLength(10);
 
     conn.runRequest("partloaded.add", new Data("updated"));
-    const updated = await conn.expectMethod("d.partloaded");
-    expect(updated).toHaveLength(10);
-    expect(updated[0]).toMatchObject({ name: "updated" });
+    const updated = await conn.expectMethod(
+      "d.partloaded",
+      null,
+      null,
+      (hash, ins, upd, del) => {
+        expect(ins).toHaveLength(1);
+        expect(ins[0]).toMatchObject({ name: "updated" });
+      }
+    );
+    expect(updated).toBe("data_diff");
   });
 });
 
@@ -149,7 +168,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
         specific = s;
       }
     );
-    expect(data.length).toBe(10);
+    expect(data).toHaveLength(10);
 
     conn.runRequest("request.d.partloaded", {
       count: 20,
@@ -179,11 +198,13 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
       undefined,
       undefined,
       (s, inserted) => {
-        expect(inserted.length).toBe(1);
-        expect(inserted[0]).toMatchObject({
-          id: 25,
-          name: "obj25",
-        });
+        expect(inserted).toHaveLength(1);
+        expect(inserted).toMatchObject([
+          {
+            id: 25,
+            name: "obj25",
+          },
+        ]);
       }
     );
     expect(data).toBe("data_id");
@@ -200,7 +221,7 @@ describe("partial loaded data (lazy-loaded, with cache support)", () => {
       specificHash: null,
     });
     const data = await conn.expectMethod("d.partloaded");
-    expect(data.length).toBe(10);
+    expect(data).toHaveLength(10);
 
     conn.runRequest("partloaded.add", new Data("updated"));
     const updated = await conn.expectMethod(
