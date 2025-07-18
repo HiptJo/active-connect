@@ -51,7 +51,7 @@ const dailyRotateTransport: DailyRotateFile = new DailyRotateFile({
   datePattern: "YYYY-MM-DD",
   zippedArchive: false,
   maxFiles: "7d",
-  level: process.env.LOG_LEVEL_FILE || "silly",
+  level: process.env.LOG_LEVEL_FILE || "debug",
   format: combine(
     timestamp(),
     errors({ stack: true }),
