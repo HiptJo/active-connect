@@ -9,6 +9,7 @@ import { DecorableFunction } from "../../../decorator-config/function";
 
 import * as _ from "lodash";
 import { IdObject } from "../../../integration-testing/angular-integration/objects/outbound-object";
+import { asyncLocalStorage } from "../../../logger/async-local-storage";
 
 /**
  * Represents a WebSocket connection.
@@ -67,8 +68,10 @@ export class WebsocketConnection {
   ) {
     if (supportsCache) this.enableCache();
     this.token = authToken;
-    this.initializeListeners();
-    this.sendWelcomeMessages();
+    this.withContext(() => {
+      this.initializeListeners();
+      this.sendWelcomeMessages();
+    }, "onconnect");
     if (connection) {
       this.pingInterval = setInterval(function pingConnection() {
         connection.ping();
@@ -78,14 +81,11 @@ export class WebsocketConnection {
     this.clientInformation = this.prepareClientInformation();
   }
 
-  private logging = false;
-
   /**
    * Enables message logging for the WebSocket connection.
+   * @deprecated
    */
-  public enableLogging() {
-    this.logging = true;
-  }
+  public enableLogging() {}
 
   private cachingEnabled = false;
   /**
@@ -104,9 +104,13 @@ export class WebsocketConnection {
 
   private initializeListeners() {
     if (this.connection) {
-      this.connection.on("message", this.onMessage.bind(this));
-      this.connection.on("error", this.onError.bind(this));
-      this.connection.on("close", this.onClose.bind(this));
+      this.connection.on("message", (msg: string) => this.onMessage(msg));
+      this.connection.on("error", (msg: string) =>
+        this.withContext(() => this.onError(msg), "onerror")
+      );
+      this.connection.on("close", () =>
+        this.withContext(() => this.onClose(), "onclose")
+      );
     }
   }
 
@@ -115,21 +119,23 @@ export class WebsocketConnection {
    * @param message - The message received from the WebSocket connection.
    */
   protected onMessage(message: string) {
-    if (this.logging) {
-      console.log(
-        "Received message: " +
-          message +
-          " for Client with Session-Token=" +
-          this.token?.slice(0, 10) +
-          "..."
-      );
-    }
     const data = JsonParser.parse(message);
-    if (!data.messageId)
-      throw Error("No Message-ID has been received by the server.");
-    WebsocketConnection.router.route(
-      new WebsocketRequest(data.method, data.value, this, data.messageId || 0)
-    );
+    this.withContext(
+      async () => {
+        if (!data.messageId)
+          throw Error("No Message-ID has been received by the server.");
+        await WebsocketConnection.router.route(
+          new WebsocketRequest(
+            data.method,
+            data.value,
+            this,
+            data.messageId || 0
+          )
+        );
+      },
+      "route:" + data.method || null,
+      data?.value?.id || null
+    ).then();
   }
 
   private onError(message: string) {
@@ -183,18 +189,6 @@ export class WebsocketConnection {
       deleted,
       length,
     });
-    if (this.logging && method.startsWith("m.")) {
-      let messageLog = message;
-      // only log replies
-      if (messageLog.length > 200) messageLog = messageLog.slice(0, 200);
-      console.log(
-        "Sending message: " +
-          messageLog +
-          " for Client with Session-Token=" +
-          this.token?.slice(0, 10) +
-          "..."
-      );
-    }
     if (this.connection) this.connection.send(message);
   }
 
@@ -419,5 +413,16 @@ export class WebsocketConnection {
         data.id = id;
       }
     }
+  }
+
+  protected async withContext(
+    func: Function,
+    path: string | null = null,
+    objectId: number | null = null
+  ) {
+    return await asyncLocalStorage.run(
+      { connection: this, path, objectId },
+      func
+    );
   }
 }

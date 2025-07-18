@@ -10,6 +10,7 @@ import { ImageProvider } from "../../content/images/image-provider";
 import { HttpResponse } from "./http-response";
 import { ProvidedFile, ProvidedImage } from "../../content";
 import { WebsocketServer } from "../../";
+import { httpLogger } from "../../logger/logger";
 
 /**
  * Represents an HTTP server.
@@ -51,6 +52,7 @@ export class HttpServer {
   private isServerStarted: boolean = false;
 
   private initializeServer() {
+    httpLogger.info("Initializing http server");
     this.app = express();
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(bodyParser.json());
@@ -112,9 +114,13 @@ export class HttpServer {
               response.headers.contentType = response.contentType;
             }
             if (response.contentType == "REDIRECT" && response.status == 0) {
+              httpLogger.http(
+                `${req.method} ${method.method} 302 REDIRECT ${response.content}`
+              );
               res.redirect(response.content);
             } else {
               if (response.contentType) {
+                httpLogger.http(`${req.method} ${method.method} 500`);
                 res.writeHead(
                   response.status || 500,
                   response.headers || {
@@ -122,6 +128,7 @@ export class HttpServer {
                   }
                 );
               } else {
+                httpLogger.http(`${req.method} ${method.method} 500`);
                 res.writeHead(
                   response.status || 500,
                   response.headers || {
@@ -129,12 +136,14 @@ export class HttpServer {
                   }
                 );
               }
+              httpLogger.http(`${req.method} ${method.method} 200`);
               res.end(response.content, response.contentEncoding);
             }
           }
         })
         .catch((err: any) => {
           const status = this.getErrorCode(err);
+          httpLogger.http(`${req.method} ${method.method} ${status} ${err}`);
           res.status(status);
           res.end("");
           if (status == 500) {
@@ -159,6 +168,7 @@ export class HttpServer {
 
   /**
    * Enables logging for WebSocket connections.
+   * @deprecated
    */
   public enableLogging() {
     this.websocket.enableLogging();
@@ -184,17 +194,24 @@ export class HttpServer {
               content: Buffer
             ) {
               if (error) {
+                httpLogger.http(
+                  `[ANGULAR SERVING] ${req.method} ${req.path} 500`
+                );
                 res.sendStatus(500);
                 throw Error(
                   "Express: Angular File Serving: index.html has not been found"
                 );
               }
+              httpLogger.http(
+                `[ANGULAR SERVING] ${req.method} ${req.path} 200`
+              );
               res.writeHead(200, { "Content-Type": "text/html" });
               res.end(content, "utf-8");
               t.indexCache = content;
             }
           );
         } else {
+          httpLogger.http(`[ANGULAR SERVING] ${req.method} ${req.path} 200`);
           res.writeHead(200, { "Content-Type": "text/html" });
           res.end(t.indexCache, "utf-8");
         }
@@ -244,6 +261,7 @@ export class HttpServer {
             // Access granted...
             return next();
           } else {
+            httpLogger.http(`[BASIC AUTH] ${req.method} ${req.path} 401`);
             // Access denied...
             res.set("WWW-Authenticate", 'Basic realm="401"'); // change this
             res.status(401).send("Authentication required."); // custom message
@@ -381,6 +399,7 @@ export class HttpServer {
           return;
         }
       }
+      httpLogger.http(`[FILE] ${req.method} ${req.path} 200`);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
@@ -389,9 +408,12 @@ export class HttpServer {
     } catch (e) {
       console.error(e);
       if (e?.isAuthenticationError) {
+        httpLogger.http(`[FILE] ${req.method} ${req.path} 401`);
         res.sendStatus(401);
       } else {
-        res.sendStatus(this.getErrorCode(e));
+        const code = this.getErrorCode(e);
+        httpLogger.http(`[FILE] ${req.method} ${req.path} ${code}`);
+        res.sendStatus(code);
       }
     }
   }
@@ -409,6 +431,7 @@ export class HttpServer {
         auth;
 
       const data: ProvidedImage = await provider.Func(id, authToken);
+      httpLogger.http(`[IMAGE] ${req.method} ${req.path} 200`);
       res.writeHead(200, {
         "Content-Type": data.contentType,
         "Cache-Control": "must-revalidate",
@@ -417,9 +440,12 @@ export class HttpServer {
     } catch (e) {
       console.error(e);
       if (e?.isAuthenticationError) {
+        httpLogger.http(`[IMAGE] ${req.method} ${req.path} 401`);
         res.sendStatus(401);
       } else {
-        res.sendStatus(this.getErrorCode(e));
+        const code = this.getErrorCode(e);
+        httpLogger.http(`[IMAGE] ${req.method} ${req.path} ${code}`);
+        res.sendStatus(code);
       }
     }
   }
@@ -438,6 +464,7 @@ export class HttpServer {
   private serverStartedResolves: Array<Function> = [];
 
   private serverStarted() {
+    httpLogger.info("Http server started on port " + this.port);
     this.serverStartedResolves.forEach(function resolveServerStarted(r) {
       r(true);
     });
@@ -530,6 +557,7 @@ export class HttpServer {
    * @returns A promise that is resolved once all connections are closed.
    */
   public stop() {
+    httpLogger.info("Stopping http server");
     return new Promise<void>(async (resolve, reject) => {
       this.server.close((err) => {
         if (err) reject(err);

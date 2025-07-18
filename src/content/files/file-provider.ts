@@ -3,6 +3,7 @@ import {
   AuthableDecorableFunction,
   AuthenticationError,
 } from "../../decorator-config/function";
+import { httpLogger } from "../../logger/logger";
 import { WebsocketConnection } from "../../websocket/server/connection/connection";
 
 /**
@@ -32,6 +33,7 @@ export class FileProvider extends AuthableDecorableFunction {
     message: string | AuthenticationError,
     authError?: boolean
   ): void {
+    httpLogger.error(message);
     if (!authError) {
       throw Error(
         "Error while running FileProvider (" + this.label + "): " + message

@@ -8,6 +8,7 @@ import {
 import * as randomstring from "randomstring";
 import { JsonParser } from "../../json/json-parser";
 import { WebsocketRouter } from "../../websocket/server/routing/router";
+import { asyncLocalStorage } from "../../logger/async-local-storage";
 
 /**
  * Websocket Connection wrapper, can be used to create integration-tests for applications.
@@ -292,11 +293,25 @@ export class StubWebsocketConnection extends WebsocketConnection {
       noMessageId ? undefined : this.messageId
     );
     this.messageId++;
-    new WebsocketRouter().route(request).then();
+    this.withContext(
+      () => {
+        new WebsocketRouter().route(request).then();
+      },
+      "route:" + method,
+      data?.id || null
+    );
   }
 
   public closeConnection() {
     this.onClose();
+  }
+
+  protected async withContext(
+    func: Function,
+    path: string | null = null,
+    objectId: number | null = null
+  ) {
+    await asyncLocalStorage.run({ connection: this, path, objectId }, func);
   }
 }
 

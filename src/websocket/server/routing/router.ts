@@ -1,3 +1,4 @@
+import { wsLogger } from "../../../logger/logger";
 import { WebsocketRequest } from "../message/request";
 import { StandaloneWebsocketRoute, WebsocketRoute } from "./route";
 
@@ -122,6 +123,7 @@ export class WebsocketRouter {
    */
   public async route(request: WebsocketRequest): Promise<any> {
     const route = WebsocketRouter.getRouteByMethod(request.method);
+    wsLogger.silly("Calling route " + route.Method);
     return await route.route(request, [route.Method]);
   }
 

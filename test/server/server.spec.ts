@@ -8,7 +8,6 @@ import {
   WebsocketServer,
 } from "../../src/";
 import { WebsocketClient } from "../../src/integration-testing/connections/websocket-client";
-import * as Randomstring from "randomstring";
 import * as test from "supertest";
 
 let server: HttpServer;
@@ -58,46 +57,6 @@ it("should be possible to fetch the client information of a connection", async (
   expect(data.ip).toBeDefined();
   expect(data.browser).toBeDefined();
   expect(data.browser).toBe("SampleLabel");
-});
-
-describe("websocket logging testing", () => {
-  class Testing {
-    async route() {
-      return true;
-    }
-  }
-  WebsocketRouter.registerStandaloneRoute(
-    new StandaloneWebsocketRoute("fetch.example", {
-      target: Testing.prototype,
-      propertyKey: "route",
-    })
-  );
-
-  it("should be possible to enable logging", (done) => {
-    console.log = (message: string) => {
-      if (message.startsWith("Received message: ")) done();
-    };
-    server.enableLogging();
-    const client = new WebsocketClient(9008);
-    client.awaitConnection().then(() => {
-      client.send("fetch.example", null);
-      client.close();
-    });
-  });
-
-  it("should cut the string when logging a long request", (done) => {
-    console.log = (message: string) => {
-      if (message.startsWith("Received message: ")) {
-        done();
-      }
-    };
-    server.enableLogging();
-    const client = new WebsocketClient(9008);
-    client.awaitConnection().then(() => {
-      client.send("fetch.example", Randomstring.generate(500));
-      client.close();
-    });
-  });
 });
 
 describe("websocket client ip access", () => {

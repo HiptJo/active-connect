@@ -10,6 +10,8 @@ import { WebsocketOutboundDecoratorConfig } from "../../decorators/websocket-out
 import { JsonParser } from "../../../json";
 import { StubWebsocketConnection } from "../../../integration-testing";
 import { StackTrace } from "../../../error/stack-trace";
+import { wsLogger } from "../../../logger/logger";
+import { asyncLocalStorage } from "../../../logger/async-local-storage";
 
 /**
  * @deprecated
@@ -194,6 +196,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       requestConfig?.id ||
       requestConfig?.groupId
     ) {
+      wsLogger.debug(`Sending outbound ${this.method}`);
       await this.sendData(
         conn,
         requestConfig?.id,
@@ -312,6 +315,13 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
               res,
               isPartial
             );
+            wsLogger.silly(
+              `Update ${this.method} (${result.data?.length || 0} Entries / +${
+                result.inserted?.length || 0
+              } ~${result.updated?.length || 0} -${
+                result.deleted?.length || 0
+              })`
+            );
             conn.send(
               this.method,
               result.data,
@@ -323,6 +333,10 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
               dataContext?.length || 0
             );
           } else {
+            wsLogger.silly(
+              `Update ${this.method} (${res?.length || 1} Entries)`
+            );
+
             conn.send(
               this.method,
               res,
@@ -500,22 +514,32 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
 
         const tasks = connectionsWithGroupSubscription
           .map((conn) =>
-            this.sendData(
-              conn,
-              undefined,
-              conn.getOutboundRequestConfig(this.method).groupId
-            )
+            this.withUpdateMessageContext(async () => {
+              await this.sendData(
+                conn,
+                undefined,
+                conn.getOutboundRequestConfig(this.method).groupId
+              );
+            }, conn)
           )
           .concat(
             connectionsWithIdSubscription.map((conn) =>
-              this.sendData(
-                conn,
-                conn.getOutboundRequestConfig(this.method).id,
-                undefined
-              )
+              this.withUpdateMessageContext(async () => {
+                await this.sendData(
+                  conn,
+                  conn.getOutboundRequestConfig(this.method).id,
+                  undefined
+                );
+              }, conn)
             )
           )
-          .concat(connections.map((conn) => this.sendData(conn)));
+          .concat(
+            connections.map((conn) =>
+              this.withUpdateMessageContext(async () => {
+                await this.sendData(conn);
+              }, conn)
+            )
+          );
 
         await Promise.all(tasks);
       }
@@ -605,6 +629,23 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
 
   public resetSubscriptions() {
     this.subscribedConnections = new Map();
+  }
+
+  protected async withUpdateMessageContext(
+    func: Function,
+    connection: WebsocketConnection
+  ) {
+    const store = asyncLocalStorage.getStore() || {};
+    return await asyncLocalStorage.run(
+      {
+        connection,
+        path: "outbound:" + this.method,
+        trigger: `{connectionId:${store.connection?.id || "/"},auth:${
+          store.connection?.description || "/"
+        },path:${store.path || "none"}}`,
+      },
+      func
+    );
   }
 }
 
@@ -698,6 +739,7 @@ export class WebsocketOutbounds {
     method: string,
     key: number | null
   ) {
+    wsLogger.silly(`Sending updated for outbound ${method} (key=${key})`);
     var outbound = this.outbounds.get(method);
     if (outbound && outbound.subscriptionEnabled) {
       await outbound.sendUpdatedData(key);

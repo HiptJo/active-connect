@@ -6,6 +6,7 @@ import { WebsocketRouter } from "./router";
 import { MessageFilter } from "../../auth/authenticator";
 import { WebsocketRouteDecoratorConfig } from "../../decorators/websocket-route-decorator-config";
 import { StackTrace } from "../../../error/stack-trace";
+import { wsLogger } from "../../../logger/logger";
 
 const ERROR = "__active-connect_error__";
 
@@ -167,9 +168,15 @@ export class WebsocketRoute extends AuthableDecorableFunction {
     if (this.Func) {
       try {
         const data = await this.Func(request.data, request.connection);
+        wsLogger.silly(
+          "Successfully executed route method, propagating changes..."
+        );
         await this.resendModifiedData(data, request.connection);
-        if (this.modifiesAuthentication)
+        if (this.modifiesAuthentication) {
+          wsLogger.silly("Resending data due to authentication change...");
           WebsocketOutbounds.resendDataAfterAuth(request.connection).then();
+        }
+        wsLogger.debug("Successful");
         return data;
       } catch (e) {
         this.handleError(e, request);
@@ -188,11 +195,14 @@ export class WebsocketRoute extends AuthableDecorableFunction {
     );
 
     if (!e?.isAuthenticationError) {
-      req.connection.send("m.error", error.message, req.messageId);
-
-      if (!e?.SILENT) {
-        console.error(error);
+      if (e.SILENT) {
+        wsLogger.warn(error.message);
+      } else {
+        wsLogger.error(error.message);
       }
+      req.connection.send("m.error", error.message, req.messageId);
+    } else {
+      wsLogger.debug("Unauthenticated");
     }
   }
 

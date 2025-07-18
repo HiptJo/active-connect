@@ -7,6 +7,8 @@ import { SimpleWebsocketRoute } from "./routing/route";
 import { WebsocketRouter } from "./routing/router";
 import { WebsocketOutbounds } from "./routing/outbound";
 
+import { wsLogger } from "../../logger/logger";
+
 /**
  * WebSocket Server
  *
@@ -33,6 +35,7 @@ export class WebsocketServer {
    * Initializes and starts the WebSocket server.
    */
   private initializeWebsocketServer() {
+    wsLogger.info("Initializing websocket server");
     this.loadDecoratorConfiguration();
     this.server = new Server(this.getConfiguration());
     this.server.on("connection", this.onConnect.bind(this));
@@ -150,6 +153,9 @@ export class WebsocketServer {
       )
         conn.enableCache();
     }
+    wsLogger.http(
+      `New websocket client connected from IP ${conn.clientInformation.ip}`
+    );
     if (this.logging) conn.enableLogging();
     this.connections.push(conn);
     connection.on("close", this.onClose(conn).bind(this));
@@ -172,6 +178,7 @@ export class WebsocketServer {
    * Closes the WebSocket server.
    */
   public close() {
+    wsLogger.info("Closing websocket server");
     this.server.close();
   }
 }
