@@ -67,6 +67,10 @@ export class WebsocketRoute extends AuthableDecorableFunction {
     this.modifiesOutbounds.push({ filter: filter || null, outboundRoutes });
   }
 
+  public clearModifies() {
+    this.modifiesOutbounds = [];
+  }
+
   protected children: Array<WebsocketRoute> = [];
 
   /**
@@ -255,6 +259,7 @@ export class WebsocketRoute extends AuthableDecorableFunction {
       if (this.decoratorConfigReference.authenticator) {
         this.setAuthenticator(this.decoratorConfigReference.authenticator);
       }
+      this.clearModifies();
       if (this.decoratorConfigReference.modifies) {
         this.modifies(this.decoratorConfigReference.modifies);
       }
