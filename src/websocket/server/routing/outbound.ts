@@ -367,12 +367,14 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     );
 
     if (!e?.isAuthenticationError) {
-      if (!e?.SILENT) console.error(error);
+      if (e?.SILENT) wsLogger.warn(error);
+      else wsLogger.error(error);
       conn.send("m.error", error.message);
     } else if (sendDeleteOnAuthError) {
       conn.send(this.method, "data_delete");
       conn.resetOutboundCache(this.method);
     } else if (this.lazyLoading || e?.SILENT) {
+      wsLogger.warn(error);
       conn.send("m.error", error.message);
     }
   }

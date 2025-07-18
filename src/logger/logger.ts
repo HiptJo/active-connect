@@ -91,6 +91,8 @@ const logger: Logger = createLogger({
       ),
     }),
   ],
+  exceptionHandlers: [dailyRotateErrorTransport],
+  rejectionHandlers: [dailyRotateErrorTransport],
 });
 
 const wsLogger = logger.child({ module: "ws" });
