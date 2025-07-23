@@ -87,7 +87,8 @@ const logger: Logger = createLogger({
         colorize({ all: true }),
         timestamp(),
         splat(),
-        logFormat(false)
+        logFormat(false),
+        errors({ stack: true })
       ),
     }),
   ],
