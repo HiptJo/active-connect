@@ -196,7 +196,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       requestConfig?.id ||
       requestConfig?.groupId
     ) {
-      wsLogger.debug(`Sending outbound ${this.method}`);
+      wsLogger.silly(`Sending outbound ${this.method}`);
       await this.sendData(
         conn,
         requestConfig?.id,
