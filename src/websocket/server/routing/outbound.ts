@@ -227,132 +227,137 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     groupId?: number,
     sendDeleteOnAuthError?: boolean
   ) {
-    try {
-      var dataContext:
-        | any[]
-        | PartialOutboundData<any>
-        | PartialOutboundDataForGroup<any>
-        | PartialOutboundDataForId<any> = [];
-      const forId = WebsocketOutbounds.getForId(this.method);
-      const forGroup = WebsocketOutbounds.getForGroup(this.method);
-      if (id && forId) {
-        // authenticate
-        if (this.authenticator) await this.authenticateOrThrow(conn);
-        dataContext = await forId.Func(conn, id);
-      } else if (groupId && forGroup) {
-        if (this.authenticator) await this.authenticateOrThrow(conn);
-        dataContext = await forGroup.Func(conn, groupId);
-      } else {
-        dataContext = await this.Func(
-          conn,
-          conn.getOutboundRequestConfig(this.method).count,
-          id,
-          groupId
-        );
-      }
-
-      if (groupId) {
-        if (!(dataContext as PartialOutboundDataForGroup<any>)?.PARTIAL_GROUP) {
-          throw Error(
-            "Active-Connect: Expected Group Result for outbound " + this.method
+    return await this.withUpdateMessageContext(async () => {
+      try {
+        var dataContext:
+          | any[]
+          | PartialOutboundData<any>
+          | PartialOutboundDataForGroup<any>
+          | PartialOutboundDataForId<any> = [];
+        const forId = WebsocketOutbounds.getForId(this.method);
+        const forGroup = WebsocketOutbounds.getForGroup(this.method);
+        if (id && forId) {
+          // authenticate
+          if (this.authenticator) await this.authenticateOrThrow(conn);
+          dataContext = await forId.Func(conn, id);
+        } else if (groupId && forGroup) {
+          if (this.authenticator) await this.authenticateOrThrow(conn);
+          dataContext = await forGroup.Func(conn, groupId);
+        } else {
+          dataContext = await this.Func(
+            conn,
+            conn.getOutboundRequestConfig(this.method).count,
+            id,
+            groupId
           );
         }
-        conn.send(
-          this.method,
-          "data_group",
-          undefined,
-          undefined,
-          (dataContext as PartialOutboundDataForGroup<any>).data,
-          [groupId]
-        );
-      } else if (id) {
-        if (!(dataContext as PartialOutboundDataForId<any>)?.PARTIAL_ID) {
-          throw Error(
-            "Active-Connect: Expected Id Result for outbound " + this.method
-          );
-        }
-        conn.send(
-          this.method,
-          "data_id",
-          undefined,
-          undefined,
-          (dataContext as PartialOutboundDataForGroup<any>).data,
-          [id]
-        );
-      } else {
-        const isPartial =
-          (dataContext as PartialOutboundData<any>)?.PARTIAL_SUPPORT || false;
-        const res: any[] = isPartial
-          ? (dataContext as PartialOutboundData<any>).data
-          : (dataContext as any[]);
 
-        if (id) {
-          conn.updateOutboundCache(this.method, res, [], []);
-          conn.send(
-            this.method,
-            "data_diff",
-            undefined,
-            undefined,
-            res,
-            undefined,
-            undefined,
-            dataContext?.length || 0
-          );
-        } else if (
-          !res ||
-          (res &&
-            !res.toString().startsWith("auth:unauthorized") &&
-            !res.toString().startsWith("error:auth:unauthorized"))
-        ) {
-          await this.subscribeForConnection(conn, res);
-          const stringContent = JsonParser.stringify(res);
-          const hash = conn.supportsCaching
-            ? JsonParser.getHashCode(stringContent)
-            : null;
-          if (this.partialUpdates) {
-            const result = conn.getOutboundDiffAndUpdateCache(
-              this.method,
-              res,
-              isPartial
-            );
-            wsLogger.silly(
-              `Update ${this.method} (${result.data?.length || 0} Entries / +${
-                result.inserted?.length || 0
-              } ~${result.updated?.length || 0} -${
-                result.deleted?.length || 0
-              })`
-            );
-            conn.send(
-              this.method,
-              result.data,
-              undefined,
-              hash,
-              result.inserted,
-              result.updated,
-              result.deleted,
-              dataContext?.length || 0
-            );
-          } else {
-            wsLogger.silly(
-              `Update ${this.method} (${res?.length || 1} Entries)`
-            );
-
-            conn.send(
-              this.method,
-              res,
-              undefined,
-              hash,
-              undefined,
-              undefined,
-              undefined,
-              dataContext?.length || 0
+        if (groupId) {
+          if (
+            !(dataContext as PartialOutboundDataForGroup<any>)?.PARTIAL_GROUP
+          ) {
+            throw Error(
+              "Active-Connect: Expected Group Result for outbound " +
+                this.method
             );
           }
+          conn.send(
+            this.method,
+            "data_group",
+            undefined,
+            undefined,
+            (dataContext as PartialOutboundDataForGroup<any>).data,
+            [groupId]
+          );
+        } else if (id) {
+          if (!(dataContext as PartialOutboundDataForId<any>)?.PARTIAL_ID) {
+            throw Error(
+              "Active-Connect: Expected Id Result for outbound " + this.method
+            );
+          }
+          conn.send(
+            this.method,
+            "data_id",
+            undefined,
+            undefined,
+            (dataContext as PartialOutboundDataForGroup<any>).data,
+            [id]
+          );
+        } else {
+          const isPartial =
+            (dataContext as PartialOutboundData<any>)?.PARTIAL_SUPPORT || false;
+          const res: any[] = isPartial
+            ? (dataContext as PartialOutboundData<any>).data
+            : (dataContext as any[]);
+
+          if (id) {
+            conn.updateOutboundCache(this.method, res, [], []);
+            conn.send(
+              this.method,
+              "data_diff",
+              undefined,
+              undefined,
+              res,
+              undefined,
+              undefined,
+              dataContext?.length || 0
+            );
+          } else if (
+            !res ||
+            (res &&
+              !res.toString().startsWith("auth:unauthorized") &&
+              !res.toString().startsWith("error:auth:unauthorized"))
+          ) {
+            await this.subscribeForConnection(conn, res);
+            const stringContent = JsonParser.stringify(res);
+            const hash = conn.supportsCaching
+              ? JsonParser.getHashCode(stringContent)
+              : null;
+            if (this.partialUpdates) {
+              const result = conn.getOutboundDiffAndUpdateCache(
+                this.method,
+                res,
+                isPartial
+              );
+              wsLogger.silly(
+                `Update ${this.method} (${
+                  result.data?.length || 0
+                } Entries / +${result.inserted?.length || 0} ~${
+                  result.updated?.length || 0
+                } -${result.deleted?.length || 0})`
+              );
+              conn.send(
+                this.method,
+                result.data,
+                undefined,
+                hash,
+                result.inserted,
+                result.updated,
+                result.deleted,
+                dataContext?.length || 0
+              );
+            } else {
+              wsLogger.silly(
+                `Update ${this.method} (${res?.length || 1} Entries)`
+              );
+
+              conn.send(
+                this.method,
+                res,
+                undefined,
+                hash,
+                undefined,
+                undefined,
+                undefined,
+                dataContext?.length || 0
+              );
+            }
+          }
         }
+      } catch (e) {
+        this.handleError(e, conn, sendDeleteOnAuthError);
       }
-    } catch (e) {
-      this.handleError(e, conn, sendDeleteOnAuthError);
-    }
+    }, conn);
   }
 
   private handleError(
@@ -516,32 +521,22 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
 
         const tasks = connectionsWithGroupSubscription
           .map((conn) =>
-            this.withUpdateMessageContext(async () => {
-              await this.sendData(
-                conn,
-                undefined,
-                conn.getOutboundRequestConfig(this.method).groupId
-              );
-            }, conn)
+            this.sendData(
+              conn,
+              undefined,
+              conn.getOutboundRequestConfig(this.method).groupId
+            )
           )
           .concat(
             connectionsWithIdSubscription.map((conn) =>
-              this.withUpdateMessageContext(async () => {
-                await this.sendData(
-                  conn,
-                  conn.getOutboundRequestConfig(this.method).id,
-                  undefined
-                );
-              }, conn)
+              this.sendData(
+                conn,
+                conn.getOutboundRequestConfig(this.method).id,
+                undefined
+              )
             )
           )
-          .concat(
-            connections.map((conn) =>
-              this.withUpdateMessageContext(async () => {
-                await this.sendData(conn);
-              }, conn)
-            )
-          );
+          .concat(connections.map((conn) => this.sendData(conn)));
 
         await Promise.all(tasks);
       }
