@@ -1,4 +1,5 @@
 import { DecorableFunction } from "../../decorator-config";
+import { cronLogger } from "../../logger/logger";
 
 const cron = require("node-cron");
 
@@ -22,7 +23,7 @@ export function Cron(crontab: string, label: string = "") {
   return function _Cron(target: any, propertyKey: string) {
     const obj = new DecorableFunction({ target, propertyKey });
     cron.schedule(crontab, () => {
-      console.info("Running cronjob " + label);
+      cronLogger.debug("Running " + label);
       const res = obj.Func();
       if (res.then) {
         return res.then();
