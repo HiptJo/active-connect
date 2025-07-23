@@ -97,4 +97,5 @@ const logger: Logger = createLogger({
 
 const wsLogger = logger.child({ module: "ws" });
 const httpLogger = logger.child({ module: "http" });
-export { logger, wsLogger, httpLogger };
+const appLogger = logger.child({ module: "app" });
+export { logger, wsLogger, httpLogger, appLogger };
