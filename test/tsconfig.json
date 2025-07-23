@@ -3,7 +3,7 @@
     "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "lib": ["es6", "dom"],
+    "lib": ["es2021", "dom"],
     "module": "commonjs",
     "newLine": "LF",
     "noFallthroughCasesInSwitch": true,
@@ -14,7 +14,7 @@
     "noUnusedLocals": true,
     "sourceMap": true,
     "strictNullChecks": false,
-    "target": "es5"
+    "target": "es2021"
   },
   "include": ["**/*.ts"]
 }
