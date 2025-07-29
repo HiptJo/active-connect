@@ -10,6 +10,7 @@ import { DecorableFunction } from "../../../decorator-config/function";
 import * as _ from "lodash";
 import { IdObject } from "../../../integration-testing/angular-integration/objects/outbound-object";
 import { asyncLocalStorage } from "../../../logger/async-local-storage";
+import { wsLogger } from "../../../logger/logger";
 
 /**
  * Represents a WebSocket connection.
@@ -151,6 +152,7 @@ export class WebsocketConnection {
   }
 
   protected onClose() {
+    wsLogger.info(`Closing connection ${this.id}`);
     this.closed = true;
     clearInterval(this.pingInterval);
     WebsocketOutbounds.unsubscribeConnection(this);
