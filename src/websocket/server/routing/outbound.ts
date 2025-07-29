@@ -320,9 +320,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
                 isPartial
               );
               wsLogger.silly(
-                `Update ${this.method} (${
-                  result.data?.length || 0
-                } Entries / +${result.inserted?.length || 0} ~${
+                `Update ${this.method} (+${result.inserted?.length || 0} ~${
                   result.updated?.length || 0
                 } -${result.deleted?.length || 0})`
               );
