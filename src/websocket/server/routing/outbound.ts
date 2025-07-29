@@ -550,6 +550,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       const connections = this.subscribedConnections.get(key);
       const index = connections.indexOf(conn);
       if (index >= 0) {
+        wsLogger.silly(
+          `Unsubscribing connection #${conn.id} for outbound ${this.method}`
+        );
         connections.splice(index);
       }
     }
