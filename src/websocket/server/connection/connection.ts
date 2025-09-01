@@ -56,6 +56,8 @@ export class WebsocketConnection {
   public static router: WebsocketRouter = new WebsocketRouter();
   private pingInterval;
 
+  public onCloseCallback: Function = () => {};
+
   /**
    * Creates a new instance of WebsocketConnection.
    * @param connection - The WebSocket connection object representing the connection to the client.
@@ -158,6 +160,7 @@ export class WebsocketConnection {
     WebsocketOutbounds.unsubscribeConnection(this);
     WebsocketConnection.closeHandlers.forEach((c) => c.Func(this));
     this.outboundCache = new Map();
+    this.onCloseCallback();
   }
 
   private async sendWelcomeMessages() {

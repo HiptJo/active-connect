@@ -158,19 +158,8 @@ export class WebsocketServer {
     );
     if (this.logging) conn.enableLogging();
     this.connections.push(conn);
-    connection.on("close", this.onClose(conn).bind(this));
-  }
-
-  /**
-   * Handles the WebSocket connection close event.
-   *
-   * @param connection - The closed WebsocketConnection object.
-   * @returns A callback function that removes the closed connection from the list of established connections.
-   */
-  private onClose(connection: WebsocketConnection) {
-    WebsocketOutbounds.unsubscribeConnection(connection);
-    return () => {
-      this.connections = this.connections.filter((c) => c.id !== connection.id);
+    conn.onCloseCallback = () => {
+      this.connections = this.connections.filter((c) => c.id !== conn.id);
     };
   }
 
