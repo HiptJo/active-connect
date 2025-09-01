@@ -12,6 +12,7 @@ import { StubWebsocketConnection } from "../../../integration-testing";
 import { StackTrace } from "../../../error/stack-trace";
 import { wsLogger } from "../../../logger/logger";
 import { asyncLocalStorage } from "../../../logger/async-local-storage";
+import { logger } from "../../..";
 
 /**
  * @deprecated
@@ -286,7 +287,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
         } else {
           const isPartial =
             (dataContext as PartialOutboundData<any>)?.PARTIAL_SUPPORT || false;
-          const res: any[] = isPartial
+          const res: any[] =
+            isPartial && (dataContext as PartialOutboundData<any>).data
             ? (dataContext as PartialOutboundData<any>).data
             : (dataContext as any[]);
 
@@ -414,6 +416,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     specificHash: number
   ) {
     if (conn.isClosed) {
+      logger.silly("Skipping data update for closed clonnection");
       return;
     }
 
