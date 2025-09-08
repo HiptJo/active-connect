@@ -178,6 +178,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     sendDeleteOnAuthError?: boolean
   ) {
     if (conn.isClosed) {
+      logger.silly("Skipping sendTo for closed clonnection");
       return;
     }
 
@@ -245,6 +246,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
           if (this.authenticator) await this.authenticateOrThrow(conn);
           dataContext = await forGroup.Func(conn, groupId);
         } else {
+          /// ????
           dataContext = await this.Func(
             conn,
             conn.getOutboundRequestConfig(this.method).count,
@@ -289,8 +291,8 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
             (dataContext as PartialOutboundData<any>)?.PARTIAL_SUPPORT || false;
           const res: any[] =
             isPartial && (dataContext as PartialOutboundData<any>).data
-            ? (dataContext as PartialOutboundData<any>).data
-            : (dataContext as any[]);
+              ? (dataContext as PartialOutboundData<any>).data
+              : (dataContext as any[]);
 
           if (id) {
             conn.updateOutboundCache(this.method, res, [], []);
@@ -393,6 +395,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     sendDeleteOnAuthError?: boolean
   ) {
     if (conn.isClosed) {
+      logger.silly("Skipping sendToIfSubscribed for closed clonnection");
       return;
     }
 
@@ -416,7 +419,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     specificHash: number
   ) {
     if (conn.isClosed) {
-      logger.silly("Skipping data update for closed clonnection");
+      logger.silly("Skipping sendToIfContentChanged for closed clonnection");
       return;
     }
 
