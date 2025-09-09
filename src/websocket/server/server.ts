@@ -19,7 +19,6 @@ import { wsLogger } from "../../logger/logger";
 export class WebsocketServer {
   private server: Server;
   private connections: Array<WebsocketConnection> = [];
-  private logging = false;
   private static _fetchIpLocation = false;
 
   /**
@@ -50,10 +49,9 @@ export class WebsocketServer {
 
   /**
    * Enables logging of all received messages.
+   * @deprecated
    */
-  public enableLogging() {
-    this.logging = true;
-  }
+  public enableLogging() {}
 
   /**
    * Enables the connection IP location functionality.
@@ -144,19 +142,19 @@ export class WebsocketServer {
    * @param req - The request object associated with the connection.
    */
   private onConnect(connection: WebSocket, req: any) {
-    const conn = new WebsocketConnection(connection);
-    if (req) {
-      conn.setIp(req.headers["x-forwarded-for"] || req.socket.remoteAddress);
-      if (
-        req.headers["supports-active-connect-cache"] ||
+    const ip = req
+      ? req.headers["x-forwarded-for"] || req.socket.remoteAddress
+      : "-";
+    const supportsCache = req
+      ? req.headers["supports-active-connect-cache"] ||
         req.url?.indexOf("?cache=true") >= 0
-      )
-        conn.enableCache();
+      : false;
+
+    wsLogger.http(`New websocket client connected from IP ${ip}`);
+    const conn = new WebsocketConnection(connection, supportsCache);
+    if (req) {
+      conn.setIp(ip);
     }
-    wsLogger.http(
-      `New websocket client connected from IP ${conn.clientInformation.ip}`
-    );
-    if (this.logging) conn.enableLogging();
     this.connections.push(conn);
     conn.onCloseCallback = () => {
       this.connections = this.connections.filter((c) => c.id !== conn.id);
