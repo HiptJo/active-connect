@@ -144,7 +144,7 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       this.subscribedConnections.set(key || null, [conn]);
     } else {
       // Check if connection is not already inside the map
-      if (!result.includes(conn)) {
+      if (!result.find((e) => e.id == conn.id)) {
         this.subscribedConnections.get(key || null).push(conn);
       }
     }
