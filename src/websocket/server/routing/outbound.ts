@@ -125,6 +125,11 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
     conn: WebsocketConnection,
     response: any
   ) {
+    if (conn.isClosed) {
+      logger.silly("Skipping subscription: connection is closed");
+      return;
+    }
+
     this.addSubscriptionForKey(null, conn);
     for await (const filter of this.subscribesFilteredChanges) {
       this.addSubscriptionForKey(await filter.filter(response, conn), conn);
