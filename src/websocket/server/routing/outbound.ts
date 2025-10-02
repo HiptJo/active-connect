@@ -139,6 +139,9 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   private subscribedConnections: Map<number, WebsocketConnection[]> = new Map();
 
   private addSubscriptionForKey(key: number | null, conn: WebsocketConnection) {
+    logger.debug(
+      `Subscribing for outbound ${this.method} using key=${key || "null"}`
+    );
     const result = this.subscribedConnections.get(key || null);
     if (!result) {
       this.subscribedConnections.set(key || null, [conn]);
