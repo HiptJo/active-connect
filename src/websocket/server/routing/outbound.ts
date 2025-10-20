@@ -621,7 +621,6 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       if (this.decoratorConfigReference.resendAfterAuthenticationChange) {
         this.resendAfterAuthenticationChange = true;
       }
-      this.resetSubscriptions();
       if (this.decoratorConfigReference.subscriptionEnabled) {
         this.subscribeChanges();
       }
