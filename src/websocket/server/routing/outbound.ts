@@ -217,12 +217,14 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
       // check if the user has sufficient permissions
       if (
         !this.hasAuthenticator ||
-        (this.hasAuthenticator && (await this.authenticate(conn)))
+        (this.hasAuthenticator &&
+          (await this.authenticate(conn, sendDeleteOnAuthError)))
       ) {
         conn.send("___cache", this.method);
       } else if (sendDeleteOnAuthError) {
         conn.send(this.method, "data_delete");
         conn.resetOutboundCache(this.method);
+        this.unsubscribeConnection(conn);
       }
     }
   }
@@ -603,8 +605,23 @@ export class WebsocketOutbound extends AuthableDecorableFunction {
   /**
    * Checks whether the connection has sufficient permission to receive this outbound.
    */
-  public async authenticate(conn: WebsocketConnection) {
-    return await this.authenticator.authenticate(conn, null);
+  public async authenticate(
+    conn: WebsocketConnection,
+    suppressAuthException: boolean = false,
+  ) {
+    try {
+      return await this.authenticator.authenticate(conn, null);
+    } catch (e) {
+      if (suppressAuthException) {
+        logger.debug(
+          "Suppressing exception during resend of outbound due to auth change: " +
+            e,
+        );
+        return false;
+      } else {
+        throw e;
+      }
+    }
   }
 
   /**
