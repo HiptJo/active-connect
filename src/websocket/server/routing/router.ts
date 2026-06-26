@@ -59,8 +59,8 @@ export class WebsocketRouter {
         selectedRoute = res[0];
         routes = selectedRoute.Children;
       } else {
-        throw Error(
-          `Websocket Routing: Could not find route by method "${method}"`
+        wsLogger.warn(
+          `Websocket Routing: Could not remove route by method "${method}": Route not found`,
         );
       }
     });
@@ -122,9 +122,16 @@ export class WebsocketRouter {
    * @returns - A promise that resolves with the routed response.
    */
   public async route(request: WebsocketRequest): Promise<any> {
-    const route = WebsocketRouter.getRouteByMethod(request.method);
-    wsLogger.silly("Calling route " + route.Method);
-    return await route.route(request, [route.Method]);
+    try {
+      const route = WebsocketRouter.getRouteByMethod(request.method);
+      wsLogger.silly("Calling route " + route.Method);
+      return await route.route(request, [route.Method]);
+    } catch (e) {
+      wsLogger.error(
+        "Unable to call route " + request.method + ": " + e?.message,
+        e,
+      );
+    }
   }
 
   /**
