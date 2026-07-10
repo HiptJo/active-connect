@@ -11,7 +11,7 @@ export class WebsocketClient {
     enableCachingUsingParam?: boolean
   ) {
     const opts: any = {
-      headers: {},
+      headers: {}
     };
     if (process.env.ip_override) {
       opts.headers["x-forwarded-for"] = process.env.ip_override;
@@ -49,7 +49,13 @@ export class WebsocketClient {
   }
 
   private expectedMessages: Map<string, Function> = new Map();
+
   awaitMessage<T>(method: string): Promise<T> {
+    if (this.messageHistory.has(method)) {
+      const value = this.messageHistory.get(method);
+      this.messageHistory.delete(method);
+      return Promise.resolve(value);
+    }
     return new Promise((resolve) => {
       this.expectedMessages.set(method, resolve);
     });
@@ -69,7 +75,7 @@ export class WebsocketClient {
       JsonParser.stringify({
         method: method,
         value: data,
-        messageId: ++this.messageId,
+        messageId: ++this.messageId
       })
     );
   }
