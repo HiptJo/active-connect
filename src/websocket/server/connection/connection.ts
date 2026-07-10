@@ -56,6 +56,15 @@ export class WebsocketConnection {
   public static router: WebsocketRouter = new WebsocketRouter();
   private pingInterval;
 
+  /**
+   * Tracks whether a pong has been received since the last ping.
+   * Used to detect and terminate dead connections that never emit a
+   * "close" event on their own (e.g. the client machine went to sleep,
+   * lost network connectivity abruptly, or sits behind a NAT/proxy that
+   * silently drops idle connections without sending a FIN/RST).
+   */
+  private isAlive: boolean = true;
+
   public onCloseCallback: Function = () => {};
 
   /**
@@ -76,8 +85,31 @@ export class WebsocketConnection {
       this.sendWelcomeMessages();
     }, "onconnect");
     if (connection) {
-      this.pingInterval = setInterval(function pingConnection() {
-        connection.ping();
+      this.pingInterval = setInterval(() => {
+        // If the previous ping never got a pong back, the socket is
+        // considered dead. Terminate it so the server (and, once the
+        // client notices the resulting close/error, the client too) can
+        // clean up and reconnect instead of the connection silently
+        // hanging around while no data flows in either direction.
+        if (!this.isAlive) {
+          wsLogger.info(
+            `Terminating unresponsive connection ${this.id} (no pong received)`
+          );
+          connection.terminate();
+          return;
+        }
+        this.isAlive = false;
+        try {
+          connection.ping();
+        } catch (err) {
+          // A throwing ping() (e.g. on an already half-closed socket)
+          // should not crash the process and take every other
+          // connection down with it.
+          wsLogger.info(
+            `Error while pinging connection ${this.id}, terminating: ${err}`
+          );
+          connection.terminate();
+        }
       }, 45000);
     }
 
@@ -108,6 +140,9 @@ export class WebsocketConnection {
   private initializeListeners() {
     if (this.connection) {
       this.connection.on("message", (msg: string) => this.onMessage(msg));
+      this.connection.on("pong", () => {
+        this.isAlive = true;
+      });
       this.connection.on("error", (msg: string) =>
         this.withContext(() => this.onError(msg), "onerror")
       );
@@ -122,19 +157,49 @@ export class WebsocketConnection {
    * @param message - The message received from the WebSocket connection.
    */
   protected onMessage(message: string) {
-    const data = JsonParser.parse(message);
+    let data: any;
+    try {
+      data = JsonParser.parse(message);
+    } catch (err) {
+      // A malformed payload must not throw inside the "message" event
+      // handler - an uncaught exception here can bring down the whole
+      // process (and therefore every other connection) depending on how
+      // uncaughtException is handled elsewhere.
+      wsLogger.info(
+        `Failed to parse incoming message on connection ${this.id}: ${err}`
+      );
+      return;
+    }
+
     this.withContext(
       async () => {
-        if (!data.messageId)
-          throw Error("No Message-ID has been received by the server.");
-        await WebsocketConnection.router.route(
-          new WebsocketRequest(
-            data.method,
-            data.value,
-            this,
-            data.messageId || 0
-          )
-        );
+        try {
+          if (!data.messageId)
+            throw Error("No Message-ID has been received by the server.");
+          await WebsocketConnection.router.route(
+            new WebsocketRequest(
+              data.method,
+              data.value,
+              this,
+              data.messageId || 0
+            )
+          );
+        } catch (err) {
+          // Whatever goes wrong while routing/handling the request, the
+          // client is (almost always) sitting on a promise waiting for a
+          // reply keyed by this messageId. If we swallow the error here
+          // without responding, that promise never resolves or rejects
+          // and the caller hangs forever, even though the connection
+          // itself is perfectly healthy. Always send something back.
+          wsLogger.info(
+            `Error handling message ${data?.method} on connection ${this.id}: ${err}`
+          );
+          this.send(
+            "m.error",
+            err instanceof Error ? err.message : String(err),
+            data?.messageId || null
+          );
+        }
       },
       "route:" + data.method || null,
       data?.value?.id || null
@@ -142,7 +207,7 @@ export class WebsocketConnection {
   }
 
   private onError(message: string) {
-    throw Error(message);
+    wsLogger.info(`Connection ${this.id} error: ${message}`);
   }
 
   private closed: boolean = false;
@@ -192,9 +257,18 @@ export class WebsocketConnection {
       inserted,
       updated,
       deleted,
-      length,
+      length
     });
-    if (this.connection) this.connection.send(message);
+    if (this.connection) {
+      try {
+        this.connection.send(message);
+      } catch (err) {
+        wsLogger.info(
+          `Failed to send message on connection ${this.id}, terminating: ${err}`
+        );
+        this.connection.terminate();
+      }
+    }
   }
 
   private outboundCache: Map<string, any[] | Map<number, any>> = new Map();
@@ -292,7 +366,7 @@ export class WebsocketConnection {
         inserted,
         updated,
         deleted,
-        data: "data_diff",
+        data: "data_diff"
       };
     } else {
       if (isPartial) {
@@ -304,7 +378,7 @@ export class WebsocketConnection {
         data,
         inserted: null,
         updated: null,
-        deleted: null,
+        deleted: null
       };
     }
   }
@@ -385,7 +459,7 @@ export class WebsocketConnection {
       this.outboundRequestConfig.get(method) || {
         count: Number.MAX_SAFE_INTEGER,
         id: undefined,
-        groupId: undefined,
+        groupId: undefined
       }
     );
   }
@@ -404,7 +478,7 @@ export class WebsocketConnection {
       this.outboundRequestConfig.set(method, {
         count,
         id,
-        groupId,
+        groupId
       });
     } else {
       const data = this.outboundRequestConfig.get(method);
