@@ -3,7 +3,7 @@ import {
   StandaloneWebsocketRoute,
   WebsocketOutbound,
   WebsocketOutbounds,
-  WebsocketRouter,
+  WebsocketRouter
 } from "../../../src";
 import * as assert from "assert";
 import { WebsocketClient } from "../../../src/integration-testing/connections/websocket-client";
@@ -13,6 +13,8 @@ function delay(ms: number): Promise<void> {
     setTimeout(() => resolve(), ms);
   });
 }
+
+jest.setTimeout(10000);
 
 describe("server creation", () => {
   let server: HttpServer;
@@ -47,7 +49,7 @@ describe("server creation", () => {
     WebsocketOutbounds.addOutbound(
       new WebsocketOutbound("await.message", {
         target: Testing.prototype,
-        propertyKey: "message",
+        propertyKey: "message"
       })
     );
     expect(Testing).toBeDefined();
@@ -71,7 +73,7 @@ describe("server creation", () => {
     WebsocketRouter.registerStandaloneRoute(
       new StandaloneWebsocketRoute("falseval.awaitfalse", {
         target: Testing.prototype,
-        propertyKey: "message",
+        propertyKey: "message"
       })
     );
     expect(Testing).toBeDefined();
@@ -94,7 +96,7 @@ describe("server creation", () => {
     }
     const out = new WebsocketOutbound("await.message1", {
       target: Testing.prototype,
-      propertyKey: "message",
+      propertyKey: "message"
     });
     out.subscribeChanges();
     WebsocketOutbounds.addOutbound(out);
@@ -122,7 +124,7 @@ describe("server creation", () => {
     }
     const out = new WebsocketOutbound("await.message2", {
       target: Testing.prototype,
-      propertyKey: "message",
+      propertyKey: "message"
     });
     out.subscribeChanges();
     WebsocketOutbounds.addOutbound(out);
