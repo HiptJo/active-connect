@@ -80,19 +80,19 @@ export class WebsocketServer {
       server: this.httpServer,
       perMessageDeflate: {
         zlibDeflateOptions: {
-          // See zlib defaults.
-          chunkSize: 1024,
+          chunkSize: 16 * 1024,
           memLevel: 7,
-          level: 3,
+          level: 6
         },
         zlibInflateOptions: {
-          chunkSize: 10 * 1024,
+          chunkSize: 16 * 1024
         },
-        serverMaxWindowBits: 10, // Defaults to negotiated value.
-        // Below options specified as default values.
-        concurrencyLimit: 10, // Limits zlib concurrency for performance.
-        threshold: 1024, // Size (in bytes) below which messages should not be compressed.
-      },
+        serverMaxWindowBits: 15,
+        serverNoContextTakeover: true, // don't keep zlib state alive between messages per-connection — big memory win at many-connections scale
+        clientNoContextTakeover: true,
+        concurrencyLimit: 6,
+        threshold: 4096
+      }
     };
   }
 
